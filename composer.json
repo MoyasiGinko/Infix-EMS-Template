@@ -113,10 +113,7 @@
     "pre-autoload-dump": "Google\\Task\\Composer::cleanup",
     "post-autoload-dump": [
       "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-      "@php artisan package:discover --ansi",
-      "@php artisan package:discover --ansi",
-      "mkdir -p bootstrap/cache storage/framework storage/logs",
-      "chmod -R 777 bootstrap storage resources public"
+      "@php artisan package:discover --ansi"
     ],
     "post-root-package-install": [
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
