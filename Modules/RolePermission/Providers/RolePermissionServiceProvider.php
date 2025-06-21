@@ -4,6 +4,8 @@ namespace Modules\RolePermission\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\File;
 
 class RolePermissionServiceProvider extends ServiceProvider
 {
@@ -38,7 +40,7 @@ class RolePermissionServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->register(RouteServiceProvider::class);
+        $this->app->register(\Modules\RolePermission\Providers\RouteServiceProvider::class);
     }
 
     /**
@@ -73,7 +75,7 @@ class RolePermissionServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(array_merge(array_map(function ($path) {
             return $path . '/modules/rolepermission';
-        }, \Config::get('view.paths')), [$sourcePath]), 'rolepermission');
+        }, Config::get('view.paths')), [$sourcePath]), 'rolepermission');
     }
 
     /**

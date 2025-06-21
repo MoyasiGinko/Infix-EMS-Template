@@ -6,9 +6,11 @@ use App\SmCustomLink;
 use App\SmFrontendPersmission;
 use App\SmGeneralSettings;
 use App\SmHeaderMenuManager;
+use App\SmSchool;
 use App\SmSocialMediaIcon;
 use Closure;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Spatie\Valuestore\Valuestore;
@@ -24,20 +26,59 @@ class SubdomainMiddleware
      */
     public function handle($request, Closure $next)
     {
+        // Get school instance safely
+        try {
+            $school = null;
 
-        $school = SaasSchool();
-        Session::put('domain', $school->domain);
-        app()->forgetInstance('school');
-        app()->instance('school', $school);
-        $settings_prefix = Str::lower(str_replace(' ', '_', $school->domain));
-        $chat_settings = storage_path('app/chat/' . $settings_prefix . '_settings.json');
-        if (!file_exists($chat_settings)) {
-            copy(storage_path('app/chat/default_settings.json'), $chat_settings);
+            // Try multiple ways to get school
+            if (app()->bound('school')) {
+                $school = app('school');
+            } elseif (Auth::check() && Auth::user()->school_id) {
+                $school = SmSchool::find(Auth::user()->school_id);
+            } else {
+                // Default school or first available school
+                $school = SmSchool::first();
+                if (!$school) {
+                    throw new \Exception('No school found');
+                }
+            }
+
+            Session::put('domain', $school->domain ?? 'default');
+            app()->forgetInstance('school');
+            app()->instance('school', $school);
+
+            $settings_prefix = Str::lower(str_replace(' ', '_', $school->domain ?? 'default'));
+            $chat_settings = storage_path('app/chat/' . $settings_prefix . '_settings.json');
+            if (!file_exists($chat_settings)) {
+                $default_settings = storage_path('app/chat/default_settings.json');
+                if (file_exists($default_settings)) {
+                    copy($default_settings, $chat_settings);
+                } else {
+                    // Create basic settings file if default doesn't exist
+                    file_put_contents($chat_settings, json_encode([]));
+                }
+            }
+
+            app()->scoped('general_settings', function () use ($chat_settings) {
+                return Valuestore::make($chat_settings);
+            });
+        } catch (\Exception $e) {
+            // Log error and continue with basic setup
+            Log::warning('SubdomainMiddleware error: ' . $e->getMessage());
+
+            // Set up minimal required bindings
+            if (!app()->bound('school')) {
+                $defaultSchool = new \stdClass();
+                $defaultSchool->domain = 'default';
+                app()->instance('school', $defaultSchool);
+            }
+
+            if (!app()->bound('general_settings')) {
+                app()->scoped('general_settings', function () {
+                    return Valuestore::make(storage_path('app/chat/default_settings.json'));
+                });
+            }
         }
-
-        app()->scoped('general_settings', function () use ($chat_settings) {
-            return Valuestore::make($chat_settings);
-        });
 
         view()->composer('frontEnd.home.front_master', function ($view) use ($school) {
 

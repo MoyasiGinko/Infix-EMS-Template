@@ -1,7 +1,8 @@
-<?php 
+<?php
 namespace App\Providers;
 
 use App\SmParent;
+use App\SmSchool;
 use App\Models\Plugin;
 use App\SmNotification;
 use App\SmGeneralSettings;
@@ -9,6 +10,7 @@ use App\Models\CustomMixin;
 use Spatie\Valuestore\Valuestore;
 use App\Models\MaintenanceSetting;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
@@ -28,17 +30,17 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        
+
         try{
             Paginator::useBootstrapFour();
             Builder::defaultStringLength(191);
-    
+
             view()->composer('backEnd.partials.parents_sidebar', function ($view) {
                 $data =[
                     'childrens' => SmParent::myChildrens(),
                 ];
                 $view->with($data);
-       
+
 
             });
 
@@ -64,30 +66,36 @@ class AppServiceProvider extends ServiceProvider
 
 
             view()->composer(['plugins.tawk_to'], function ($view) {
-                $data =[
-                    'agent' => new \Jenssegers\Agent\Agent(),
-                    'tawk_setting' => Plugin::where('name','tawk')->where('school_id',app('school')->id)->first()
-                ];
-                $view->with($data);
+                if (app()->bound('school')) {
+                    $data =[
+                        'agent' => new \Jenssegers\Agent\Agent(),
+                        'tawk_setting' => Plugin::where('name','tawk')->where('school_id',app('school')->id)->first()
+                    ];
+                    $view->with($data);
+                }
             });
 
             view()->composer(['backEnd.partials.menu', 'layouts.pb-site', 'frontEnd.home.front_master'], function ($view) {
-                $pluginCheck = Plugin::whereIn('name',['tawk', 'messenger'])->where('school_id',app('school')->id)->get();
-                $tawk = $pluginCheck->where('name', 'tawk')->first();
-                $messenger = $pluginCheck->where('name', 'messenger')->first();
-                $data = [
-                    'position' => $tawk ? $tawk->position : null,
-                    'messenger_position' => $messenger ? $messenger->position : null,
-                ];
-                $view->with($data);
+                if (app()->bound('school')) {
+                    $pluginCheck = Plugin::whereIn('name',['tawk', 'messenger'])->where('school_id',app('school')->id)->get();
+                    $tawk = $pluginCheck->where('name', 'tawk')->first();
+                    $messenger = $pluginCheck->where('name', 'messenger')->first();
+                    $data = [
+                        'position' => $tawk ? $tawk->position : null,
+                        'messenger_position' => $messenger ? $messenger->position : null,
+                    ];
+                    $view->with($data);
+                }
             });
 
             view()->composer(['plugins.messenger'], function ($view) {
-                $data =[
-                    'agent' => new \Jenssegers\Agent\Agent(),
-                    'messenger_setting' => Plugin::where('name','messenger')->where('school_id',app('school')->id)->first()
-                ];
-                $view->with($data);
+                if (app()->bound('school')) {
+                    $data =[
+                        'agent' => new \Jenssegers\Agent\Agent(),
+                        'messenger_setting' => Plugin::where('name','messenger')->where('school_id',app('school')->id)->first()
+                    ];
+                    $view->with($data);
+                }
             });
 
             if(Storage::exists('.app_installed') && Storage::get('.app_installed')){
@@ -106,9 +114,51 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->register(RepositoryServiceProvider::class);
+
+        // Register school binding with safety checks
+        $this->app->singleton('school', function () {
+            try {
+                // Check if user is authenticated and has school_id
+                if (Auth::check() && Auth::user()->school_id) {
+                    return SmSchool::find(Auth::user()->school_id);
+                }
+
+                // Check if SaasSchool function exists and works
+                if (function_exists('SaasSchool')) {
+                    try {
+                        return SaasSchool();
+                    } catch (\Exception $e) {
+                        // Log the error but continue
+                        Log::warning('SaasSchool function failed: ' . $e->getMessage());
+                    }
+                }
+
+                // Fallback to first available school or create a default
+                $school = SmSchool::first();
+                if (!$school) {
+                    // Create a minimal school object as last resort
+                    $school = new \stdClass();
+                    $school->id = 1;
+                    $school->domain = 'default';
+                }
+
+                return $school;
+            } catch (\Exception $e) {
+                // Log error and return default school object
+                Log::warning('School binding failed: ' . $e->getMessage());
+                $defaultSchool = new \stdClass();
+                $defaultSchool->id = 1;
+                $defaultSchool->domain = 'default';
+                return $defaultSchool;
+            }
+        });
+
         $this->app->singleton('dashboard_bg', function () {
-            $dashboard_background = DB::table('sm_background_settings')->where('school_id', app('school')->id)->where([['is_default', 1], ['title', 'Dashboard Background']])->first();
-            return $dashboard_background;
+            if (app()->bound('school')) {
+                $dashboard_background = DB::table('sm_background_settings')->where('school_id', app('school')->id)->where([['is_default', 1], ['title', 'Dashboard Background']])->first();
+                return $dashboard_background;
+            }
+            return null;
         });
 
         $this->app->singleton('school_info', function () {
@@ -124,14 +174,14 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton('permission', function () {
-            
+
             $infixRole = InfixRole::find(Auth::user()->role_id);
             $permissionIds = AssignPermission::where('role_id', Auth::user()->role_id)
             ->when($infixRole->is_saas == 0, function($q) {
                 $q->where('school_id', Auth::user()->school_id);
             })->pluck('permission_id')->toArray();
-            
-            $permissions = Permission::whereIn('id', $permissionIds)->pluck('route')->toArray();  
+
+            $permissions = Permission::whereIn('id', $permissionIds)->pluck('route')->toArray();
 
         });
 

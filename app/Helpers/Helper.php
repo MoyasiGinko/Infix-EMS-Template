@@ -645,9 +645,9 @@ if (!function_exists('send_mail')) {
         if (!$templete) {
             return;
         }
-        
+
         $school_id = Auth::check() && saasSettings('email_settings') ? Auth::user()->school_id : 1;
-        
+
         $setting = SmEmailSetting::where('school_id', $school_id)->where('active_status', 1)->first();
 
         if (!$setting) {
@@ -1956,8 +1956,7 @@ if (!function_exists('subjectHighestMark')) {
     function subjectHighestMark($exam_id, $subject_id, $class_id, $section_id)
     {
         $school_id = 1;
-        if (Auth::check()) {
-            $school_id = Auth::user()->school_id;
+        if (Auth::check()) {            $school_id = Auth::user()->school_id;
         } elseif (app()->bound('school')) {
             $school_id = app('school')->id;
         }
@@ -2770,120 +2769,18 @@ if (!function_exists('sm_fees_invoice')) {
 
         $key = [
             'prefix',
-            'start_form',
+            'admission_no',
+            'class',
+            'section',
+            'inv_id',
         ];
 
         $value = [
             $setting->prefix,
-            $setting->start_form
-        ];
-        return str_replace($key, $value, $format);
-    }
-}
-
-
-if (!function_exists('smFeesInvoice')) {
-    function smFeesInvoice($invoice)
-    {
-        $settings = FeesInvoice::where('school_id', auth()->user()->school_id)->first();
-
-        $number = (($settings->start_form + $invoice) - 1);
-        $format = $settings->prefix . "-" . $number;
-
-        $key = [
-            'prefix',
-            'start_form',
-        ];
-
-        $value = [
-            $settings->prefix,
-            $settings->start_form
-        ];
-        return str_replace($key, $value, $format);
-    }
-}
-
-if (!function_exists('fees_payment_status')) {
-    function fees_payment_status($amount, $discount = 0, $paid_amo = 0, $status = null)
-    {
-        $balance_fees = ($amount - $discount) - ($paid_amo);
-        if (moduleStatusCheck('University')) {
-            if ($status == 1 && $balance_fees == 0) {
-                $paid = __('fees.paid');
-                return [$paid, 'bg-success'];
-            } elseif ($status == 2 || ($paid_amo > 0)) {
-                $partial = __('fees.partial');
-                return [$partial, 'bg-warning'];
-            } else {
-                $unpaid = __('fees.unpaid');
-                return [$unpaid, 'bg-danger'];
-            }
-        } else {
-            if ($status == 1 && $balance_fees == 0) {
-                $paid = __('fees.paid');
-                return [$paid, 'bg-success'];
-            } elseif ($status == 2 || ($paid_amo > 0)) {
-                $partial = __('fees.partial');
-                return [$partial, 'bg-warning'];
-            } else {
-                $unpaid = __('fees.unpaid');
-                return [$unpaid, 'bg-danger'];
-            }
-        }
-    }
-}
-
-if (!function_exists('feesPaymentStatus')) {
-    function feesPaymentStatus($installment_id)
-    {
-        if (moduleStatusCheck('University')) {
-            $feesInstallment = UnFeesInstallmentAssign::find($installment_id);
-            $balance_fees = $balance_fees = discountFeesAmount($feesInstallment->id) - ($feesInstallment->paid_amount);
-            if ($feesInstallment->active_status == 1 && $balance_fees == 0) {
-                $paid = __('fees.paid');
-                return [$paid, 'bg-success'];
-            } elseif ($feesInstallment->active_status == 2 || ($feesInstallment->paid_amount > 0)) {
-                $partial = __('fees.partial');
-                return [$partial, 'bg-warning'];
-            } else {
-                $unpaid = __('fees.unpaid');
-                return [$unpaid, 'bg-danger'];
-            }
-        } else {
-            $feesInstallment = DirectFeesInstallmentAssign::find($installment_id);
-            $balance_fees = $balance_fees = discount_fees($feesInstallment->amount, $feesInstallment->discount_amount) - ($feesInstallment->paid_amount);
-            if ($feesInstallment->active_status == 1 && $balance_fees == 0) {
-                $paid = __('fees.paid');
-                return [$paid, 'bg-success'];
-            } elseif ($feesInstallment->active_status == 2 || ($feesInstallment->paid_amount > 0)) {
-                $partial = __('fees.partial');
-                return [$partial, 'bg-warning'];
-            } else {
-                $unpaid = __('fees.unpaid');
-                return [$unpaid, 'bg-danger'];
-            }
-        }
-    }
-}
-
-
-if (!function_exists('universityFeesInvoice')) {
-    function universityFeesInvoice($invoice)
-    {
-        $settings = FeesInvoice::where('school_id', auth()->user()->school_id)
-            ->first();
-
-        $number = $settings->start_form + $invoice;
-        $format = $settings->prefix . "-" . $number;
-
-        $key = [
-            'prefix',
-            'start_form',
-        ];
-
-        $value = [
-            $settings->prefix,
-            $settings->start_form
+            Str::limit(@$invoice->studentInfo->admission_no, $setting->admission_limit),
+            Str::limit(@$invoice->recordDetail->class->class_name, $setting->class_limit),
+            Str::limit(@$invoice->recordDetail->section->section_name, $setting->section_limit),
+            $setting->uniq_id_start + $invoice->id
         ];
         return str_replace($key, $value, $format);
     }
@@ -2962,7 +2859,7 @@ if (!function_exists('singleSubjectMark')) {
             if (moduleStatusCheck('University')) {
                 $sm_mark = SmResultStore::where('student_record_id', $record_id)->where('un_subject_id', $subject_id)->where('exam_type_id', $exam_id)->first();
                 if ($sm_mark) {
-                    $full_mark = SmExam::where('exam_type_id', $exam_id)->where('un_subject_id', $subject_id)->where('un_semester_label_id', $sm_mark->un_semester_label_id)->where('un_section_id', $sm_mark->un_section_id)->first('exam_mark');
+                    $full_mark = SmExam::where('exam_type_id', $exam_id)->where('un_subject_id', $subject_id)->where('class_id', $sm_mark->class_id)->where('un_section_id', $sm_mark->un_section_id)->first('exam_mark');
                 }
             } else {
                 $sm_mark = SmResultStore::where('student_record_id', $record_id)->where('subject_id', $subject_id)->where('exam_type_id', $exam_id)->first();
@@ -3034,18 +2931,12 @@ if (!function_exists('subjectAverageMark')) {
                     $mark = $mark->first();
 
                     if ($mark) {
-                        $full_mark = SmExam::query();
-                        $full_mark->where('exam_type_id', $mark->exam_type_id);
                         if (moduleStatusCheck('University')) {
-                            $full_mark = $full_mark->where('un_subject_id', $subject_id)
-                                ->where('un_semester_label_id', $mark->un_semester_label_id)
-                                ->where('un_section_id', $mark->un_section_id);
+                            $full_mark = SmExam::where('exam_type_id', $mark->id)->where('un_subject_id', $subject_id)->where('un_semester_label_id', $mark->un_semester_label_id)->where('un_section_id', $mark->un_section_id)->first('exam_mark');
                         } else {
-                            $full_mark->where('subject_id', $subject_id)
-                                ->where('class_id', $mark->class_id)
-                                ->where('section_id', $mark->section_id);
+                            $full_mark = SmExam::where('exam_type_id', $mark->id)->where('subject_id', $subject_id)->where('class_id', $mark->class_id)->where('section_id', $mark->section_id)->first('exam_mark');
                         }
-                        $full_mark = $full_mark->first('exam_mark');
+
                         $total_mark += $mark->total_marks;
                     }
                 }
@@ -3058,255 +2949,8 @@ if (!function_exists('subjectAverageMark')) {
     }
 }
 
-if (!function_exists('allSubjectAverageMark')) {
-    function allSubjectAverageMark($record_id, $subject_id)
-    {
-        try {
-            $exam_rules = CustomResultSetting::where('school_id', Auth()->user()->school_id)
-                ->where('academic_id', getAcademicId())
-                ->get();
-            $total_mark = 0;
-            $grade = "";
-            if (!is_null($exam_rules))
-                foreach ($exam_rules as $exam) {
-                    $mark = SmResultStore::where('student_record_id', $record_id)->where('subject_id', $subject_id)->where('exam_type_id', $exam->exam_type_id)->first();
-                    if ($mark) {
-                        $full_mark = SmExam::where('exam_type_id', $mark->exam_type_id)->where('subject_id', $subject_id)->where('class_id', $mark->class_id)->where('section_id', $mark->section_id)->first('exam_mark');
-                        $total_mark += ((($mark->total_marks * 100) / $full_mark->exam_mark) * ($exam->exam_percentage / 100));
-                    }
-                }
-            $total_mark = number_format($total_mark, 2);
-            return [$total_mark];
-        } catch (\Exception $e) {
-            return [0];
-        }
-    }
-
-
-    if (!function_exists('allExamSubjectMark')) {
-        function allExamSubjectMark($record_id, $exam_rule_id, $exam_rule = true)
-        {
-            try {
-                $avg_marks = 0;
-                $studentRecord = StudentRecord::find($record_id);
-
-                if ($exam_rule) {
-                    $exam_rule = CustomResultSetting::find($exam_rule_id);
-                    if ($exam_rule) {
-                        $result = SmResultStore::where('student_record_id', $record_id)
-                            ->where('exam_type_id', $exam_rule->exam_type_id)
-                            ->where('academic_id', getAcademicId())->get();
-                        if ($result->count()) {
-                            $total_marks = $result->sum('total_marks');
-                            $avg_marks = ($total_marks / count($result)) * ($exam_rule->exam_percentage / 100);
-                        }
-                    }
-                } else {
-                    $result = SmResultStore::where('student_record_id', $record_id)
-                        ->where('exam_type_id', $exam_rule_id)
-                        ->where('academic_id', getAcademicId())->get();
-                    if ($result->count()) {
-                        $total_marks = $result->sum('total_marks');
-                        $avg_marks = $total_marks / count($result);
-                    }
-                }
-                $avg_marks = number_format($avg_marks, 2);
-                return [$avg_marks];
-            } catch (\Exception $e) {
-                return [0];
-            }
-        }
-    }
-
-    if (!function_exists('allExamSubjectMarkAverage')) {
-        function allExamSubjectMarkAverage($record_id, $all_subject_ids)
-        {
-            try {
-                $total_avg = 0;
-                if (moduleStatusCheck('University')) {
-                    $exam_rules = CustomResultSetting::where('un_academic_id', getAcademicId())->where('school_id', Auth()->user()->school_id)
-                        ->where('un_academic_id', getAcademicId())
-                        ->get();
-                } else {
-                    $exam_rules = CustomResultSetting::where('academic_id', getAcademicId())->where('school_id', Auth()->user()->school_id)
-                        ->where('academic_id', getAcademicId())
-                        ->get();
-                }
-
-                if (count($exam_rules)) {
-                    foreach ($all_subject_ids as $subject_id) {
-                        foreach ($exam_rules as $exam) {
-                            if (moduleStatusCheck('University')) {
-                                $mark = SmResultStore::where('student_record_id', $record_id)->where('un_subject_id', $subject_id)->where('exam_type_id', $exam->exam_type_id)->first();
-                                $full_mark = SmExam::where('exam_type_id', $mark->exam_type_id)->where('un_subject_id', $subject_id)->where('class_id', $mark->class_id)->where('un_section_id', $mark->un_section_id)->first('exam_mark');
-                            } else {
-                                $mark = SmResultStore::where('student_record_id', $record_id)->where('subject_id', $subject_id)->where('exam_type_id', $exam->exam_type_id)->first();
-                                $full_mark = SmExam::where('exam_type_id', $mark->exam_type_id)->where('subject_id', $subject_id)->where('class_id', $mark->class_id)->where('section_id', $mark->section_id)->first('exam_mark');
-                            }
-
-                            if ($mark) {
-                                $total_avg += ((($mark->total_marks * 100) / $full_mark->exam_mark) * ($exam->exam_percentage / 100));
-                            }
-                        }
-                    }
-                } else {
-                    foreach ($all_subject_ids as $subject_id) {
-                        foreach (examTypes() as $exam) {
-                            if (moduleStatusCheck('University')) {
-                                $mark = SmResultStore::where('student_record_id', $record_id)->where('un_subject_id', $subject_id)->where('exam_type_id', $exam->id)->first();
-                            } else {
-                                $mark = SmResultStore::where('student_record_id', $record_id)->where('subject_id', $subject_id)->where('exam_type_id', $exam->id)->first();
-                            }
-
-                            if ($mark) {
-                                if (moduleStatusCheck('University')) {
-                                    $full_mark = SmExam::where('exam_type_id', $mark->id)->where('un_subject_id', $subject_id)->where('un_semester_label_id', $mark->un_semester_label_id)->where('un_section_id', $mark->un_section_id)->first('exam_mark');
-                                } else {
-                                    $full_mark = SmExam::where('exam_type_id', $mark->id)->where('subject_id', $subject_id)->where('class_id', $mark->class_id)->where('section_id', $mark->section_id)->first('exam_mark');
-                                }
-
-                                $total_avg += $mark->total_marks;
-                            }
-                        }
-                    }
-                }
-
-                $average = $total_avg / count($all_subject_ids);
-                return number_format($average, 2);
-            } catch (\Exception $e) {
-                return 0;
-            }
-        }
-    }
-
-
-    if (!function_exists('avgSubjectPassMark')) {
-        function avgSubjectPassMark($all_subject_ids)
-        {
-            try {
-                $pass_mark = 0;
-                $subjects = SmSubject::whereIn('id', $all_subject_ids)->get();
-                if (count($subjects)) {
-
-                    $pass_mark = $subjects->sum('pass_mark') / count($subjects);
-                }
-                return number_format($pass_mark, 2);
-            } catch (\Exception $e) {
-                return 0;
-            }
-        }
-    }
-}
-
-
-if (!function_exists('SaasSchool')) {
-    function SaasSchool()
-    {
-        $request = request();
-        $domain = $request->subdomain;
-        $host = $request->getHttpHost();
-        $school = null;
-        $short_url = preg_replace('#^https?://#', '', rtrim(env('APP_URL', 'http://localhost'), '/'));
-        if (!$domain) {
-            $domain = str_replace('.' . $short_url, '', $host);
-        }
-
-        if ($domain == $host) {
-            $domain = null;
-        }
-
-        $saas_module = 'Modules/Saas/Providers/SaasServiceProvider.php';
-        if (file_exists($saas_module)) {
-            $module_status = json_decode(file_get_contents('modules_statuses.json'), true);
-            if (isset($module_status['Saas']) && $module_status['Saas']) {
-
-                if ($domain) {
-                    $school = \App\SmSchool::where(['domain' => $domain, 'active_status' => 1])->firstOrFail();
-                    $request->route()->forgetParameter('subdomain');
-                } else if ($host == $short_url) {
-                    $school = \App\SmSchool::findOrFail(1);
-                } else if ($host != $short_url and config('app.allow_custom_domain')) {
-                    $school = \App\SmSchool::where(['custom_domain' => $host, 'active_status' => 1])->firstOrFail();
-                } elseif (Auth::check()) {
-                    $school = \App\SmSchool::findOrFail(Auth::user()->school_id);
-                } else {
-                    $school = \App\SmSchool::where(['domain' => $domain, 'active_status' => 1])->firstOrFail();
-                    $request->route()->forgetParameter('subdomain');
-                }
-            }
-        }
-
-        if (!$school) {
-            $school = Auth::check() ? auth()->user()->school : \App\SmSchool::findOrFail(1);
-        }
-        if (app()->bound('school')) {
-            return app('school');
-        } else {
-            app()->forgetInstance('school');
-            app()->instance('school', $school);
-        }
-        return $school;
-    }
-}
-
-if (!function_exists('SaasDomain')) {
-    function SaasDomain()
-    {
-        return SaasSchool()->domain;
-    }
-}
-
-if (!function_exists('saasEnv')) {
-    function saasEnv($value, $default = null)
-    {
-
-        try {
-
-            $domain = SaasDomain();
-            $settings_prefix = Str::lower(str_replace(' ', '_', $domain));
-            $path = storage_path('app/chat/' . $settings_prefix . '_settings.json');
-            if (!file_exists($path)) {
-                copy(storage_path('app/chat/default_settings.json'), $path);
-            }
-
-
-            $data = json_decode(file_get_contents($path), true);
-
-            $settings = [];
-            if (!empty($data)) {
-                foreach ($data as $key => $property) {
-                    $settings[$key] = $property;
-                }
-            }
-
-            $env = $settings[$value] ?? '';
-        } catch (\Throwable $th) {
-            $env = null;
-        }
-
-        if (empty($env)) {
-            $env = $default;
-        }
-        return $env;
-    }
-}
-
-if (!function_exists('examTypes')) {
-    function examTypes()
-    {
-        try {
-            return SmExamType::where('school_id', auth()->user()->school_id)
-                ->where('academic_id', getAcademicId())
-                ->where('active_status', 1)
-                ->get();
-        } catch (\Throwable $th) {
-            return [];
-        }
-    }
-}
-
-if (!function_exists('allExamsSubjectTotalMark')) {
-    function allExamsSubjectTotalMark($subject_id)
+if (!function_exists('allExamSubjectTotalMark')) {
+    function allExamSubjectTotalMark($subject_id)
     {
         try {
             $toal_mark = 0;
@@ -4095,150 +3739,6 @@ if (!function_exists('defaultLogo')) {
     }
 }
 
-if (!function_exists('defaultUserLogo')) {
-    function defaultUserLogo($path)
-    {
-        if ($path && file_exists($path)) {
-            return asset($path);
-        } else {
-            return asset('public/uploads/staff/demo/staff.jpg');
-        }
-    }
-}
-
-if (!function_exists('latterAvater')) {
-    function latterAvater($string)
-    {
-        $words = explode(" ", $string);
-        if (count($words) > 1) {
-            $output = substr($words[0], 0, 1) . substr($words[1], 0, 1);
-        } else {
-            $first = substr($string, 0, 1);
-            $last = substr($string, -1);
-            $output = $first . $last;
-        }
-        return $output;
-    }
-}
-
-if (!function_exists('getProfileImage')) {
-    function getProfileImage($user_id)
-    {
-        $user = User::find($user_id);
-        $role_id = $user->role_id;
-        $student = SmStudent::where('user_id', $user_id)->first();
-        $parent = SmParent::where('user_id', $user_id)->first();
-        $staff = SmStaff::where('user_id', $user_id)->first();
-        if ($role_id == 2) {
-            $profile = $student->student_photo ? $student->student_photo : 'public/backEnd/assets/img/avatar.png';
-        } elseif ($role_id == 3) {
-            $profile = $parent->fathers_photo ? $parent->fathers_photo : 'c';
-        } else {
-            $profile = $staff->staff_photo ? $staff->staff_photo : 'public/backEnd/assets/img/avatar.png';
-        }
-        return $profile;
-    }
-
-    function headerContent()
-    {
-        $headerPageData = Page::where('school_id', app('school')->id)->where('name', 'header_menu')
-            ->select('id', 'name', 'title', 'description', 'slug', 'settings', 'status')
-            ->first();
-        if ($headerPageData) {
-            return  view('pagebuilder::components.header-footer-page-components', ['page' => $headerPageData]);
-        }
-    }
-
-
-    function footerContent()
-    {
-        $footerPage = Page::where('school_id', app('school')->id)->where('name', 'footer_menu')
-            ->select('id', 'name', 'title', 'description', 'slug', 'settings', 'status')
-            ->first();
-        if ($footerPage) {
-            return view('pagebuilder::components.header-footer-page-components', ['page' => $footerPage]);
-        }
-    }
-
-    function formatedDate($date)
-    {
-        return date('Y-m-d', strtotime($date));
-    }
-}
-
-if (!function_exists('envu')) {
-    function envu($data = array())
-    {
-        foreach ($data as $key => $value) {
-            if (env($key) === $value) {
-                unset($data[$key]);
-            }
-        }
-
-        if (!count($data)) {
-            return false;
-        }
-
-        $env = file_get_contents(base_path() . '/.env');
-        $env = explode("\n", $env);
-        foreach ((array) $data as $key => $value) {
-            foreach ($env as $env_key => $env_value) {
-                $entry = explode("=", $env_value, 2);
-                if ($entry[0] === $key) {
-                    $env[$env_key] = $key . "=" . (is_string($value) ? '"' . $value . '"' : $value);
-                } else {
-                    $env[$env_key] = $env_value;
-                }
-            }
-        }
-        $env = implode("\n", $env);
-        file_put_contents(base_path() . '/.env', $env);
-        return true;
-    }
-}
-if (!function_exists('lastOneMonthDates')) {
-    function lastOneMonthDates()
-    {
-        $days_ago = [];
-        for ($i = 30; $i >= 1; $i--) {
-            $day = date('Y-m-d', strtotime('-' . $i . ' days', strtotime(date('Y-m-d'))));
-            array_push($days_ago, $day);
-        }
-        return $days_ago;
-    }
-}
-if (!function_exists('insertMenuManage')) {
-    function insertMenuManage($menu)
-    {
-        $menuData = SmHeaderMenuManager::create($menu);
-        if (gv($menu, 'childs')) {
-            foreach (gv($menu, 'childs') as $child) {
-                $child['parent_id'] = $menuData->id;
-                insertMenuManage($child);
-            }
-        }
-    }
-}
-// if (!function_exists('asset_path')) {
-//     function asset_path($path = null)
-//     {
-//         return 'public/' . $path;
-//     }
-// }
-
-if (!function_exists('asset_path')) {
-    function asset_path($path = null)
-    {
-        return public_path($path);
-    }
-}
-
-if (!function_exists('forumSetting')) {
-    function forumSetting()
-    {
-        return ForumSetting::where('school_id', 1)->withoutGlobalScopes()->first();
-    }
-}
 
 if (!function_exists('get_logo')) {
     function get_logo()
@@ -4303,13 +3803,13 @@ if(!function_exists('generateDatePeriod'))
         $dates = array();
         $current = strtotime($first);
         $last = strtotime($last);
-    
+
         while( $current <= $last ) {
-    
+
             $dates[] = date($output_format, $current);
             $current = strtotime($step, $current);
         }
-    
+
         return $dates;
     }
 }
@@ -4333,7 +3833,7 @@ if(!function_exists('dayNames'))
 if(!function_exists('getWeekendDay'))
 {
     function getWeekendDay($day)
-    {       
+    {
        return dayNames()[$day];
     }
 }
@@ -4342,10 +3842,10 @@ if(!function_exists('getWeekNumber'))
     function getWeekNumber($date) {
         // Convert the date to a Unix timestamp
         $timestamp = strtotime($date);
-        
+
         // Get the ISO-8601 week number
         $weekNumber = date('W', $timestamp);
-    
+
         return $weekNumber;
     }
 }
@@ -4386,5 +3886,65 @@ if (!function_exists('ad')) {
 
              dd(...$vars);
         }
+    }
+}
+
+// Add missing app() helper function if not already defined
+if (!function_exists('app')) {
+    /**
+     * Get the available container instance.
+     *
+     * @param  string|null  $abstract
+     * @param  array  $parameters
+     * @return mixed|\Illuminate\Contracts\Foundation\Application
+     */
+    function app($abstract = null, array $parameters = [])
+    {
+        if (is_null($abstract)) {
+            return \Illuminate\Container\Container::getInstance();
+        }
+
+        return \Illuminate\Container\Container::getInstance()->make($abstract, $parameters);
+    }
+}
+
+// Add missing gv() helper function if not already defined
+if (!function_exists('gv')) {
+    /**
+     * Get a value from an array or object using "dot" notation.
+     * If the key doesn't exist, return the default value.
+     *
+     * @param  mixed   $target
+     * @param  string|array|int|null  $key
+     * @param  mixed   $default
+     * @return mixed
+     */
+    function gv($target, $key, $default = null)
+    {
+        if (is_null($key)) {
+            return $target;
+        }
+
+        if (is_array($key)) {
+            $key = implode('.', $key);
+        }
+
+        foreach (explode('.', $key) as $segment) {
+            if (is_array($target)) {
+                if (!array_key_exists($segment, $target)) {
+                    return $default;
+                }
+                $target = $target[$segment];
+            } elseif (is_object($target)) {
+                if (!isset($target->$segment)) {
+                    return $default;
+                }
+                $target = $target->$segment;
+            } else {
+                return $default;
+            }
+        }
+
+        return $target;
     }
 }

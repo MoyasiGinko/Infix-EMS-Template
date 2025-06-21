@@ -4,6 +4,8 @@ namespace Modules\ExamPlan\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\File;
 
 class ExamPlanServiceProvider extends ServiceProvider
 {
@@ -37,7 +39,7 @@ class ExamPlanServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->register(RouteServiceProvider::class);
+        $this->app->register(\Modules\ExamPlan\Providers\RouteServiceProvider::class);
     }
 
     /**
@@ -102,7 +104,7 @@ class ExamPlanServiceProvider extends ServiceProvider
     private function getPublishableViewPaths(): array
     {
         $paths = [];
-        foreach (\Config::get('view.paths') as $path) {
+        foreach (Config::get('view.paths') as $path) {
             if (is_dir($path . '/modules/' . $this->moduleNameLower)) {
                 $paths[] = $path . '/modules/' . $this->moduleNameLower;
             }

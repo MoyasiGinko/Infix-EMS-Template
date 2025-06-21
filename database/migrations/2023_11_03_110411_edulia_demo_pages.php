@@ -13,7 +13,15 @@ use Illuminate\Database\Migrations\Migration;
 use Modules\RolePermission\Entities\Permission;
 
 return new class extends Migration
-{
+{    function insertMenuManage($menu){
+        $menuData = SmHeaderMenuManager::create($menu);
+        if(isset($menu['childs']) && $menu['childs']){
+            foreach($menu['childs'] as $child){
+                $child['parent_id'] = $menuData->id;
+                $this->insertMenuManage($child);
+            }
+        }
+    }
 
     function replace_array_recursive(string $needle, string $replace, array &$haystack)
     {
@@ -59,7 +67,7 @@ return new class extends Migration
 
 
         // Header Menu manage Start
-        $datas = 
+        $datas =
           array (
               array (
                 'type' => 'sPages',
@@ -73,11 +81,11 @@ return new class extends Migration
                 'school_id' => 1,
                 'created_at' => '2024-01-05T07:37:19.000000Z',
                 'updated_at' => '2024-01-05T07:40:14.000000Z',
-                'childs' => 
+                'childs' =>
                 array (
                 ),
               ),
-            
+
               array (
                 'type' => 'sPages',
                 'element_id' => 2,
@@ -90,11 +98,11 @@ return new class extends Migration
                 'school_id' => 1,
                 'created_at' => '2024-01-05T07:37:52.000000Z',
                 'updated_at' => '2024-01-05T07:40:14.000000Z',
-                'childs' => 
+                'childs' =>
                 array (
                 ),
               ),
-            
+
               array (
                 'type' => 'sPages',
                 'element_id' => 5,
@@ -107,7 +115,7 @@ return new class extends Migration
                 'school_id' => 1,
                 'created_at' => '2024-01-05T07:38:04.000000Z',
                 'updated_at' => '2024-01-05T07:40:14.000000Z',
-                'childs' => 
+                'childs' =>
                 array (
                 ),
               ),
@@ -124,11 +132,11 @@ return new class extends Migration
                 'school_id' => 1,
                 'created_at' => '2024-01-05T07:38:04.000000Z',
                 'updated_at' => '2024-01-05T07:40:14.000000Z',
-                'childs' => 
+                'childs' =>
                 array (
                 ),
               ),
-            
+
               array (
                 'type' => 'sPages',
                 'element_id' => 10,
@@ -141,11 +149,11 @@ return new class extends Migration
                 'school_id' => 1,
                 'created_at' => '2024-01-05T07:38:17.000000Z',
                 'updated_at' => '2024-01-05T07:40:14.000000Z',
-                'childs' => 
+                'childs' =>
                 array (
                 ),
               ),
-            
+
               array (
                 'type' => 'sPages',
                 'element_id' => 15,
@@ -158,11 +166,11 @@ return new class extends Migration
                 'school_id' => 1,
                 'created_at' => '2024-01-05T07:38:30.000000Z',
                 'updated_at' => '2024-01-05T07:40:14.000000Z',
-                'childs' => 
+                'childs' =>
                 array (
                 ),
               ),
-              
+
               array (
                 'type' => 'sPages',
                 'element_id' => 22,
@@ -175,7 +183,7 @@ return new class extends Migration
                 'school_id' => 1,
                 'created_at' => '2024-01-05T07:43:22.000000Z',
                 'updated_at' => '2024-01-05T07:43:22.000000Z',
-                'childs' => 
+                'childs' =>
                 array (
                 ),
               ),
@@ -191,10 +199,10 @@ return new class extends Migration
                 'school_id' => 1,
                 'created_at' => '2024-01-05T07:38:39.000000Z',
                 'updated_at' => '2024-01-05T07:40:14.000000Z',
-                'childs' => 
+                'childs' =>
                 array (
                   array (
-              
+
                     'type' => 'customLink',
                     'element_id' => NULL,
                     'title' => 'Student',
@@ -206,15 +214,15 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:55.000000Z',
                     'updated_at' => '2024-01-05T07:40:21.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                       array (
-                  
+
                         'type' => 'sPages',
                         'element_id' => 16,
                         'title' => 'Student List',
                         'link' => '/student-lists',
-              
+
                         'position' => 1,
                         'show' => 0,
                         'is_newtab' => 0,
@@ -222,14 +230,14 @@ return new class extends Migration
                         'school_id' => 1,
                         'created_at' => '2024-01-05T07:39:32.000000Z',
                         'updated_at' => '2024-01-05T07:40:27.000000Z',
-                        'childs' => 
+                        'childs' =>
                         array (
                         ),
                       ),
                     ),
                   ),
                   array (
-              
+
                     'type' => 'customLink',
                     'element_id' => NULL,
                     'title' => 'Teacher',
@@ -241,15 +249,15 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:40:03.000000Z',
                     'updated_at' => '2024-01-05T07:40:36.000000Z',
-                    'childs' => 
-                    array ( 
+                    'childs' =>
+                    array (
                       array (
-                  
+
                         'type' => 'sPages',
                         'element_id' => 21,
                         'title' => 'Teacher List',
                         'link' => '/teacher-lists',
-              
+
                         'position' => 1,
                         'show' => 0,
                         'is_newtab' => 0,
@@ -257,13 +265,13 @@ return new class extends Migration
                         'school_id' => 1,
                         'created_at' => '2024-01-05T07:39:32.000000Z',
                         'updated_at' => '2024-01-05T07:40:45.000000Z',
-                        'childs' => 
+                        'childs' =>
                         array (
                         ),
                       ),
                     ),
                   ),
-                  
+
                   array (
                     'type' => 'sPages',
                     'element_id' => 3,
@@ -276,7 +284,7 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:32.000000Z',
                     'updated_at' => '2024-01-05T07:40:53.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                     ),
                   ),
@@ -292,14 +300,14 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:47.000000Z',
                     'updated_at' => '2024-01-05T07:41:27.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                       array (
                         'type' => 'sPages',
                         'element_id' => 4,
                         'title' => 'Class Routine',
                         'link' => '/class-routines',
-              
+
                         'position' => 1,
                         'show' => 0,
                         'is_newtab' => 0,
@@ -307,7 +315,7 @@ return new class extends Migration
                         'school_id' => 1,
                         'created_at' => '2024-01-05T07:39:32.000000Z',
                         'updated_at' => '2024-01-05T07:41:30.000000Z',
-                        'childs' => 
+                        'childs' =>
                         array (
                         ),
                       ),
@@ -316,7 +324,7 @@ return new class extends Migration
                         'element_id' => 7,
                         'title' => 'Exam Routine',
                         'link' => '/exam-routine',
-              
+
                         'position' => 2,
                         'show' => 0,
                         'is_newtab' => 0,
@@ -324,14 +332,14 @@ return new class extends Migration
                         'school_id' => 1,
                         'created_at' => '2024-01-05T07:39:32.000000Z',
                         'updated_at' => '2024-01-05T07:41:35.000000Z',
-                        'childs' => 
+                        'childs' =>
                         array (
                         ),
                       ),
                     ),
                   ),
                   array (
-              
+
                     'type' => 'sPages',
                     'element_id' => 6,
                     'title' => 'Events',
@@ -343,12 +351,12 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:32.000000Z',
                     'updated_at' => '2024-01-05T07:41:35.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                     ),
                   ),
                   array (
-              
+
                     'type' => 'sPages',
                     'element_id' => 8,
                     'title' => 'Facilities',
@@ -360,12 +368,12 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:32.000000Z',
                     'updated_at' => '2024-01-05T07:41:35.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                     ),
                   ),
                   array (
-              
+
                     'type' => 'sPages',
                     'element_id' => 13,
                     'title' => 'Individual Result',
@@ -377,12 +385,12 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:32.000000Z',
                     'updated_at' => '2024-01-05T07:41:35.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                     ),
                   ),
                   array (
-              
+
                     'type' => 'sPages',
                     'element_id' => 14,
                     'title' => 'Noticeboard',
@@ -394,12 +402,12 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:32.000000Z',
                     'updated_at' => '2024-01-05T07:41:35.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                     ),
                   ),
                   array (
-              
+
                     'type' => 'sPages',
                     'element_id' => 17,
                     'title' => 'Tuition Fees',
@@ -411,7 +419,7 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:32.000000Z',
                     'updated_at' => '2024-01-05T07:41:35.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                     ),
                   ),
@@ -427,7 +435,7 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:32.000000Z',
                     'updated_at' => '2024-01-05T07:41:35.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                     ),
                   ),
@@ -443,7 +451,7 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:32.000000Z',
                     'updated_at' => '2024-01-05T07:41:35.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                     ),
                   ),
@@ -459,7 +467,7 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:39:32.000000Z',
                     'updated_at' => '2024-01-05T07:41:35.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                     ),
                   ),
@@ -475,15 +483,14 @@ return new class extends Migration
                     'school_id' => 1,
                     'created_at' => '2024-01-05T07:38:04.000000Z',
                     'updated_at' => '2024-01-05T07:40:14.000000Z',
-                    'childs' => 
+                    'childs' =>
                     array (
                     ),
                   ),
                 ),
               ),
-          );
-        foreach($datas as $data){
-            insertMenuManage($data);
+          );        foreach($datas as $data){
+            $this->insertMenuManage($data);
         }
 
         // Header Menu manage End
@@ -494,8 +501,8 @@ return new class extends Migration
         }
 
         $frontResultDatas = [
-            'Science' => 'public/uploads/front_result/sci.jpg', 
-            'Arts' => 'public/uploads/front_result/art.jpg', 
+            'Science' => 'public/uploads/front_result/sci.jpg',
+            'Arts' => 'public/uploads/front_result/art.jpg',
             'Commerce' => 'public/uploads/front_result/comm.png'
         ];
 

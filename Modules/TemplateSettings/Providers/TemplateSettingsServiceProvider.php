@@ -4,6 +4,8 @@ namespace Modules\TemplateSettings\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\File;
 
 class TemplateSettingsServiceProvider extends ServiceProvider
 {
@@ -38,7 +40,7 @@ class TemplateSettingsServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->register(RouteServiceProvider::class);
+        $this->app->register(\Modules\TemplateSettings\Providers\RouteServiceProvider::class);
     }
 
     /**
@@ -73,7 +75,7 @@ class TemplateSettingsServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(array_merge(array_map(function ($path) {
             return $path . '/modules/templatesettings';
-        }, \Config::get('view.paths')), [$sourcePath]), 'templatesettings');
+        }, Config::get('view.paths')), [$sourcePath]), 'templatesettings');
     }
 
     /**

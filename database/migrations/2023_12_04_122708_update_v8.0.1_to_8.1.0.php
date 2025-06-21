@@ -15,6 +15,15 @@ use Modules\ParentRegistration\Entities\SmStudentField;
 
 return new class extends Migration
 {
+    function insertMenuManage($menu){
+        $menuData = SmHeaderMenuManager::create($menu);
+        if(isset($menu['childs']) && $menu['childs']){
+            foreach($menu['childs'] as $child){
+                $child['parent_id'] = $menuData->id;
+                $this->insertMenuManage($child);
+            }
+        }
+    }
 
     function replace_array_recursive(string $needle, string $replace, array &$haystack)
     {
@@ -117,7 +126,7 @@ return new class extends Migration
                 $table->string('phone')->nullable();
             }
         });
-        
+
         Schema::table('sm_staffs', function (Blueprint $table) {
             if (!Schema::hasColumn('sm_staffs', 'show_public')) {
                 $table->tinyInteger('show_public')->default(0);
@@ -276,9 +285,9 @@ return new class extends Migration
             $del->delete();
         }
 
-        
 
-        
+
+
 
 
         // Datatable Row Position End
@@ -332,13 +341,13 @@ return new class extends Migration
             $event->shortcode = $shortCodes;
             $event->update();
         }
-        
+
         // Default color theme change start
         $colorThemes = ColorTheme::where('theme_id', 1)->delete();
         $themes = \App\Models\Theme::withOutGlobalScopes()->get();
         $sql = [];
         foreach($themes as $theme){
-            if($theme->title == 'Default') { 
+            if($theme->title == 'Default') {
                 $sql[] = ['theme_id'  => $theme->id, 'color_id' => 1, 'value'   => "#415094"];
                 $sql[] = ['theme_id'  => $theme->id, 'color_id' => 2, 'value'  => "#7c32ff"];
                 $sql[] = ['theme_id'  => $theme->id, 'color_id' => 3, 'value'  => "#7c32ff"];
@@ -361,7 +370,7 @@ return new class extends Migration
                 $sql[] = ['theme_id'  => $theme->id, 'color_id' => 20, 'value'  => "#ffffff"];
                 $sql[] = ['theme_id'  => $theme->id, 'color_id' => 21, 'value'  => "#ffffff"];
                 $sql[] = ['theme_id'  => $theme->id, 'color_id' => 29, 'value'  => "#415094"];
-        
+
             }
         }
         DB::table('color_theme')->insert($sql);
@@ -443,7 +452,7 @@ return new class extends Migration
         //     }
         // }
 
-        $datas = 
+        $datas =
           array (
               array (
                 'type' => 'sPages',
@@ -457,13 +466,13 @@ return new class extends Migration
                 'school_id' => 1,
                 'created_at' => '2024-01-05T07:43:22.000000Z',
                 'updated_at' => '2024-01-05T07:43:22.000000Z',
-                'childs' => 
+                'childs' =>
                 array (
                 ),
               )
           );
         foreach($datas as $data){
-            insertMenuManage($data);
+            $this->insertMenuManage($data);
         }
     }
 
