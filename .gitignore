@@ -1,7 +1,7 @@
-/node_modules
+# /node_modules
 /public/hot
-/vendor
-.env
+# /vendor
+# .env
 .env.backup
 .phpunit.result.cache
 phpcs.xml
@@ -9,8 +9,8 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
-/uploads
-/storage/app/uploads
+# /uploads
+# /storage/app/uploads
 docker-compose.override.yml
 /.idea
 /.vscode
