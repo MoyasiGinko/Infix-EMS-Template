@@ -59,8 +59,11 @@
 
         .login_wrapper {
             width: 550px;
-            background: #fff;
-            padding: 30px;
+            background: #d4f5ff3b;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
         }
 
         .text-danger.text-left {
@@ -155,7 +158,7 @@
                             <a href="{{ route('recoveryPassord') }}" id='forget'>@lang('auth.forget_password')?</a>
                         </div>
                         <div class="input-control">
-                            <input type="submit" class='input-control-input' value="Sign In">
+                            <input type="submit" class='input-control-input rounded-30' value="Sign In">
                         </div>
                     </form>
                 </div>
