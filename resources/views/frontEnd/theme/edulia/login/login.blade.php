@@ -158,7 +158,7 @@
                             <a href="{{ route('recoveryPassord') }}" id='forget'>@lang('auth.forget_password')?</a>
                         </div>
                         <div class="input-control">
-                            <input type="submit" class='input-control-input rounded-30' value="Sign In">
+                            <input type="submit" class='input-control-input' style="border-radius: 30px;" value="Sign In">
                         </div>
                     </form>
                 </div>
