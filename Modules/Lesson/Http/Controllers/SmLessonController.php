@@ -25,7 +25,7 @@ use Modules\University\Repositories\Interfaces\UnCommonRepositoryInterface;
 
 class SmLessonController extends Controller
 {
-    
+
 
     public function index(){
         try {
@@ -62,7 +62,7 @@ class SmLessonController extends Controller
         }
 
         DB::beginTransaction();
-        
+
         try {
             $sections = SmAssignSubject::where('class_id', $request->class)
                 ->where('subject_id', $request->subject)
@@ -74,7 +74,7 @@ class SmLessonController extends Controller
             if (moduleStatusCheck('University')) {
                 if ($request->un_section_id) {
                     $sections = UnSubject::where('un_department_id', $request->un_department_id)
-                        ->where('school_id', auth()->user()->school_id)
+                        ->where('school_id', Auth::user()->school_id)
                         ->get();
                 } else {
                     $sections = $request->un_section_id;
@@ -89,8 +89,8 @@ class SmLessonController extends Controller
                     $smLesson->subject_id = $request->subject;
                     $smLesson->section_id = $section->section_id;
                     $smLesson->shift_id = shiftEnable() ? $request->shift : null;
-                    $smLesson->school_id = auth()->user()->school_id;
-                    $smLesson->user_id = auth()->user()->id;
+                    $smLesson->school_id = Auth::user()->school_id;
+                    $smLesson->user_id = Auth::user()->id;
                     if (moduleStatusCheck('University')) {
                         $common = App::make(UnCommonRepositoryInterface::class);
                         $common->storeUniversityData($smLesson, $request);
@@ -165,7 +165,7 @@ class SmLessonController extends Controller
     public function updateLesson(Request $request)
     {
         try {
-            
+
             $existingLessons = SmLesson::whereIn('id', $request->lesson_detail_id)->get();
             foreach ($existingLessons as $key => $lesson) {
                 $lesson->lesson_title = $request->lesson[$key];

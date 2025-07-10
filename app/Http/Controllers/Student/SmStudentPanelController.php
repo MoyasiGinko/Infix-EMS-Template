@@ -189,7 +189,7 @@ class SmStudentPanelController extends Controller
     {
         try {
 
-            $student_detail = auth()->user()->student->load('studentRecords.class', 'studentDocument', 'academicYear', 'defaultClass.class', 'defaultClass.section', 'gender');
+            $student_detail = Auth::user()->student->load('studentRecords.class', 'studentDocument', 'academicYear', 'defaultClass.class', 'defaultClass.section', 'gender');
             $student = $student_detail;
             $bank_cheque_info = SmPaymentMethhod::where('school_id', Auth::user()->school_id)->get();
             $data['bank_info'] = $bank_cheque_info->where('method', 'Bank')->first();
@@ -299,7 +299,7 @@ class SmStudentPanelController extends Controller
                     ->where('is_default', 1)
                     ->orderBy('id', 'DESC')->first();
                 $labelIds = StudentRecord::where('student_id', $student_detail->id)
-                    ->where('school_id', auth()->user()->school_id)
+                    ->where('school_id', Auth::user()->school_id)
                     ->pluck('un_semester_label_id')->toArray();
                     $lastRecordCreatedDate= date('Y-m-d');
                 if ($lastRecord) {
@@ -307,7 +307,7 @@ class SmStudentPanelController extends Controller
                         ->where('id', '!=', $lastRecord->un_semester_label_id)
                         ->first();
 
-                    $next_subjects = UnAssignSubject::where('school_id', auth()->user()->school_id)
+                    $next_subjects = UnAssignSubject::where('school_id', Auth::user()->school_id)
                         ->where('un_semester_label_id', $lastRecord->un_semester_label_id)
                         ->get();
                     $departmentSubjects = $lastRecord->withOutPreSubject;
@@ -315,7 +315,7 @@ class SmStudentPanelController extends Controller
                     $lastRecordCreatedDate = $student_detail->lastRecord->value('created_at')->format('Y-m-d');
                 }
 
-                $unSettings = UniversitySetting::where('school_id', auth()->user()->school_id)
+                $unSettings = UniversitySetting::where('school_id', Auth::user()->school_id)
                     ->first();
 
 
@@ -352,7 +352,7 @@ class SmStudentPanelController extends Controller
                 ->where('school_id', $student_detail->school_id)
                 ->get();
 
-            $studentBehaviourRecords = (moduleStatusCheck('BehaviourRecords')) ? AssignIncident::where('student_id', auth()->user()->student->id)->with('incident', 'user', 'academicYear')->get() : null;
+            $studentBehaviourRecords = (moduleStatusCheck('BehaviourRecords')) ? AssignIncident::where('student_id', Auth::user()->student->id)->with('incident', 'user', 'academicYear')->get() : null;
             $behaviourRecordSetting = BehaviourRecordSetting::where('id', 1)->first();
 
             if (moduleStatusCheck('University')) {
@@ -656,7 +656,7 @@ class SmStudentPanelController extends Controller
 
                             $maxFileSize = generalSetting()->file_size;
                             $file = $field;
-                            $fileSize = filesize($file);
+                            $fileSize = $file ? $file->getSize() : 0;
                             $fileSizeKb = ($fileSize / 1000000);
                             if ($fileSizeKb >= $maxFileSize) {
                                 Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
@@ -736,14 +736,14 @@ class SmStudentPanelController extends Controller
             $lead_city = [];
             $sources = [];
             if (moduleStatusCheck('Lead') == true) {
-                $lead_city = \Modules\Lead\Entities\LeadCity::where('school_id', auth()->user()->school_id)->get(['id', 'city_name']);
-                $sources = \Modules\Lead\Entities\Source::where('school_id', auth()->user()->school_id)->get(['id', 'source_name']);
+                $lead_city = \Modules\Lead\Entities\LeadCity::where('school_id', Auth::user()->school_id)->get(['id', 'city_name']);
+                $sources = \Modules\Lead\Entities\Source::where('school_id', Auth::user()->school_id)->get(['id', 'source_name']);
             }
-            $fields = SmStudentRegistrationField::where('school_id', auth()->user()->school_id)
-                ->when(auth()->user()->role_id == 2, function ($query) {
+            $fields = SmStudentRegistrationField::where('school_id', Auth::user()->school_id)
+                ->when(Auth::user()->role_id == 2, function ($query) {
                     $query->where('student_edit', 1);
                 })
-                ->when(auth()->user()->role_id == 3, function ($query) {
+                ->when(Auth::user()->role_id == 3, function ($query) {
                     $query->where('parent_edit', 1);
                 })
                 ->pluck('field_name')->toArray();
@@ -752,13 +752,13 @@ class SmStudentPanelController extends Controller
     }
     public function studentDashboard(Request $request, $id = null)
     {
-            $user = auth()->user();
+            $user = Auth::user();
             if ($user) {
                 $user_id = $user->id;
             } else {
                 $user_id = $request->user_id;
             }
-            $student_detail = auth()->user()->student->load('studentRecords', 'feesAssign', 'feesAssignDiscount');
+            $student_detail = Auth::user()->student->load('studentRecords', 'feesAssign', 'feesAssignDiscount');
 
             // record data
             $class_ids = $student_detail->studentRecords->pluck('class_id')->unique()->toArray();
@@ -925,7 +925,7 @@ class SmStudentPanelController extends Controller
 
             $data['settings'] = SmCalendarSetting::get();
             $data['roles'] = InfixRole::where('is_saas',0)->where(function ($q) {
-                $q->where('school_id', auth()->user()->school_id)->orWhere('type', 'System');
+                $q->where('school_id', Auth::user()->school_id)->orWhere('type', 'System');
             })
                 ->whereNotIn('id', [1, 2])
                 ->get();
@@ -970,7 +970,7 @@ class SmStudentPanelController extends Controller
 
     public function classRoutine(Request $request, $id = null)
     {
-            $user = auth()->user();
+            $user = Auth::user();
             $student_detail = SmStudent::where('user_id', $user->id)->first();
             $sm_weekends = SmWeekend::orderBy('order', 'ASC')
                 ->where('active_status', 1)
@@ -1284,7 +1284,7 @@ class SmStudentPanelController extends Controller
                 ->where('academic_id', getAcademicId())
                 ->where('school_id', Auth::user()->school_id)
                 ->get();
-            if (Auth()->user()->role_id != 1) {
+            if (Auth::user()->role_id != 1) {
                 if ($user->role_id == 2) {
                     SmNotification::where('user_id', $user->student->id)->where('role_id', 2)->update(['is_read' => 1]);
                 }
@@ -1425,7 +1425,7 @@ class SmStudentPanelController extends Controller
     //student panel Transport
     public function studentTransport()
     {
-            $studentBehaviourRecords = (moduleStatusCheck('BehaviourRecords')) ? AssignIncident::where('student_id', auth()->user()->student->id)->with('incident', 'user', 'academicYear')->get() : null;
+            $studentBehaviourRecords = (moduleStatusCheck('BehaviourRecords')) ? AssignIncident::where('student_id', Auth::user()->student->id)->with('incident', 'user', 'academicYear')->get() : null;
             $behaviourRecordSetting = BehaviourRecordSetting::where('id', 1)->first();
             $user = Auth::user();
             $student_detail = SmStudent::where('user_id', $user->id)->first();
@@ -1719,7 +1719,7 @@ class SmStudentPanelController extends Controller
             $maxFileSize = SmGeneralSettings::first('file_size')->file_size;
             $file = $request->file('attach_file');
             if ($file) {
-                $fileSize = filesize($file);
+                $fileSize = $file->getSize();
                 $fileSizeKb = ($fileSize / 1000000);
                 if ($fileSizeKb >= $maxFileSize) {
                     Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
@@ -1819,7 +1819,7 @@ class SmStudentPanelController extends Controller
         ]);
             $maxFileSize = SmGeneralSettings::first('file_size')->file_size;
             $file = $request->file('attach_file');
-            $fileSize = filesize($file);
+            $fileSize = $file ? $file->getSize() : 0;
             $fileSizeKb = ($fileSize / 1000000);
             if ($fileSizeKb >= $maxFileSize) {
                 Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
