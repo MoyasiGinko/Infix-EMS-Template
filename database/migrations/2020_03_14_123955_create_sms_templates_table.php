@@ -154,11 +154,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -226,7 +226,7 @@ class CreateSmsTemplatesTable extends Migration
                                                             <p style="margin:10px 0px 30px;line-height:1.929;font-size:16px;color:rgb(113,128,150);">
                                                                 Tap the button below to reset your account password. If you didnt request a new password, you can safely delete this email.
                                                             </p>
-                                                            <p style="text-align:center;margin:10px 0px 30px;line-height:1.929;font-size:16px;color:rgb(113,128,150);"> 
+                                                            <p style="text-align:center;margin:10px 0px 30px;line-height:1.929;font-size:16px;color:rgb(113,128,150);">
                                                                 <a href="[reset_link]" target="_blank" style="font-size:12px;line-height:40px;background:#7c32ff;color:#fff;letter-spacing:1px;font-weight:500;padding:19px 52px;text-align:center;text-transform:uppercase;border:0;text-decoration:none;font-family:Arial, Helvetica Neue, Helvetica;" rel="noreferrer noopener">
                                                                     RESET LINK
                                                                 </a>
@@ -258,11 +258,11 @@ class CreateSmsTemplatesTable extends Migration
                                                         <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                             <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                                 <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                    © 2024 Infix Education software| 
+                                                                    © 2025 EMS Software| 
                                                                 </span>
                                                                 <span style="background-color:transparent;text-align:left;">
                                                                     <font color="#ffffff">
-                                                                        Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                        Copyright &copy; 2025 All rights reserved.
                                                                     </font>
                                                                 </span>
                                                                 <br>
@@ -346,11 +346,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -436,11 +436,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -528,11 +528,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -616,11 +616,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -704,11 +704,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -792,11 +792,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -880,11 +880,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -968,11 +968,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1056,11 +1056,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1144,11 +1144,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1232,11 +1232,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1320,11 +1320,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1408,11 +1408,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1496,11 +1496,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1584,11 +1584,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1679,11 +1679,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1767,11 +1767,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1855,11 +1855,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -1943,11 +1943,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2031,11 +2031,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2119,11 +2119,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2207,11 +2207,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2295,11 +2295,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2383,11 +2383,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2471,11 +2471,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2559,11 +2559,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2647,11 +2647,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2735,11 +2735,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2824,11 +2824,11 @@ class CreateSmsTemplatesTable extends Migration
                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software| 
+                                                                © 2025 EMS Software| 
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
-                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                    Copyright &copy; 2025 All rights reserved.
                                                                 </font>
                                                             </span>
                                                             <br>
@@ -2935,7 +2935,7 @@ class CreateSmsTemplatesTable extends Migration
                                                     <p
                                                         style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                         <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                            © 2024 Infix Education software|
+                                                            © 2025 EMS Software|
                                                         </span>
                                                         <span style="background-color:transparent;text-align:left;">
                                                             <font color="#ffffff">
@@ -3047,7 +3047,7 @@ class CreateSmsTemplatesTable extends Migration
                                                         <p
                                                             style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software|
+                                                                © 2025 EMS Software|
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
@@ -3250,11 +3250,11 @@ class CreateSmsTemplatesTable extends Migration
                                                                                     <div class="txtTinyMce-wrapper" style="line-height:1.2;font-size:12px;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;color:#262b30;">
                                                                                         <p style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                                                © 2024 Infix Education software|
+                                                                                                © 2025 EMS Software|
                                                                                             </span>
                                                                                             <span style="background-color:transparent;text-align:left;">
                                                                                                 <font color="#ffffff">
-                                                                                                    Copyright &copy; 2024 All rights reserved | This application is made by Codethemes
+                                                                                                    Copyright &copy; 2025 All rights reserved.
                                                                                                 </font>
                                                                                             </span>
                                                                                             <br>

@@ -1119,7 +1119,7 @@ return new class extends Migration
                                                     <p
                                                         style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                         <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                            © 2024 Infix Education software|
+                                                            © 2025 EMS Software|
                                                         </span>
                                                         <span style="background-color:transparent;text-align:left;">
                                                             <font color="#ffffff">
@@ -1231,7 +1231,7 @@ return new class extends Migration
                                                         <p
                                                             style="margin:0;font-size:12px;line-height:1.2;text-align:center;margin-top:0;margin-bottom:0;">
                                                             <span style="font-size:14px;color:rgb(255,255,255);font-family:Arial;">
-                                                                © 2024 Infix Education software|
+                                                                © 2025 EMS Software|
                                                             </span>
                                                             <span style="background-color:transparent;text-align:left;">
                                                                 <font color="#ffffff">
@@ -1377,5 +1377,3 @@ return new class extends Migration
         //
     }
 };
-
-
