@@ -311,7 +311,7 @@ class SmStudentPanelController extends Controller
                         ->where('un_semester_label_id', $lastRecord->un_semester_label_id)
                         ->get();
                     $departmentSubjects = $lastRecord->withOutPreSubject;
-                   
+
                     $lastRecordCreatedDate = $student_detail->lastRecord->value('created_at')->format('Y-m-d');
                 }
 
@@ -742,7 +742,7 @@ class SmStudentPanelController extends Controller
             $fields = SmStudentRegistrationField::where('school_id', auth()->user()->school_id)
                 ->when(auth()->user()->role_id == 2, function ($query) {
                     $query->where('student_edit', 1);
-                }) 
+                })
                 ->when(auth()->user()->role_id == 3, function ($query) {
                     $query->where('parent_edit', 1);
                 })
@@ -770,7 +770,7 @@ class SmStudentPanelController extends Controller
                 ->first();
             $siblings = SmStudent::where('parent_id', $student_detail->parent_id)->where('school_id', $user->school_id)->get();
             $fees_assigneds = $student_detail->feesAssign;
-            
+
             $old_fees = 0;
             foreach ($fees_assigneds as $fees_assigned) {
                 $fees_assigned->amount = $fees_assigned->fees_amount;
@@ -812,10 +812,10 @@ class SmStudentPanelController extends Controller
                     ->whereIn('section_id', $section_ids)
                     ->where('academic_id', getAcademicId())
                     ->where('school_id', $user->school_id)
-                    ->get(); 
+                    ->get();
 
             }
-           
+
             $totalNotices = SmNoticeBoard::where('active_status', 1)
                 ->where('inform_to', 'LIKE', '%2%')
                 ->orderBy('id', 'DESC')
@@ -889,7 +889,7 @@ class SmStudentPanelController extends Controller
                 })
                 #->whereJsonContains('role_ids', "2")
                 ->get();
-            
+
             $student_detail = SmStudent::where('user_id', $user->id)->first();
             $sm_weekends = SmWeekend::orderBy('order', 'ASC')
                 ->where('active_status', 1)
@@ -904,7 +904,7 @@ class SmStudentPanelController extends Controller
                     ->where('academic_id', getAcademicId())->get();
             }
             $routineDashboard = true;
-            
+
             $student_details = Auth::user()->student->load('studentRecords', 'attendances');
             $student_records = $student_details->studentRecords;
 
@@ -922,14 +922,14 @@ class SmStudentPanelController extends Controller
                 ->whereIn('school_id', $student_records->pluck('school_id'))
                 ->get();
             $complaints = SmComplaint::with('complaintType', 'complaintSource')->get();
-           
+
             $data['settings'] = SmCalendarSetting::get();
             $data['roles'] = InfixRole::where('is_saas',0)->where(function ($q) {
                 $q->where('school_id', auth()->user()->school_id)->orWhere('type', 'System');
             })
                 ->whereNotIn('id', [1, 2])
                 ->get();
-                
+
             $academicCalendar = new SmAcademicCalendarController();
             $events = $academicCalendar->calenderData();
 
@@ -943,10 +943,10 @@ class SmStudentPanelController extends Controller
                         $total_amount += $assign->amount;
                         $paid_amount +=  $assign->paid_amount;
                     }
-        
+
                     $due_amount = $total_amount - $paid_amount;
                 } else {
-                    
+
                 }
             }
 
@@ -1025,7 +1025,7 @@ class SmStudentPanelController extends Controller
             $exam_terms = SmExamType::where('school_id', Auth::user()->school_id)
                 ->where('academic_id', getAcademicId())
                 ->get();
-            
+
             if (moduleStatusCheck('University')) {
                 $student_id = $student_detail->id;
                 $studentDetails = SmStudent::find($student_id);
@@ -1144,13 +1144,13 @@ class SmStudentPanelController extends Controller
             $user = Auth::user();
             $student_detail = SmStudent::where('user_id', $user->id)->first();
             $records = $student_detail->studentRecords;
-            return view('backEnd.studentPanel.student_homework', compact('student_detail', 'records'));    
+            return view('backEnd.studentPanel.student_homework', compact('student_detail', 'records'));
     }
 
     public function studentHomeworkView($class_id, $section_id, $homework)
     {
-            $homeworkDetails = SmHomework::find($homework);   
-            $homework_id = $homework;                    
+            $homeworkDetails = SmHomework::find($homework);
+            $homework_id = $homework;
             return view('backEnd.studentPanel.studentHomeworkView', compact('homeworkDetails', 'homework_id'));
     }
 
@@ -1525,7 +1525,7 @@ class SmStudentPanelController extends Controller
                 ->where('sm_assign_class_teachers.active_status', '=', 1)
                 ->select('full_name')
                 ->first();
-                
+
             $settings = SmGeneralSettings::find(1);
             if (@$settings->phone_number_privacy == 1) {
                 $permission = 1;
@@ -1601,7 +1601,7 @@ class SmStudentPanelController extends Controller
             if (ApiBaseMethod::checkUrl($request->fullUrl())) {
 
                 $student = SmStudent::where('user_id', $id)->first();
-                
+
                 $exam_List = DB::table('sm_exam_types')
                     ->join('sm_exams', 'sm_exams.exam_type_id', '=', 'sm_exam_types.id')
                     ->where('sm_exams.class_id', '=', $student->class_id)
@@ -1718,11 +1718,13 @@ class SmStudentPanelController extends Controller
         ]);
             $maxFileSize = SmGeneralSettings::first('file_size')->file_size;
             $file = $request->file('attach_file');
-            $fileSize = filesize($file);
-            $fileSizeKb = ($fileSize / 1000000);
-            if ($fileSizeKb >= $maxFileSize) {
-                Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
-                return redirect()->back();
+            if ($file) {
+                $fileSize = filesize($file);
+                $fileSizeKb = ($fileSize / 1000000);
+                if ($fileSizeKb >= $maxFileSize) {
+                    Toastr::error('Max upload file size ' . $maxFileSize . ' Mb is set in system', 'Failed');
+                    return redirect()->back();
+                }
             }
             $input = $request->all();
             $fileName = "";
@@ -1732,7 +1734,7 @@ class SmStudentPanelController extends Controller
                 $file->move('public/uploads/leave_request/', $fileName);
                 $fileName = 'public/uploads/leave_request/' . $fileName;
             }
-            $user = auth()->user();
+            $user = Auth::user();
             if ($user) {
                 $login_id = $user->id;
                 $role_id = $user->role_id;
@@ -1753,10 +1755,10 @@ class SmStudentPanelController extends Controller
             $apply_leave->reason = $request->reason;
             $apply_leave->file = $fileName;
             $apply_leave->academic_id = getAcademicId();
-            $apply_leave->school_id = auth()->user()->school_id;
+            $apply_leave->school_id = Auth::user()->school_id;
             $result = $apply_leave->save();
 
-            $studentInfo = SmStudent::where('user_id', auth()->user()->id)->first();
+            $studentInfo = SmStudent::where('user_id', Auth::user()->id)->first();
             $data['to_date'] = $apply_leave->leave_to;
             $data['name'] = $apply_leave->user->full_name;
             $data['from_date'] = $apply_leave->leave_from;
@@ -1764,7 +1766,7 @@ class SmStudentPanelController extends Controller
             $data['section'] = $studentInfo->studentRecord->section->section_name;
             $this->sent_notifications('Leave_Apply', [$studentInfo->user_id], $data, ['Student']);
 
-           
+
 
             if ($result) {
                 Toastr::success('Operation successful', 'Success');
@@ -1777,7 +1779,7 @@ class SmStudentPanelController extends Controller
 
     public function pendingLeave(Request $request)
     {
-            $apply_leaves = SmLeaveRequest::with('leaveDefine', 'student')->where([['active_status', 1], ['approve_status', 'P']])->where('staff_id', auth()->id())->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+            $apply_leaves = SmLeaveRequest::with('leaveDefine', 'student')->where([['active_status', 1], ['approve_status', 'P']])->where('staff_id', Auth::id())->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
 
 
             return view('backEnd.student_leave.pending_leave', compact('apply_leaves'));
@@ -1836,7 +1838,7 @@ class SmStudentPanelController extends Controller
                 $fileName = 'public/uploads/leave_request/' . $fileName;
             }
 
-            $user = Auth()->user();
+            $user = Auth::user();
             if ($user) {
                 $login_id = $user->id;
                 $role_id = $user->role_id;
@@ -1916,7 +1918,7 @@ class SmStudentPanelController extends Controller
                 $student = SmStudent::where('user_id', $student_id)->first();
             }
             $hwContent = SmUploadHomeworkContent::where('student_id', $student->id)->where('homework_id', $id)->get();
-           
+
 
 
             $file_paths = [];
@@ -1939,7 +1941,7 @@ class SmStudentPanelController extends Controller
             $public_dir = public_path('uploads/homeworkcontent');
             $zip = new ZipArchive;
             if ($zip->open($public_dir . '/' . $zip_file_name, ZipArchive::CREATE) === true) {
-                
+
                 foreach ($new_file_array as $key => $file) {
                     $zip->addFile($file['path'], @$file['name']);
                 }

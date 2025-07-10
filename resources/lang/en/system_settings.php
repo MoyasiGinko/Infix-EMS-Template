@@ -515,4 +515,13 @@ return [
     'to_run_cron_jobs' => 'To run cron jobs, you need to set up a cron job in your server. Here is the command you need to run in your server.',
     'in_cpanel_you_should_set_time_interval' => 'In server, you should set the time interval',
     'every_ten_minutes' => 'Every ten minutes',
+    'latest_bug_fixes' => 'Latest Bug Fixes',
+    'bug_fix_notes' => 'Add Class Error Fix on Result Type mark : Lesson List error fix : Student Lesson List error fix : Parent Panel apply leave error fix : Student panel apply leave error fix : Admin panel Remaining Leave count issue fix : User login issue fix on Mobile responsive version.',
+    'class_error_fix' => 'Add Class Error Fix on Result Type mark',
+    'lesson_list_fix' => 'Lesson List error fix',
+    'student_lesson_list_fix' => 'Student Lesson List error fix',
+    'parent_panel_leave_fix' => 'Parent Panel apply leave error fix',
+    'student_panel_leave_fix' => 'Student panel apply leave error fix',
+    'admin_leave_count_fix' => 'Admin panel Remaining Leave count issue fix',
+    'mobile_login_fix' => 'User login issue fix on Mobile responsive version',
 ];
