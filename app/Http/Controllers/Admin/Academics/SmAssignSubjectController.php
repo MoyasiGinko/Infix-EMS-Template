@@ -97,7 +97,7 @@ class SmAssignSubjectController extends Controller
     public function search(Request $request)
     {
         $input = $request->all();
-        
+
         if(moduleStatusCheck('University')){
             $validator = Validator::make($input, [
                 'un_session_id' => 'required',
@@ -114,7 +114,7 @@ class SmAssignSubjectController extends Controller
                 'section' => 'required',
             ]);
         }
-       
+
 
         if ($validator->fails()) {
 
@@ -238,7 +238,7 @@ class SmAssignSubjectController extends Controller
                 foreach ($request->subjects as $key => $subject) {
                     if ($subject) {
                         if(moduleStatusCheck('University')){
-                            $assign_subject = new SmAssignSubject();                            
+                            $assign_subject = new SmAssignSubject();
                             $assign_subject->school_id = $user->school_id;
                             $assign_subject->un_faculty_id = $request->un_faculty_id;
                             $assign_subject->un_department_id = $request->un_department_id;
@@ -256,41 +256,67 @@ class SmAssignSubjectController extends Controller
                             if (!$request->section_id) {
                                 $all_section = SmClassSection::where('class_id', $request->class)->get();
                                 foreach ($all_section as $section) {
+                                    // Check if assignment already exists
+                                    $exists = SmAssignSubject::where('class_id', $request->class)
+                                        ->where('section_id', $section->section_id)
+                                        ->where('subject_id', $subject)
+                                        ->where('academic_id', getAcademicId())
+                                        ->where('school_id', $user->school_id)
+                                        ->when(shiftEnable() && $request->shift, function($q) use ($request) {
+                                            $q->where('shift_id', $request->shift);
+                                        })
+                                        ->first();
+
+                                    if (!$exists) {
+                                        $assign_subject = new SmAssignSubject();
+                                        $assign_subject->class_id = $request->class;
+                                        $assign_subject->school_id = $user->school_id;
+                                        $assign_subject->section_id = $section->section_id;
+                                        $assign_subject->shift_id = shiftEnable() ? $request->shift : null;
+                                        $assign_subject->subject_id = $subject;
+                                        $assign_subject->teacher_id = $request->teachers[$key];
+                                        $assign_subject->created_at = YearCheck::getYear().'-'.date('m-d h:i:s');
+                                        $assign_subject->academic_id = getAcademicId();
+                                        $assign_subject->save();
+                                        event(new CreateClassGroupChat($assign_subject));
+                                    }
+                                }
+                            } else {
+                                // Check if assignment already exists
+                                $exists = SmAssignSubject::where('class_id', $request->class)
+                                    ->where('section_id', $request->section_id)
+                                    ->where('subject_id', $subject)
+                                    ->where('academic_id', getAcademicId())
+                                    ->where('school_id', $user->school_id)
+                                    ->when(shiftEnable() && $request->shift, function($q) use ($request) {
+                                        $q->where('shift_id', $request->shift);
+                                    })
+                                    ->first();
+
+                                if (!$exists) {
                                     $assign_subject = new SmAssignSubject();
                                     $assign_subject->class_id = $request->class;
                                     $assign_subject->school_id = $user->school_id;
-                                    $assign_subject->section_id = $section->section_id;
+                                    $assign_subject->section_id = $request->section_id;
                                     $assign_subject->shift_id = shiftEnable() ? $request->shift : null;
                                     $assign_subject->subject_id = $subject;
-                                    $assign_subject->teacher_id = $request->teachers[$key];
+                                    $assign_subject->teacher_id = $request->teachers[$i];
                                     $assign_subject->created_at = YearCheck::getYear().'-'.date('m-d h:i:s');
-                                    $assign_subject->academic_id = getAcademicId();
+                                        $assign_subject->academic_id = getAcademicId();
                                     $assign_subject->save();
                                     event(new CreateClassGroupChat($assign_subject));
                                 }
-                            } else {
-                                $assign_subject = new SmAssignSubject();
-                                $assign_subject->class_id = $request->class;
-                                $assign_subject->school_id = $user->school_id;
-                                $assign_subject->section_id = $request->section_id;
-                                $assign_subject->shift_id = shiftEnable() ? $request->shift : null;
-                                $assign_subject->subject_id = $subject;
-                                $assign_subject->teacher_id = $request->teachers[$i];
-                                $assign_subject->created_at = YearCheck::getYear().'-'.date('m-d h:i:s');
-                                $assign_subject->academic_id = getAcademicId();
-                                $assign_subject->save();
-                                event(new CreateClassGroupChat($assign_subject));
                                 $i++;
                             }
 
                         }
-                        
+
                     }
                 }
             }
         } elseif ($request->update == 1) {
-            if(moduleStatusCheck('University')){                
-                    $i = 0;                    
+            if(moduleStatusCheck('University')){
+                    $i = 0;
                     if ($request->subjects) {
                         foreach ($request->subjects as $key => $subject) {
                             SmAssignSubject::where('un_faculty_id', $request->un_faculty_id)
@@ -302,7 +328,7 @@ class SmAssignSubjectController extends Controller
                                 ->where('un_subject_id',$subject)
                                 ->delete();
                             if ($subject) {
-                                $assign_subject = new SmAssignSubject();                            
+                                $assign_subject = new SmAssignSubject();
                                 $assign_subject->school_id = $user->school_id;
                                 $assign_subject->un_faculty_id = $request->un_faculty_id;
                                 $assign_subject->un_department_id = $request->un_department_id;
@@ -320,8 +346,16 @@ class SmAssignSubjectController extends Controller
                     }
             }else{
                 if (!$request->section_id) {
+                    // Delete existing assignments for the class first
+                    SmAssignSubject::where('class_id', $request->class)
+                        ->where('academic_id', getAcademicId())
+                        ->where('school_id', $user->school_id)
+                        ->when(shiftEnable() && $request->shift, function($q) use ($request) {
+                            $q->where('shift_id', $request->shift);
+                        })
+                        ->delete();
+
                     if ($request->subjects) {
-    
                         foreach ($request->subjects as $key => $subject) {
                             if ($subject) {
                                 $all_section = SmClassSection::where('class_id', $request->class)->get();
@@ -335,7 +369,7 @@ class SmAssignSubjectController extends Controller
                                     $assign_subject->created_at = YearCheck::getYear().'-'.date('m-d h:i:s');
                                     $assign_subject->academic_id = getAcademicId();
                                     $assign_subject->school_id = $user->school_id;
-    
+
                                     $assign_subject->save();
                                     event(new CreateClassGroupChat($assign_subject));
                                 }
@@ -343,7 +377,14 @@ class SmAssignSubjectController extends Controller
                         }
                     }
                 } else {
-                    SmAssignSubject::where('class_id', $request->class)->where('section_id', $request->section_id)->delete();
+                    SmAssignSubject::where('class_id', $request->class)
+                        ->where('section_id', $request->section_id)
+                        ->where('academic_id', getAcademicId())
+                        ->where('school_id', $user->school_id)
+                        ->when(shiftEnable() && $request->shift, function($q) use ($request) {
+                            $q->where('shift_id', $request->shift);
+                        })
+                        ->delete();
                     $i = 0;
                     if ($request->subjects) {
                         foreach ($request->subjects as $subject) {
@@ -366,13 +407,13 @@ class SmAssignSubjectController extends Controller
                 }
 
             }
-           
+
         }
         Toastr::success('Operation successful', 'Success');
         return redirect()->back();
         // }catch(Exception $e){
         //     dd($e);
-        // }     
+        // }
     }
 
     public function assignSubjectFind(Request $request)
@@ -396,7 +437,7 @@ class SmAssignSubjectController extends Controller
         $teachers = SmStaff::status()->where(function ($q): void {
             $q->where('role_id', 4)->orWhere('previous_role_id', 4);
         })->get();
-        
+
         if ($assign_subjects->count() == 0) {
             Toastr::error('No Result Found', 'Failed');
             return redirect()->back();

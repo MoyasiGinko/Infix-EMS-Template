@@ -516,7 +516,7 @@ return [
     'in_cpanel_you_should_set_time_interval' => 'In server, you should set the time interval',
     'every_ten_minutes' => 'Every ten minutes',
     'latest_bug_fixes' => 'Latest Bug Fixes',
-    'bug_fix_notes' => 'Add Class Error Fix on Result Type mark : Lesson List error fix : Student Lesson List error fix : Parent Panel apply leave error fix : Student panel apply leave error fix : Admin panel Remaining Leave count issue fix : User login issue fix on Mobile responsive version : All Auth helper method fixes : File upload validation fixes : .gitignore cPanel deployment configuration.',
+    'bug_fix_notes' => 'Add Class Error Fix on Result Type mark : Lesson List error fix : Student Lesson List error fix : Parent Panel apply leave error fix : Student panel apply leave error fix : Admin panel Remaining Leave count issue fix : User login issue fix on Mobile responsive version : All Auth helper method fixes : File upload validation fixes : .gitignore cPanel deployment configuration : Assign Subject Duplicate Issue Fix.',
     'class_error_fix' => 'Add Class Error Fix on Result Type mark - COMPLETED',
     'lesson_list_fix' => 'Lesson List error fix - COMPLETED',
     'student_lesson_list_fix' => 'Student Lesson List error fix - COMPLETED',
@@ -527,4 +527,5 @@ return [
     'auth_helper_fixes' => 'All Auth helper method fixes - COMPLETED',
     'file_upload_fixes' => 'File upload validation fixes - COMPLETED',
     'gitignore_deployment_fix' => '.gitignore cPanel deployment configuration - COMPLETED',
+    'assign_subject_duplicate_fix' => 'Assign Subject Duplicate Issue Fix - COMPLETED',
 ];
