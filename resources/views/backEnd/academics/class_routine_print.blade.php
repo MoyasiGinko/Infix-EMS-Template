@@ -55,6 +55,11 @@
                         class="text-white mb-0">
                         {{ isset(generalSetting()->school_name) ? generalSetting()->school_name : 'Infix School Management ERP' }}
                     </h3>
+                    // add subtitle in arabic
+                    <span style="font-size:11px !important;margin-right:10px"
+                        class="text-white">{{ isset(generalSetting()->school_name_ar) ? generalSetting()->school_name_ar : 'مركز العلوم علي الإسلامية دكا' }}
+                    </span>
+                    <br>
                     <span style="font-size:11px !important;margin:0px"
                         class="text-white ">
                         {{ isset(generalSetting()->address) ? generalSetting()->address : 'Infix School Address' }}
