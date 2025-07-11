@@ -527,5 +527,6 @@ return [
     'auth_helper_fixes' => 'All Auth helper method fixes - COMPLETED',
     'file_upload_fixes' => 'File upload validation fixes - COMPLETED',
     'gitignore_deployment_fix' => '.gitignore cPanel deployment configuration - COMPLETED',
-    'assign_subject_duplicate_fix' => 'Assign Subject Duplicate Issue Fix - COMPLETED',
+    'assign_subject_duplicate_fix' => 'COMPLETED - Fixed duplicate subject assignment at /assign-subject-search endpoint',
+    'academic_calendar_modal_fix' => 'COMPLETED - Fixed academic calendar modal not closing and creating duplicates by adding CSRF token to AJAX request',
 ];

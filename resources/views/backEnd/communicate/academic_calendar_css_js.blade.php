@@ -237,6 +237,7 @@
                 type: 'POST',
                 dataType: 'json',
                 data: {
+                    _token: '{{ csrf_token() }}',
                     event_title,
                     role_ids,
                     event_location,
@@ -247,10 +248,12 @@
                     data_type
                 },
                 success: function(response) {
+                    console.log('Event created successfully:', response);
                     $('#addEventOnCalendar').modal('hide');
                     location.reload();
                 },
                 error: function(xhr) {
+                    console.log('Error creating event:', xhr);
                     errorDataShow(null, xhr);
                 }
             })
