@@ -1,10 +1,18 @@
-# Fees Invoice Edit Permission Fix - Test Guide
+# Fees Permission System Fix - Test Guide
 
-## Issue Fixed
+## Issues Fixed
+
+### 1. Permission Bypass Issue (COMPLETED)
 
 - **Problem**: Users could access `/fees/fees-invoice-edit/3` directly even without permission
 - **Root Cause**: Missing permission middleware on the route
 - **Solution**: Added `userRolePermission:fees.fees-invoice-edit` middleware
+
+### 2. Permission Assignment Not Working (COMPLETED)
+
+- **Problem**: Assigned permissions at `/rolepermission/assign-permission/5` were not taking effect
+- **Root Cause**: Debug statement `dd($permissionIds)` in AppServiceProvider was halting execution and function had void return type
+- **Solution**: Removed debug statement and fixed function to return permissions array
 
 ## Test Steps
 
@@ -43,13 +51,15 @@
 
 ## Files Modified
 
-1. `Modules/Fees/Routes/web.php` - Added middleware to route
-2. `Modules/Fees/Http/Controllers/FeesController.php` - Added permission check in controller
-3. `resources/lang/en/system_settings.php` - Updated documentation
+1. `Modules/Fees/Routes/web.php` - Added middleware to routes
+2. `Modules/Fees/Http/Controllers/FeesController.php` - Added permission checks in controller methods
+3. `app/Providers/AppServiceProvider.php` - Fixed permission loading singleton function
+4. `resources/lang/en/system_settings.php` - Updated documentation
 
 ## Expected Behavior After Fix
 
-- Only users with `fees.fees-invoice-edit` permission can access the edit page
+- Only users with proper permissions can access edit pages
+- Permission assignment at `/rolepermission/assign-permission/5` now works correctly
 - Direct URL access is blocked for unauthorized users
-- Edit button only shows for users with proper permission
+- Edit buttons only show for users with proper permissions
 - 403 Forbidden error for unauthorized access attempts

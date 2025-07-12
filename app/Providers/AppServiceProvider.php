@@ -126,16 +126,16 @@ class AppServiceProvider extends ServiceProvider
             return InfixModuleInfo::where('parent_id', 0)->with(['children'])->whereIn('id', $module_ids)->get();
         });
 
-        $this->app->singleton('permission', function (): void {
+        $this->app->singleton('permission', function () {
 
             $infixRole = InfixRole::find(Auth::user()->role_id);
             $permissionIds = AssignPermission::where('role_id', Auth::user()->role_id)
                 ->when($infixRole->is_saas == 0, function ($q): void {
                     $q->where('school_id', Auth::user()->school_id);
                 })->pluck('permission_id')->toArray();
-                dd($permissionIds);
             $permissions = Permission::whereIn('id', $permissionIds)->pluck('route')->toArray();
 
+            return $permissions;
         });
 
         $this->app->singleton('saasSettings', function () {
