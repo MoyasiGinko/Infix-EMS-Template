@@ -11,6 +11,7 @@ use Illuminate\Database\Schema\Builder;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
@@ -124,9 +125,10 @@ class AppServiceProvider extends ServiceProvider
             $module_ids = getPlanPermissionMenuModuleId();
 
             return InfixModuleInfo::where('parent_id', 0)->with(['children'])->whereIn('id', $module_ids)->get();
-        });
-
-        $this->app->singleton('permission', function () {
+        });        $this->app->singleton('permission', function () {
+            if (!Auth::check()) {
+                return [];
+            }
 
             $infixRole = InfixRole::find(Auth::user()->role_id);
             $permissionIds = AssignPermission::where('role_id', Auth::user()->role_id)

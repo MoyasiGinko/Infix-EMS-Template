@@ -532,4 +532,5 @@ return [
     'fees_invoice_edit_permission_fix' => 'COMPLETED - Fixed fees invoice edit permission issue where any user could access edit page directly via URL',
     'fees_module_permission_fix' => 'COMPLETED - Fixed missing permission middleware on fees-group-edit and fees-type-edit routes',
     'permission_assignment_system_fix' => 'COMPLETED - Fixed critical permission assignment bug in AppServiceProvider where dd() debug statement was preventing permission loading and return type was void instead of returning permissions array',
+    'fees_invoice_edit_permission_missing' => 'COMPLETED - Critical issue: fees.fees-invoice-edit permission was completely missing from permissions table. Added permission definition and created migration file for production deployment.',
 ];
