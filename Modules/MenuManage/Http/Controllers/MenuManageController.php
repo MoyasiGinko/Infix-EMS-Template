@@ -11,6 +11,7 @@ use App\Traits\SidebarDataStore;
 use Illuminate\Routing\Controller;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Modules\MenuManage\Entities\SmMenu;
 use Modules\MenuManage\Entities\Sidebar;
 use Modules\MenuManage\Entities\SidebarNew;
@@ -188,10 +189,10 @@ class MenuManageController extends Controller
         if(moduleStatusCheck('Saas')){
             $data['schools'] = SmSchool::with('settings')->get();
         } else {
-            // For single school installation, get current school
-            $data['current_school'] = Auth::user()->school_id;
-            $data['settings'] = SmGeneralSettings::where('school_id', Auth::user()->school_id)->first();
+            // For single school installation - use simplified approach
+            $data['settings'] = SmGeneralSettings::first();
         }
+
         return view('menumanage::settings', $data);
     }
 
@@ -208,9 +209,9 @@ class MenuManageController extends Controller
                ]);
            }
        } else {
-           // For single school installation - handle current school only
+           // For single school installation - update all settings
            $role_based_sidebar = $request->get('role_based_sidebar', 0);
-           SmGeneralSettings::where('school_id', Auth::user()->school_id)->update([
+           SmGeneralSettings::query()->update([
                'role_based_sidebar' => $role_based_sidebar
            ]);
        }

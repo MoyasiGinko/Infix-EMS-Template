@@ -101,9 +101,7 @@
                         {{ __('common.disable_all') }}
                     </a> --}}
 
-
                 </div>
-                @endif
                 {!! html()->form()->close() !!}
             </div>
         </div>
