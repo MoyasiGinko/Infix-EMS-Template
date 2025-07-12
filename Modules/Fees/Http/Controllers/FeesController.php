@@ -80,6 +80,9 @@ class FeesController extends Controller
     public function feesGroupEdit($id)
     {
         try {
+            // Check permission - users can only edit fees groups if they have the proper permission
+            abort_if(! userPermission('fees.fees-group-edit'), 403);
+
             if (checkAdmin() == true) {
                 $feesGroup = FmFeesGroup::find($id);
             } else {
@@ -221,6 +224,9 @@ class FeesController extends Controller
     public function feesTypeEdit($id)
     {
         try {
+            // Check permission - users can only edit fees types if they have the proper permission
+            abort_if(! userPermission('fees.fees-type-edit'), 403);
+
             if (checkAdmin() == true) {
                 $feesType = FmFeesType::find($id);
             } else {
@@ -392,8 +398,8 @@ class FeesController extends Controller
 
             return redirect()->back()->withErrors($validator)->withInput();
         }
-        
-       
+
+
 
         if ($request->payment_status == 'partial' && $request->total_paid_amount == null) {
             Toastr::warning('Paid Amount Can Not Be Blank', 'Failed');
@@ -402,14 +408,14 @@ class FeesController extends Controller
         }
 
         try {
-            
+
             $feesExtendedController = new FeesExtendedController();
             $payment_method = $request->payment_method ?? '';
             if ($request->student != 'all_student') {
-                
+
                 $student = StudentRecord::find($request->student);
                 if ($request->groups) {
-                    
+
                     if (empty($request->singleInvoice)) {
                         $feesType = [];
                         $amount = [];
@@ -420,7 +426,7 @@ class FeesController extends Controller
                     }
 
                     foreach ($request->groups as $group) {
-                        
+
                         if ($request->singleInvoice == 1) {
                             $feesType = [];
                             $amount = [];
@@ -466,7 +472,7 @@ class FeesController extends Controller
                     }
 
                     if (!$request->singleInvoice) {
-                        
+
                         $feesCarry = feesCarryForward($request->student, $feesType, $amount, $sub_total);
                         if ($feesCarry != null && $feesCarry != []) {
                             if ($feesCarry['type'] == 'due') {
@@ -481,10 +487,10 @@ class FeesController extends Controller
                                 $payment_method = $feesCarry['paymentMethod'];
                             }
                         }
-                        
-                       
-                        
-                       
+
+
+
+
                         $feesExtendedController->invStore($request->merge(['student' => $student->student_id,
                             'record_id' => $student->id,
                             'feesType' => $feesType,
@@ -510,7 +516,7 @@ class FeesController extends Controller
 
                     foreach ($request->types as $type) {
                         if ($request->singleInvoice == 1) {
-                            $tfeesType = []; 
+                            $tfeesType = [];
                             $tamount = [];
                             $tweaver = [];
                             $tsub_total = [];
@@ -605,7 +611,7 @@ class FeesController extends Controller
                 }
 
             } else {
-               
+
                 $allStudents = StudentRecord::with(['studentDetail' => function ($q) {
                     return $q->where('active_status', 1);
                 }, 'studentDetail.parents'])
@@ -702,12 +708,12 @@ class FeesController extends Controller
                                 'paid_amount' => $paid_amount,
                                 'payment_method' => $payment_method,
                             ]));
-                          
+
                         }
                     }
 
                     $tsub_total = 0;
-                    
+
 
                     if ($request->types) {
                         foreach ($request->types as $type) {
@@ -753,11 +759,11 @@ class FeesController extends Controller
                     //Notification
                     sendNotification("Fees Assign", null, $allStudent->studentDetail->user_id, 2);
                     sendNotification("Fees Assign", null, $allStudent->studentDetail->parents->user_id, 3);
-                    
+
                     $student_user_id      = SmStudent::find($allStudent->student_id)->user_id;
                     $data['student_name'] = $allStudent->studentDetail->full_name;
                     $data['fees']         = isset($tsub_total[0]) &&  is_array($tsub_total) ? (string) $tsub_total[0] : $tsub_total;
-                    
+
                     try{
                         $this->sent_notifications('Fees_Assign', [$student_user_id], $data, ['Student', 'Parent']);
                     } catch (Exception $e) {
@@ -780,6 +786,9 @@ class FeesController extends Controller
     public function feesInvoiceEdit($id)
     {
         try {
+            // Check permission - users can only edit invoices if they have the proper permission
+            abort_if(! userPermission('fees.fees-invoice-edit'), 403);
+
             // View Start
             $classes = SmClass::where('school_id', Auth::user()->school_id)
                 ->where('academic_id', getAcademicId())
@@ -1009,7 +1018,7 @@ class FeesController extends Controller
 
     public function feesPaymentStore(Request $request)
     {
-       
+
         if ($request->total_paid_amount == null) {
             Toastr::warning('Paid Amount Can Not Be Blank', 'Failed');
             return redirect()->back();
@@ -1489,11 +1498,11 @@ class FeesController extends Controller
                     $weaver = $row->Tweaver;
                     $fine = $row->Tfine;
                     $paid_amount = $row->Tpaidamount;
-                    
-                    
+
+
                     $balance = $amount + $fine - ($paid_amount + $weaver);
-                    
-                    
+
+
                     if ($balance == 0) {
                         if ($amount == 0 && $balance == 0 && $paid_amount == 0) {
                             $btn = '<button class="primary-btn small bg-danger text-white border-0">'.__('fees.unpaid').'</button>';

@@ -529,4 +529,6 @@ return [
     'gitignore_deployment_fix' => '.gitignore cPanel deployment configuration - COMPLETED',
     'assign_subject_duplicate_fix' => 'COMPLETED - Fixed duplicate subject assignment at /assign-subject-search endpoint',
     'academic_calendar_modal_fix' => 'COMPLETED - Fixed academic calendar modal not closing and creating duplicates by adding CSRF token to AJAX request',
+    'fees_invoice_edit_permission_fix' => 'COMPLETED - Fixed fees invoice edit permission issue where any user could access edit page directly via URL',
+    'fees_module_permission_fix' => 'COMPLETED - Fixed missing permission middleware on fees-group-edit and fees-type-edit routes',
 ];
