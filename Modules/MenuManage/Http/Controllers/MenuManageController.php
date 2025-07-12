@@ -24,8 +24,8 @@ class MenuManageController extends Controller
     use SidebarDataStore;
 
     public function index(Request $request)
-    {   
-        
+    {
+
          set_time_limit(300);
          $data = [];
         if(!empty($request->role_name))
@@ -41,13 +41,13 @@ class MenuManageController extends Controller
                 $role_name = 'staff';
             }
         }
-        
+
         $data['role_name'] = $role_name;
-        $data['unused_menus']  =  getUnusedMenus($role_name);                 
+        $data['unused_menus']  =  getUnusedMenus($role_name);
         $data['sidebar_menus'] = getMenus($role_name);
         $data['permission_sections'] = Permission::where('user_id', auth()->user()->id)->pluck('id')->toArray();
         return view('menumanage::index', $data);
-        
+
 
         if(is_role_based_sidebar()){
             if(moduleStatusCheck('Saas') && !auth()->user()->is_administrator){
@@ -57,16 +57,16 @@ class MenuManageController extends Controller
                 abort(403);
             }
         }
-       
+
 
         if(!is_role_based_sidebar()){
 
-            $data['unused_menus'] = SidebarManagerController::unUsedMenu();            
+            $data['unused_menus'] = SidebarManagerController::unUsedMenu();
             $data['sidebar_menus'] = getMenus();
             $data['permission_sections'] = Permission::where('user_id', auth()->user()->id)->pluck('id')->toArray();
-           
+
             return view('menumanage::index', $data);
-            
+
         }
 
         $role_id = $request->role_id;
@@ -86,7 +86,7 @@ class MenuManageController extends Controller
                 ->get();
 
 
-           
+
             return view('menumanage::role', $data);
         }
 
@@ -109,7 +109,7 @@ class MenuManageController extends Controller
         $this->modulePermissionSidebar($role_id);
         $data['unused_menus'] = SidebarManagerController::unUsedMenu($role_id);
         $data['sidebar_menus'] = sidebar_menus($role_id);
-        $data['permission_sections'] = Permission::where('role_id', $role_id)->pluck('id')->toArray();         
+        $data['permission_sections'] = Permission::where('role_id', $role_id)->pluck('id')->toArray();
         return view('menumanage::role_index', $data);
     }
 
@@ -187,18 +187,31 @@ class MenuManageController extends Controller
 
         if(moduleStatusCheck('Saas')){
             $data['schools'] = SmSchool::with('settings')->get();
+        } else {
+            // For single school installation, get current school
+            $data['current_school'] = Auth::user()->school_id;
+            $data['settings'] = SmGeneralSettings::where('school_id', Auth::user()->school_id)->first();
         }
         return view('menumanage::settings', $data);
     }
 
     public function postSettings(Request $request){
-       $data = $request->get('role_based_sidebar', []);
-       SmGeneralSettings::query()->update([
-           'role_based_sidebar' => 0
-       ]);
-       foreach ($data as $school => $value) {
-           SmGeneralSettings::where('school_id', $school)->update([
-               'role_based_sidebar' => $value
+       if(moduleStatusCheck('Saas')){
+           // For SaaS installations - handle multiple schools
+           $data = $request->get('role_based_sidebar', []);
+           SmGeneralSettings::query()->update([
+               'role_based_sidebar' => 0
+           ]);
+           foreach ($data as $school => $value) {
+               SmGeneralSettings::where('school_id', $school)->update([
+                   'role_based_sidebar' => $value
+               ]);
+           }
+       } else {
+           // For single school installation - handle current school only
+           $role_based_sidebar = $request->get('role_based_sidebar', 0);
+           SmGeneralSettings::where('school_id', Auth::user()->school_id)->update([
+               'role_based_sidebar' => $role_based_sidebar
            ]);
        }
 
