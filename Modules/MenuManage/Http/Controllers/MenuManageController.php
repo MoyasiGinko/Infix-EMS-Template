@@ -26,52 +26,43 @@ class MenuManageController extends Controller
 
     public function index(Request $request)
     {
+        set_time_limit(300);
+        $data = [];
 
-         set_time_limit(300);
-         $data = [];
-        if(!empty($request->role_name))
-        {
-            $role_name = $request->role_name;
-        }else{
-            if(auth()->user()->role_id == 2)
-            {
-                $role_name = 'student';
-            }elseif(auth()->user()->role_id == 3){
-                $role_name = 'parent';
-            }else{
-                $role_name = 'staff';
-            }
-        }
-
-        $data['role_name'] = $role_name;
-        $data['unused_menus']  =  getUnusedMenus($role_name);
-        $data['sidebar_menus'] = getMenus($role_name);
-        $data['permission_sections'] = Permission::where('user_id', auth()->user()->id)->pluck('id')->toArray();
-        return view('menumanage::index', $data);
-
-
-        if(is_role_based_sidebar()){
-            if(moduleStatusCheck('Saas') && !auth()->user()->is_administrator){
-                abort(403);
-            }
-            if(auth()->user()->role_id != 1){
-                abort(403);
-            }
-        }
-
-
+        // Check if role-based sidebar is enabled
         if(!is_role_based_sidebar()){
+            // Old non-role-based sidebar system
+            if(!empty($request->role_name))
+            {
+                $role_name = $request->role_name;
+            }else{
+                if(Auth::user()->role_id == 2)
+                {
+                    $role_name = 'student';
+                }elseif(Auth::user()->role_id == 3){
+                    $role_name = 'parent';
+                }else{
+                    $role_name = 'staff';
+                }
+            }
 
-            $data['unused_menus'] = SidebarManagerController::unUsedMenu();
-            $data['sidebar_menus'] = getMenus();
-            $data['permission_sections'] = Permission::where('user_id', auth()->user()->id)->pluck('id')->toArray();
-
+            $data['role_name'] = $role_name;
+            $data['unused_menus']  =  getUnusedMenus($role_name);
+            $data['sidebar_menus'] = getMenus($role_name);
+            $data['permission_sections'] = Permission::where('user_id', Auth::user()->id)->pluck('id')->toArray();
+            
             return view('menumanage::index', $data);
+        }
 
+        // Role-based sidebar system
+        if(moduleStatusCheck('Saas') && !Auth::user()->is_administrator){
+            abort(403);
+        }
+        if(Auth::user()->role_id != 1){
+            abort(403);
         }
 
         $role_id = $request->role_id;
-
 
         if(!$role_id){
             $data['roles'] = InfixRole::where('is_saas',0)->when((generalSetting()->with_guardian !=1), function ($query) {
@@ -80,13 +71,11 @@ class MenuManageController extends Controller
                 ->where(function ($q) {
                     $q->where('school_id', Auth::user()->school_id)->orWhere('type', 'System');
                 })
-                ->when(auth()->user()->role_id != 1, function ($q) {
+                ->when(Auth::user()->role_id != 1, function ($q) {
                     $q->where('id', '!=', 1);
                 })
                 ->orderBy('id', 'asc')
                 ->get();
-
-
 
             return view('menumanage::role', $data);
         }
@@ -99,7 +88,7 @@ class MenuManageController extends Controller
                     ->where(function ($q) {
                         $q->where('school_id', Auth::user()->school_id)->orWhere('type', 'System');
                     })
-                    ->when(auth()->user()->role_id != 1, function ($q) {
+                    ->when(Auth::user()->role_id != 1, function ($q) {
                         $q->where('id', '!=', 1);
                     });
             })],

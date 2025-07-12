@@ -12,6 +12,11 @@
                     <a href="{{ route('dashboard') }}">{{ __('common.dashboard') }}</a>
                     <a href="#">{{ __('common.sidebar_manager') }}</a>
                     <a href="#">{{ __('menumanage::menuManage.assign_sidebar_by_role') }}</a>
+                    @if(auth()->user()->role_id == 1)
+                        <a href="{{ route('menumanage.settings') }}" class="primary-btn radius_30px fix-gr-bg ml-3">
+                            <i class="ti-settings"></i> {{ __('common.settings') }}
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>

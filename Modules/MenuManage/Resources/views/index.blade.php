@@ -13,6 +13,11 @@
             <div class="">
                 <a href="{{ route('menumanage.resetSidebar',['role_name' => $role_name ]) }}"
                    class="primary-btn radius_30px  fix-gr-bg">{{ __('menumanage::menuManage.Reset to  with Section') }}</a>
+                @if(auth()->user()->role_id == 1)
+                    <a href="{{ route('menumanage.settings') }}" class="primary-btn radius_30px fix-gr-bg ml-3">
+                        <i class="ti-settings"></i> {{ __('common.settings') }}
+                    </a>
+                @endif
             </div>
 
         </div>
