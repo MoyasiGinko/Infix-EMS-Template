@@ -10,10 +10,10 @@
                         $hasIds = [];
                         $paid_modules = ['Zoom','University','Gmeet','QRCodeAttendance','BBB','ParentRegistration','InfixBiometrics','AiContent','Lms','Certificate','Jitsi','WhatsappSupport','InAppLiveClass'];
                     @endphp
-                    
+
                     @isset($unused_menus)
-                        @if ($unused_menus->count())                            
-                            @foreach ($unused_menus as $key => $menu) 
+                        @if (is_array($unused_menus) ? count($unused_menus) > 0 : $unused_menus->count() > 0)
+                            @foreach ($unused_menus as $key => $menu)
                                 @if(!empty($menu->module) && in_array($menu->module, $paid_modules))
                                    @if(moduleStatusCheck($menu->module))
                                       <ol class="dd-list">
@@ -32,10 +32,10 @@
 
                                             </div>
 
-                                            <ol class="dd-list">   
-                                                @if($menu->count() > 0)                                            
+                                            <ol class="dd-list">
+                                                @if($menu->count() > 0)
                                                     @foreach ($menu->deActiveChild as $submenu)
-                                                            
+
                                                             <li class="dd-item" data-id="{{ $submenu->id }}">
                                                                 <div class="card accordion_card"
                                                                     id="accordion_{{ $submenu->id }}">
@@ -44,19 +44,19 @@
                                                                         <div class="dd-handle">
                                                                             <div class="float-left">
                                                                                 {{ __($submenu->permissionInfo->lang_name) }}
-                                                                               
+
                                                                             </div>
                                                                         </div>
-                                                                    
+
                                                                     </div>
                                                                 </div>
                                                             </li>
-                                                    
+
                                                     @endforeach
                                                 @endif
                                             </ol>
                                         </li>
-                                    </ol>         
+                                    </ol>
                                    @endif
                                 @else
                                  <ol class="dd-list">
@@ -75,10 +75,10 @@
 
                                             </div>
 
-                                            <ol class="dd-list">   
-                                                @if($menu->count() > 0)                                            
+                                            <ol class="dd-list">
+                                                @if($menu->count() > 0)
                                                     @foreach ($menu->deActiveChild as $submenu)
-                                                            
+
                                                             <li class="dd-item" data-id="{{ $submenu->id }}">
                                                                 <div class="card accordion_card"
                                                                     id="accordion_{{ $submenu->id }}">
@@ -87,19 +87,19 @@
                                                                         <div class="dd-handle">
                                                                             <div class="float-left">
                                                                                 {{ __($submenu->permissionInfo->lang_name) }}
-                                                                               
+
                                                                             </div>
                                                                         </div>
-                                                                    
+
                                                                     </div>
                                                                 </div>
                                                             </li>
-                                                    
+
                                                     @endforeach
                                                 @endif
                                             </ol>
                                         </li>
-                                    </ol>         
+                                    </ol>
                                 @endif
                             @endforeach
                         @else
@@ -108,7 +108,7 @@
 
                         @endif
                     @endif
-                   
+
                     </div>
                 </div>
             </div>

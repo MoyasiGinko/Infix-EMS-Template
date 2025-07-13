@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Modules\MenuManage\Entities\SmMenu;
 use Modules\MenuManage\Entities\Sidebar;
 use Modules\MenuManage\Entities\SidebarNew;
+use Modules\MenuManage\Http\Controllers\SidebarManagerController;
 use Modules\RolePermission\Entities\InfixRole;
 use Modules\RolePermission\Entities\Permission;
 use Modules\RolePermission\Entities\InfixModuleInfo;
@@ -91,15 +92,16 @@ class MenuManageController extends Controller
         $data['role'] = $role;
 
         try {
-            $this->defaultSidebarStore($role_id);
-            $this->modulePermissionSidebar($role_id);
+            // For role-based sidebar, we need to handle sidebar data differently
+            // Skip the old defaultSidebarStore and modulePermissionSidebar methods that expect role_name
+            // and use the direct methods instead
             $data['unused_menus'] = SidebarManagerController::unUsedMenu($role_id);
             $data['sidebar_menus'] = sidebar_menus($role_id);
             $data['permission_sections'] = Permission::where('role_id', $role_id)->pluck('id')->toArray();
         } catch (\Exception $e) {
             // If there's an error with sidebar operations, provide fallbacks
-            $data['unused_menus'] = [];
-            $data['sidebar_menus'] = [];
+            $data['unused_menus'] = collect(); // Empty collection instead of array
+            $data['sidebar_menus'] = collect(); // Empty collection instead of array
             $data['permission_sections'] = [];
             Toastr::error('Error loading sidebar data: ' . $e->getMessage());
         }
