@@ -91,6 +91,15 @@ class MenuManageController extends Controller
 
         $data['role'] = $role;
 
+        // Provide backward compatibility for views that expect $role_name
+        // Map common role IDs to their legacy names for view compatibility
+        $role_name_map = [
+            1 => 'staff',     // Super Admin/Staff
+            2 => 'student',   // Student
+            3 => 'parent'     // Parent
+        ];
+        $data['role_name'] = isset($role_name_map[$role_id]) ? $role_name_map[$role_id] : 'staff';
+
         try {
             // For role-based sidebar, we need to handle sidebar data differently
             // Skip the old defaultSidebarStore and modulePermissionSidebar methods that expect role_name
