@@ -50,7 +50,7 @@ class MenuManageController extends Controller
             $data['unused_menus']  =  getUnusedMenus($role_name);
             $data['sidebar_menus'] = getMenus($role_name);
             $data['permission_sections'] = Permission::where('user_id', Auth::user()->id)->pluck('id')->toArray();
-            
+
             return view('menumanage::index', $data);
         }
 
@@ -65,14 +65,9 @@ class MenuManageController extends Controller
         $role_id = $request->role_id;
 
         if(!$role_id){
-            $data['roles'] = InfixRole::where('is_saas',0)->when((generalSetting()->with_guardian !=1), function ($query) {
-                $query->where('id', '!=', 3);
-            })->where('active_status', '=', 1)
+            $data['roles'] = InfixRole::where('active_status', '=', 1)
                 ->where(function ($q) {
                     $q->where('school_id', Auth::user()->school_id)->orWhere('type', 'System');
-                })
-                ->when(Auth::user()->role_id != 1, function ($q) {
-                    $q->where('id', '!=', 1);
                 })
                 ->orderBy('id', 'asc')
                 ->get();
@@ -81,25 +76,34 @@ class MenuManageController extends Controller
         }
 
         $request->validate([
-            'role_id' => ['required', Rule::exists('infix_roles', 'id')->where(function ($query) {
-                $query->where('is_saas',0)->when((generalSetting()->with_guardian !=1), function ($query) {
-                    $query->where('id', '!=', 3);
-                })->where('active_status', '=', 1)
-                    ->where(function ($q) {
-                        $q->where('school_id', Auth::user()->school_id)->orWhere('type', 'System');
-                    })
-                    ->when(Auth::user()->role_id != 1, function ($q) {
-                        $q->where('id', '!=', 1);
-                    });
-            })],
+            'role_id' => ['required', 'integer', 'min:1'],
         ]);
 
-        $data['role'] = InfixRole::find($role_id);
-        $this->defaultSidebarStore($role_id);
-        $this->modulePermissionSidebar($role_id);
-        $data['unused_menus'] = SidebarManagerController::unUsedMenu($role_id);
-        $data['sidebar_menus'] = sidebar_menus($role_id);
-        $data['permission_sections'] = Permission::where('role_id', $role_id)->pluck('id')->toArray();
+        // Find the role with more lenient criteria
+        $role = InfixRole::where('id', $role_id)
+            ->where('active_status', 1)
+            ->first();
+
+        if (!$role) {
+            return redirect()->route('menumanage.index')->with('error', 'Role not found or inactive.');
+        }
+
+        $data['role'] = $role;
+
+        try {
+            $this->defaultSidebarStore($role_id);
+            $this->modulePermissionSidebar($role_id);
+            $data['unused_menus'] = SidebarManagerController::unUsedMenu($role_id);
+            $data['sidebar_menus'] = sidebar_menus($role_id);
+            $data['permission_sections'] = Permission::where('role_id', $role_id)->pluck('id')->toArray();
+        } catch (\Exception $e) {
+            // If there's an error with sidebar operations, provide fallbacks
+            $data['unused_menus'] = [];
+            $data['sidebar_menus'] = [];
+            $data['permission_sections'] = [];
+            Toastr::error('Error loading sidebar data: ' . $e->getMessage());
+        }
+
         return view('menumanage::role_index', $data);
     }
 
@@ -129,9 +133,9 @@ class MenuManageController extends Controller
                     $sidebar->parent_id = $infix_module ? $infix_module->parent_id : ' ';
                     $sidebar->type = $infix_module ? $infix_module->type : ' ';
                 }
-                $sidebar->role_id = auth()->user()->role_id;
-                $sidebar->user_id = auth()->user()->id;
-                $sidebar->school_id = auth()->user()->school_id;
+                $sidebar->role_id = Auth::user()->role_id;
+                $sidebar->user_id = Auth::user()->id;
+                $sidebar->school_id = Auth::user()->school_id;
                 $sidebar->active_status = $status;
                 $sidebar->parent_position_no = $key;
                 $sidebar->child_position_no = $key;

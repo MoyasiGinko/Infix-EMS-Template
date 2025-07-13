@@ -36,7 +36,7 @@
                                     <button class="btn btn-link add_btn_link">
                                         @isset($editPermissionSection)
                                         {{ __('menumanage::menuManage.Edit Section') }}
-                                        @else 
+                                        @else
                                         {{ __('menumanage::menuManage.Add Section') }}
                                         @endisset
                                     </button>
