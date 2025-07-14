@@ -1,4 +1,14 @@
 <h4>{{ __('common.Available menu items') }}</h4>
+{{-- Debug info --}}
+@if(config('app.debug'))
+<div style="background: #f8f9fa; padding: 10px; margin: 10px 0; border: 1px solid #dee2e6;">
+    <small>
+        Debug: unused_menus count = {{ isset($unused_menus) ? (is_array($unused_menus) ? count($unused_menus) : $unused_menus->count()) : 'not set' }}<br>
+        Role ID: {{ @$role->id ?? 'not set' }}<br>
+        Role Name: {{ $role_name ?? 'not set' }}
+    </small>
+</div>
+@endif
 <div class="">
     <div class="row">
         <div class="col-xl-12">

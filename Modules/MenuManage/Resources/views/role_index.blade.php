@@ -111,16 +111,18 @@
             </div>
         </div>
 
+        <!-- Hidden inputs for JavaScript -->
+        <input type="hidden" id="order_change_url" value="{{ route('sidebar-manager.menu-update') }}">
+        <input type="hidden" id="section_store_url" value="{{ route('sidebar-manager.section.store') }}">
+        <input type="hidden" id="section_delete_url" value="{{ route('sidebar-manager.remvoeSection') }}">
+        <input type="hidden" id="menu_delete_url" value="{{ route('sidebar-manager.menu-store') }}">
+        <input type="hidden" id="menu_remove_url" value="{{ route('sidebar-manager.removeMenu') }}">
+        <input type="hidden" id="section_sort_url" value="{{ route('sidebar-manager.sort-section') }}">
+        <input type="hidden" id="role_name" value="{{ $role_name }}">
+        <input type="hidden" id="role_id" value="{{ @$role->id }}">
 
+@endsection
 
-
-
-            <input type="hidden" id="order_change_url" value="{{ route('sidebar-manager.menu-update') }}">
-            <input type="hidden" id="section_store_url" value="{{ route('sidebar-manager.section.store') }}">
-            <input type="hidden" id="section_delete_url" value="{{ route('sidebar-manager.remvoeSection') }}">
-            <input type="hidden" id="menu_delete_url" value="{{ route('sidebar-manager.menu-store') }}">
-            <input type="hidden" id="menu_remove_url" value="{{ route('sidebar-manager.removeMenu') }}">
-            <input type="hidden" id="section_sort_url" value="{{ route('sidebar-manager.sort-section') }}">
-            <input type="hidden" id="role_name" value="{{ $role_name }}">
-
-    @endsection
+@push('script')
+    <script src="{{ asset('Modules/MenuManage/Resources/assets/js/sidebar.js') }}"></script>
+@endpush
