@@ -58,7 +58,7 @@ class SidebarManagerController extends Controller
         $request->validate([
             'name' => ['required', Rule::unique('permissions', 'name')->where('id', $role_id)],
         ]);
-        
+
         $permission_position = SmMenu::where('permission_section',1)->where('role_id',$role_id)->orderBy('position','DESC')->first();
         $position = ($permission_position ? $permission_position->position : 0) + 1;
         $role_slug = str_replace('-','_',Str::slug(mb_strtolower($request->name)));
@@ -102,9 +102,9 @@ class SidebarManagerController extends Controller
         $role_id = $request->role_id;
         $data['editPermissionSection'] = SmMenu::where('id',$id)->first();
 
-        $data['unused_menus'] = self::unUsedMenu($role_name);
+        $data['unused_menus'] = self::unUsedMenu($role_id);
         Cache::forget(sidebar_cache_key($role_id));
-        $data['sidebar_menus'] = getMenus($role_name);
+        $data['sidebar_menus'] = sidebar_menus($role_id);
 
         if ($role_id) {
             $data['role'] = InfixRole::find($role_id);
@@ -131,7 +131,7 @@ class SidebarManagerController extends Controller
 
     public function deleteSection(Request $request)
     {
-        
+
         if (config('app.app_sync')) {
             return $this->reloadWithData();
         }
@@ -187,7 +187,7 @@ class SidebarManagerController extends Controller
                            ->where('id',$request->id)
                            ->where('permission_section',1)
                            ->where('role_id',$role_id)
-                           ->first();            
+                           ->first();
             if($menu->childs->count() > 0){
                 foreach($menu->childs as $child){
                    $child->update(['menu_status' => 0]);
@@ -235,9 +235,9 @@ class SidebarManagerController extends Controller
     public function menuRemove(Request $request)
     {
         $data =  $request->all();
-        
+
         $menu =  SmMenu::where('id',$data['id'])->first();
-        
+
         if($menu) {
             DB::table('sm_menus')->where('id',$data['id'])->update(['menu_status' => 0]);
         }
@@ -246,7 +246,7 @@ class SidebarManagerController extends Controller
 
      public function menuUpdate(Request $request)
     {
-       
+
         if (! config('app.app_sync')) {
             $menuItemOrder = json_decode($request->get('order'));
 
@@ -309,7 +309,7 @@ class SidebarManagerController extends Controller
             }
 
             $role_ids = $this->getRoleids($role_name);
-            
+
             Sidebar::when($role_name == 'student', function ($q)  use ($role_ids) {
                 $q->whereIn('role_id',$role_ids);
             })->when($role_name == 'parent', function ($q)  use ($role_ids) {
@@ -317,8 +317,8 @@ class SidebarManagerController extends Controller
             })->when($role_name == 'staff', function ($q)  use ($role_ids) {
                 $q->whereNotIn('role_id',$role_ids);
             })->delete();
-            
-            
+
+
             $this->resetSidebarStore($role_name);
             Cache::forget(sidebar_cache_key($role_name));
             return redirect()->back();
@@ -360,7 +360,7 @@ class SidebarManagerController extends Controller
                 'parent_id' => $parent_id,
                 'menu_status' => $menu_status ?? 1,
             ];
-            
+
             if ($menuItem) {
                 $menuItem->update($data);
                 if (isset($item->children)) {
@@ -373,7 +373,7 @@ class SidebarManagerController extends Controller
     }
 
     private function reloadWithData()
-    {   
+    {
 
         if(!empty(request()->role_name)){
             $role_name = request()->role_name;
@@ -388,7 +388,7 @@ class SidebarManagerController extends Controller
             }
         }
         $data = $this->getMenusData($role_name);
-        $data['role'] = InfixRole::find(request()->role_id); 
+        $data['role'] = InfixRole::find(request()->role_id);
         $data['role_name'] = $role_name;
         return response()->json([
             'msg' => 'Success',
@@ -409,7 +409,7 @@ class SidebarManagerController extends Controller
             $role_ids = [2,3];
         }
 
-        return $role_ids;        
+        return $role_ids;
     }
 
     public function getRoleId($role_name = null)
