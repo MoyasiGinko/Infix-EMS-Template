@@ -22,9 +22,7 @@ class SidebarManagerController extends Controller
 {
     use SidebarDataStore;
 
-    public function __construct() {}
-
-    public static function unUsedMenu($role_id = null)
+    public function __construct() {}    public static function unUsedMenu($role_id = null)
     {
         // Check if there's any sidebar data for this role
         $hasSidebarData = Sidebar::where('role_id', $role_id)->whereNull('user_id')->exists();
@@ -32,8 +30,10 @@ class SidebarManagerController extends Controller
         if (!$hasSidebarData) {
             // If no sidebar data exists for this role, return all available permissions as unused
             // This handles the initial case where the role hasn't been set up yet
-            $allPermissions = Permission::where('menu_status', 1)
-                ->where('active_status', 1)
+
+            // Get all permissions that should be available for this role type
+            $allPermissions = Permission::where('status', 1)
+                ->where('menu_status', 1)
                 ->when($role_id == 2, function ($q) {
                     $q->where('is_student', 1);
                 })->when($role_id == 3, function ($q) {
@@ -43,6 +43,7 @@ class SidebarManagerController extends Controller
                         $query->where('is_admin', 1)->orWhere('is_teacher', 1);
                     });
                 })
+                ->orderBy('position')
                 ->get();
 
             // Convert permissions to sidebar-like structure for compatibility
@@ -53,9 +54,13 @@ class SidebarManagerController extends Controller
                     'role_id' => $role_id,
                     'active_status' => 0, // Mark as inactive/unused
                     'lang_name' => $permission->lang_name ?? $permission->name,
+                    'name' => $permission->name,
                     'module' => $permission->module,
                     'parent' => $permission->parent_id,
-                    'parent_id' => $permission->parent_id
+                    'parent_id' => $permission->parent_id,
+                    'route' => $permission->route,
+                    'icon' => $permission->icon,
+                    'type' => $permission->type ?? 1
                 ];
             });
         }
