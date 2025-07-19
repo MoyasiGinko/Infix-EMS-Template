@@ -267,7 +267,6 @@
         <span>{{@$admitcard->examType->title}}</span>
         @endif
       </div>
-      <span class="flex-1">TESTING 1!!!!</span>
       @if($setting->student_photo)
       {{-- <div class="student_img"
              src="{{asset(@$admitcard->studentRecord->studentDetail->student_photo != '' ? @$admitcard->studentRecord->studentDetail->student_photo : 'public/uploads/staff/demo/staff.jpg')}}"

@@ -141,12 +141,17 @@
             </td>
           </tr>
         </table>
-        <span class="flex-1">TESTING  2!!!!</span>
         @if($setting->student_photo)
-        <div class="profile flex items-center justify-center border">
-          <img
-            src="{{asset(@$admitcard->studentRecord->studentDetail->student_photo != '' ? @$admitcard->studentRecord->studentDetail->student_photo : 'public/uploads/staff/demo/staff.jpg')}}"
-            alt="{{asset(@$admitcard->studentRecord->studentDetail->full_name)}}">
+        <div class="profile flex items-center justify-center">
+          <div class="student_img"
+            style="border: 1px solid var(--base_color); width: 100px; height: 100px; padding: 5px; background-size: 100% 100%; background-position: center center; flex: 100px 0 0; position: relative;">
+            <img
+              src="{{asset(@$admitcard->studentRecord->studentDetail->student_photo != '' ? @$admitcard->studentRecord->studentDetail->student_photo : 'public/uploads/staff/demo/staff.jpg')}}"
+              alt="{{asset(@$admitcard->studentRecord->studentDetail->full_name)}}" style="max-width: 100%;">
+            <div
+              style="content: ''; position: absolute; left: 1px; right: 1px; top: 1px; bottom: 1px; border: 5px solid #fff; z-index: 1;">
+            </div>
+          </div>
         </div>
         @endif
       </div>
