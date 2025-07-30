@@ -337,8 +337,10 @@ $parents = @$student_detail->parents;
 
     </div>
     <div class="code-item">
-      <strong>Student Type: {{ @$student_detail->student_type ?? '-' }}</strong>
-      Group: {{ @$student_detail->group ?? '-' }}
+      @if(isset($student_detail->section) && $student_detail->section)
+      <br>
+      <strong>Section: {{ $student_detail->section->section_name ?? $student_detail->section->name ?? '' }}</strong>
+      @endif
       Application Date:
       {{ @$student_detail->admission_date ? dateConvert(@$student_detail->admission_date) : '' }}
     </div>
