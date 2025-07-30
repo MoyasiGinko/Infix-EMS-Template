@@ -6,31 +6,42 @@
 
 @section('mainContent')
 <style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .profile-print-container {
-  max-width: 900px;
+  max-width: 210mm;
+  min-height: 297mm;
   margin: 30px auto;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  padding: 40px 30px;
+  padding: 15mm;
+  font-family: 'Times New Roman', serif;
   font-size: 15px;
   color: #222;
+  line-height: 1.4;
 }
 
+/* Header Section */
 .profile-header {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 20px;
-  margin-bottom: 30px;
+  justify-content: space-between;
+  border-bottom: 3px solid #4e73df;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .profile-header .school-logo {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
+  border: 2px solid #4e73df;
   border-radius: 10px;
   overflow: hidden;
-  margin-right: 30px;
   background: #f7f7f7;
   display: flex;
   align-items: center;
@@ -44,13 +55,15 @@
 
 .profile-header .header-info {
   flex: 1;
+  text-align: center;
+  margin: 0 20px;
 }
 
 .profile-header .header-info h1 {
   margin: 0 0 8px 0;
   font-size: 2.2rem;
   font-weight: 700;
-  color: var(--primary-color, #4e73df);
+  color: #4e73df;
 }
 
 .profile-header .header-info p {
@@ -60,13 +73,17 @@
 }
 
 .profile-header .profile-photo {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
+  width: 100px;
+  height: 120px;
+  border: 2px solid #4e73df;
   overflow: hidden;
-  margin-left: 30px;
-  border: 3px solid var(--primary-color, #4e73df);
   background: #f7f7f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
 }
 
 .profile-header .profile-photo img {
@@ -75,52 +92,161 @@
   object-fit: cover;
 }
 
+/* Track and Code Section */
+.track-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.code-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  margin-bottom: 15px;
+  font-size: 11px;
+  border: 1px solid #333;
+}
+
+.code-item {
+  padding: 8px;
+  border-right: 1px solid #333;
+}
+
+.code-item:last-child {
+  border-right: none;
+}
+
+.code-item strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+/* Profile Sections */
 .profile-section {
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  page-break-inside: avoid;
 }
 
 .profile-section h3 {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: var(--primary-color, #4e73df);
-  margin-bottom: 12px;
-  border-left: 4px solid var(--primary-color, #4e73df);
+  color: #4e73df;
+  margin-bottom: 10px;
+  border-left: 4px solid #4e73df;
   padding-left: 10px;
+  background: #f8f9fa;
+  padding: 6px 10px;
 }
 
 .profile-table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 0;
+  font-size: 11px;
 }
 
 .profile-table th,
 .profile-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
   text-align: left;
+  vertical-align: top;
 }
 
 .profile-table th {
   background: #f8f9fa;
   color: #333;
   font-weight: 600;
-  width: 220px;
+  width: 200px;
 }
 
-.profile-table tr:last-child td {
-  border-bottom: none;
+/* Two Column Layout for some sections */
+.two-column-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
-.profile-section .badge {
-  background: var(--primary-color, #4e73df);
-  color: #fff;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  margin-left: 8px;
+/* Address Section - Full Width */
+.address-grid {
+  display: grid;
+  grid-template-columns: 150px 1fr 80px 1fr;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 11px;
 }
 
+.address-label {
+  font-weight: bold;
+  color: #333;
+}
+
+.address-value {
+  border-bottom: 1px solid #ccc;
+  padding: 2px 5px;
+  min-height: 20px;
+}
+
+/* Examination Details Table */
+.exam-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  margin-top: 10px;
+}
+
+.exam-table th,
+.exam-table td {
+  border: 1px solid #333;
+  padding: 4px;
+  text-align: center;
+}
+
+.exam-table th {
+  background: #f0f4f8;
+  font-weight: bold;
+}
+
+/* Subject List Table */
+.subject-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  margin-top: 10px;
+}
+
+.subject-table th,
+.subject-table td {
+  border: 1px solid #333;
+  padding: 6px;
+  text-align: left;
+}
+
+.subject-table th {
+  background: #f0f4f8;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Declaration Section */
+.declaration {
+  margin-top: 20px;
+  font-size: 11px;
+  text-align: justify;
+  line-height: 1.4;
+  page-break-inside: avoid;
+}
+
+.declaration p {
+  margin-bottom: 10px;
+}
+
+/* Print Styles */
 @media print {
   .no-print {
     display: none !important;
@@ -129,10 +255,36 @@
   .profile-print-container {
     box-shadow: none;
     margin: 0;
-    padding: 0;
+    padding: 10mm;
+    border-radius: 0;
+  }
+
+  .profile-section {
+    page-break-inside: avoid;
   }
 }
+
+/* Button Styles */
+.primary-btn {
+  background: #4e73df;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+  margin: 0 5px;
+}
+
+.primary-btn:hover {
+  background: #375a7f;
+  color: white;
+  text-decoration: none;
+}
 </style>
+
 @php
 $setting = app('school_info');
 $school_name = $setting->school_name ?? config('app.name', 'School');
@@ -140,7 +292,9 @@ $school_logo = $setting->logo ? asset($setting->logo) : asset('public/backEnd/im
 $currency = $setting->currency_symbol ?? '$';
 $parents = @$student_detail->parents;
 @endphp
+
 <div class="profile-print-container">
+  <!-- Header -->
   <div class="profile-header">
     <div class="school-logo">
       <img src="{{ $school_logo }}" alt="{{ $school_name }}">
@@ -148,6 +302,10 @@ $parents = @$student_detail->parents;
     <div class="header-info">
       <h1>{{ $school_name }}</h1>
       <p>@lang('student.student_profile_form')</p>
+      <div style="font-size: 14px; margin-top: 8px;">
+        <div>Department: {{ @$student_detail->class->class_name ?? 'Management' }}</div>
+        <div>Session: {{ @$student_detail->session ? @$student_detail->session->year : date('Y') }}</div>
+      </div>
     </div>
     <div class="profile-photo">
       <img
@@ -156,208 +314,289 @@ $parents = @$student_detail->parents;
     </div>
   </div>
 
+  <!-- Track Information -->
+  <div class="track-section">
+    <div><strong>Track No:</strong> {{ @$student_detail->admission_no ?? '13321' }}</div>
+  </div>
+
+  <!-- Code and Application Details -->
+  <div class="code-section">
+    <div class="code-item">
+      <strong>Code: {{ @$student_detail->roll_no ?? '6456' }}</strong>
+      Bank Transaction No: {{ @$student_detail->bank_account_no ?? '240612112345' }}
+    </div>
+    <div class="code-item">
+      <strong>Class Roll: {{ @$student_detail->admission_no ?? '220232426267' }}</strong>
+      Application Date:
+      {{ @$student_detail->admission_date ? dateConvert(@$student_detail->admission_date) : date('d-M-Y') }}
+    </div>
+    <div class="code-item">
+      <strong>Security Code/PIN:</strong>
+      Shift: Day
+    </div>
+  </div>
+
+  <!-- Student Information Section -->
   <div class="profile-section">
     <h3>1. @lang('student.student_information')</h3>
-    <table class="profile-table">
-      <tr>
-        <th>@lang('common.name')</th>
-        <td>{{ @$student_detail->full_name }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.admission_no')</th>
-        <td>{{ @$student_detail->admission_no ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.roll_number')</th>
-        <td>{{ @$student_detail->roll_no ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.class')</th>
-        <td>{{ @$student_detail->class->class_name ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.section')</th>
-        <td>{{ @$student_detail->section->section_name ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.session')</th>
-        <td>{{ @$student_detail->session ? @$student_detail->session->year : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.category')</th>
-        <td>{{ @$student_detail->category ? @$student_detail->category->category_name : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.date_of_birth')</th>
-        <td>{{ @$student_detail->date_of_birth ? dateConvert(@$student_detail->date_of_birth) : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.gender')</th>
-        <td>{{ @$student_detail->gender ? @$student_detail->gender->base_setup_name : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.blood_group')</th>
-        <td>{{ @$student_detail->bloodGroup ? @$student_detail->bloodGroup->base_setup_name : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.religion')</th>
-        <td>{{ @$student_detail->religion ? @$student_detail->religion->base_setup_name : '-' }}</td>
-      </tr>
-    </table>
+    <div class="two-column-section">
+      <div>
+        <div class="address-grid" style="grid-template-columns: 120px 1fr;">
+          <div class="address-label">Student Name (English):</div>
+          <div class="address-value">{{ @$student_detail->full_name }}</div>
+        </div>
+        <div class="address-grid" style="grid-template-columns: 120px 1fr;">
+          <div class="address-label">Student's BC/NID:</div>
+          <div class="address-value">{{ @$student_detail->national_id_no ?? @$student_detail->local_id_no }}</div>
+        </div>
+        <div class="address-grid" style="grid-template-columns: 120px 1fr;">
+          <div class="address-label">Student's Phone:</div>
+          <div class="address-value">{{ @$student_detail->mobile }}</div>
+        </div>
+        <div class="address-grid" style="grid-template-columns: 120px 1fr;">
+          <div class="address-label">Admission No:</div>
+          <div class="address-value">{{ @$student_detail->admission_no }}</div>
+        </div>
+        <div class="address-grid" style="grid-template-columns: 120px 1fr;">
+          <div class="address-label">Roll No:</div>
+          <div class="address-value">{{ @$student_detail->roll_no }}</div>
+        </div>
+      </div>
+      <div style="text-align: right; font-size: 12px; margin-top: 10px;">
+        <strong>(বাংলায়):</strong> {{ @$student_detail->full_name_bangla ?? @$student_detail->full_name }}
+      </div>
+    </div>
   </div>
 
-  <div class="profile-section">
-    <h3>2. @lang('student.father_information')</h3>
-    <table class="profile-table">
-      <tr>
-        <th>@lang('student.father_name')</th>
-        <td>{{ $parents ? $parents->fathers_name : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.father_phone')</th>
-        <td>{{ $parents ? $parents->fathers_mobile : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.father_email')</th>
-        <td>{{ $parents ? $parents->fathers_email : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.father_occupation')</th>
-        <td>{{ $parents ? $parents->fathers_occupation : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.father_nid')</th>
-        <td>{{ $parents ? $parents->fathers_nid : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.father_address')</th>
-        <td>{{ $parents ? $parents->fathers_address : '-' }}</td>
-      </tr>
-    </table>
+  <!-- Parents Information -->
+  <div class="two-column-section">
+    <div class="profile-section">
+      <h3>2. @lang('student.father_info')</h3>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Father's Name:</div>
+        <div class="address-value">{{ $parents ? $parents->fathers_name : '-' }}</div>
+      </div>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Father's NID:</div>
+        <div class="address-value">{{ $parents ? $parents->fathers_nid : '-' }}</div>
+      </div>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Father's Phone:</div>
+        <div class="address-value">{{ $parents ? $parents->fathers_mobile : '-' }}</div>
+      </div>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Occupation:</div>
+        <div class="address-value">{{ $parents ? $parents->fathers_occupation : '-' }}</div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h3>3. @lang('student.mother_info')</h3>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Mother's Name:</div>
+        <div class="address-value">{{ $parents ? $parents->mothers_name : '-' }}</div>
+      </div>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Mother's NID:</div>
+        <div class="address-value">{{ $parents ? $parents->mothers_nid : '-' }}</div>
+      </div>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Mother's Phone:</div>
+        <div class="address-value">{{ $parents ? $parents->mothers_mobile : '-' }}</div>
+      </div>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Occupation:</div>
+        <div class="address-value">{{ $parents ? $parents->mothers_occupation : '-' }}</div>
+      </div>
+    </div>
   </div>
 
+  <!-- Address Information -->
   <div class="profile-section">
-    <h3>3. @lang('student.mother_information')</h3>
-    <table class="profile-table">
-      <tr>
-        <th>@lang('student.mother_name')</th>
-        <td>{{ $parents ? $parents->mothers_name : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.mother_phone')</th>
-        <td>{{ $parents ? $parents->mothers_mobile : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.mother_email')</th>
-        <td>{{ $parents ? $parents->mothers_email : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.mother_occupation')</th>
-        <td>{{ $parents ? $parents->mothers_occupation : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.mother_nid')</th>
-        <td>{{ $parents ? $parents->mothers_nid : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.mother_address')</th>
-        <td>{{ $parents ? $parents->mothers_address : '-' }}</td>
-      </tr>
-    </table>
+    <h3>4. @lang('student.student_address_info')</h3>
+    <div class="address-grid">
+      <div class="address-label">Permanent Address:</div>
+      <div class="address-value">{{ @$student_detail->permanent_address }}</div>
+      <div class="address-label">District:</div>
+      <div class="address-value">{{ @$student_detail->permanent_district ?? 'Faridpur' }}</div>
+    </div>
+    <div class="address-grid">
+      <div class="address-label">Present Address:</div>
+      <div class="address-value">{{ @$student_detail->current_address }}</div>
+      <div class="address-label">District:</div>
+      <div class="address-value">{{ @$student_detail->current_district ?? 'Narayanganj' }}</div>
+    </div>
   </div>
 
+  <!-- Guardian Information -->
   <div class="profile-section">
-    <h3>4. @lang('student.address_information')</h3>
-    <table class="profile-table">
-      <tr>
-        <th>@lang('student.current_address')</th>
-        <td>{{ @$student_detail->current_address ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.permanent_address')</th>
-        <td>{{ @$student_detail->permanent_address ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.national_id_number')</th>
-        <td>{{ @$student_detail->national_id_no ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.local_id_number')</th>
-        <td>{{ @$student_detail->local_id_no ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.bank_account_number')</th>
-        <td>{{ @$student_detail->bank_account_no ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.bank_name')</th>
-        <td>{{ @$student_detail->bank_name ?? '-' }}</td>
-      </tr>
-    </table>
+    <h3>6. Local Guardian Name, Address & Phone</h3>
+    <div class="address-grid" style="grid-template-columns: 1fr;">
+      <div class="address-value" style="min-height: 30px;">
+        {{ @$student_detail->emergency_contact_name ? @$student_detail->emergency_contact_name . ' - ' . @$student_detail->emergency_contact_number : '-' }}
+      </div>
+    </div>
   </div>
 
-  <div class="profile-section">
-    <h3>5. @lang('student.contact_information')</h3>
-    <table class="profile-table">
-      <tr>
-        <th>@lang('student.email')</th>
-        <td>{{ @$student_detail->email ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.phone_number')</th>
-        <td>{{ @$student_detail->mobile ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.emergency_contact_name')</th>
-        <td>{{ @$student_detail->emergency_contact_name ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.emergency_contact_relation')</th>
-        <td>{{ @$student_detail->emergency_contact_relation ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.emergency_contact_number')</th>
-        <td>{{ @$student_detail->emergency_contact_number ?? '-' }}</td>
-      </tr>
-    </table>
+  <!-- Personal and Additional Details -->
+  <div class="two-column-section">
+    <div class="profile-section">
+      <h3>7-10. Personal Details</h3>
+      <div class="address-grid" style="grid-template-columns: 80px 1fr;">
+        <div class="address-label">Nationality:</div>
+        <div class="address-value">Bangladeshi</div>
+      </div>
+      <div class="address-grid" style="grid-template-columns: 80px 1fr;">
+        <div class="address-label">Date of Birth:</div>
+        <div class="address-value">
+          {{ @$student_detail->date_of_birth ? dateConvert(@$student_detail->date_of_birth) : '-' }}</div>
+      </div>
+      <div class="address-grid" style="grid-template-columns: 80px 1fr;">
+        <div class="address-label">Religion:</div>
+        <div class="address-value">
+          {{ @$student_detail->religion ? @$student_detail->religion->base_setup_name : 'Islam(Sunni)' }}</div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h3>11-13. Additional Info</h3>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Father's Income:</div>
+        <div class="address-value">{{ $parents ? $parents->fathers_annual_income ?? '120000' : '120000' }}</div>
+      </div>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Quota:</div>
+        <div class="address-value">{{ @$student_detail->quota ?? 'No' }}</div>
+      </div>
+      <div class="address-grid" style="grid-template-columns: 100px 1fr;">
+        <div class="address-label">Blood Group:</div>
+        <div class="address-value">
+          {{ @$student_detail->bloodGroup ? @$student_detail->bloodGroup->base_setup_name : 'B+' }}</div>
+      </div>
+    </div>
   </div>
 
+  <!-- Examination Details -->
   <div class="profile-section">
-    <h3>@lang('student.documents')</h3>
-    <table class="profile-table">
+    <h3>14. SSC & HSC/Equivalent Examinations Detail</h3>
+    <table class="exam-table">
       <thead>
         <tr>
-          <th>@lang('student.document_title')</th>
-          <th>@lang('student.document_file')</th>
+          <th>Exam Name</th>
+          <th>Exam Roll</th>
+          <th>Reg No</th>
+          <th>Session</th>
+          <th>Division</th>
+          <th>Exam Year</th>
+          <th>Board/Instit.</th>
+          <th>GPA</th>
         </tr>
       </thead>
       <tbody>
-        @if(isset($student_detail->studentDocument) && count($student_detail->studentDocument))
-        @foreach($student_detail->studentDocument as $doc)
         <tr>
-          <td>{{ $doc->title }}</td>
-          <td>
-            @if(file_exists($doc->file))
-            <a href="{{ url($doc->file) }}" target="_blank">@lang('common.download')</a>
-            @else
-            -
-            @endif
-          </td>
+          <td>SSC</td>
+          <td>{{ @$student_detail->ssc_roll ?? '123298' }}</td>
+          <td>{{ @$student_detail->ssc_reg ?? '1710564671' }}</td>
+          <td>{{ @$student_detail->ssc_session ?? '2018-2019' }}</td>
+          <td>{{ @$student_detail->ssc_group ?? 'Science' }}</td>
+          <td>{{ @$student_detail->ssc_year ?? '2020' }}</td>
+          <td>{{ @$student_detail->ssc_board ?? 'Dhaka' }}</td>
+          <td>{{ @$student_detail->ssc_gpa ?? '5.00' }}</td>
+        </tr>
+        <tr>
+          <td>HSC</td>
+          <td>{{ @$student_detail->hsc_roll ?? '140461' }}</td>
+          <td>{{ @$student_detail->hsc_reg ?? '1710564671' }}</td>
+          <td>{{ @$student_detail->hsc_session ?? '2020-2021' }}</td>
+          <td>{{ @$student_detail->hsc_group ?? 'Science' }}</td>
+          <td>{{ @$student_detail->hsc_year ?? '2022' }}</td>
+          <td>{{ @$student_detail->hsc_board ?? 'Dhaka' }}</td>
+          <td>{{ @$student_detail->hsc_gpa ?? '4.83' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Subject List -->
+  <div class="profile-section">
+    <h3>15. Subject List</h3>
+    <table class="subject-table">
+      <thead>
+        <tr>
+          <th>Subject Code</th>
+          <th>Subject Name</th>
+          <th>Subject Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if(isset($student_detail->subjects) && $student_detail->subjects->count() > 0)
+        @foreach($student_detail->subjects as $subject)
+        <tr>
+          <td>{{ $subject->subject_code ?? '' }}</td>
+          <td>{{ $subject->subject_name ?? '' }}</td>
+          <td>{{ $subject->subject_type ?? '' }}</td>
         </tr>
         @endforeach
         @else
         <tr>
-          <td colspan="2">@lang('student.no_documents_found')</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
         </tr>
         @endif
       </tbody>
     </table>
   </div>
 
-  <div class="text-center no-print" style="margin-top: 40px;">
-    <button class="primary-btn fix-gr-bg" onclick="window.print()">
-      <i class="ti-printer pr-2"></i> @lang('common.print')
-    </button>
+  <!-- Declaration -->
+  <div class="declaration">
+    <p><strong>16. আমি স্বীকার করিতেছি যে,</strong></p>
+    <p style="margin-top: 10px; text-align: justify;">
+      I hereby declare that all the information provided in this admission form is true and correct to the best of my
+      knowledge.
+      I understand that any false information may result in the cancellation of my admission. I agree to abide by all
+      rules
+      and regulations of the institution.
+    </p>
+    <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+      <div>
+        <div style="border-top: 1px solid #333; width: 150px; margin-top: 40px; text-align: center; padding-top: 5px;">
+          Student's Signature
+        </div>
+      </div>
+      <div>
+        <div style="border-top: 1px solid #333; width: 150px; margin-top: 40px; text-align: center; padding-top: 5px;">
+          Guardian's Signature
+        </div>
+      </div>
+      <div>
+        <div style="border-top: 1px solid #333; width: 150px; margin-top: 40px; text-align: center; padding-top: 5px;">
+          Date: ___________
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Print and Download Buttons -->
+<div class="text-center no-print" style="margin-top: 40px;">
+  <button class="primary-btn fix-gr-bg" onclick="window.print()">
+    <i class="ti-printer pr-2"></i> @lang('common.print')
+  </button>
+  <a href="{{ route('student_profile_print', [$student_detail->id]) }}?pdf=1" class="primary-btn fix-gr-bg"
+    target="_blank">
+    <i class="ti-download pr-2"></i> @lang('common.download_pdf')
+  </a>
+</div>
+
 @endsection
