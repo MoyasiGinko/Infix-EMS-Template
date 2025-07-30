@@ -325,24 +325,26 @@ $parents = @$student_detail->parents;
   </div>
 
   <!-- Track Information -->
-  <!-- <div class="track-section">
-    <div><strong>Track No:</strong> {{ @$student_detail->admission_no ?? ' ' }}</div>
-  </div> -->
+  <div class="track-section">
+    <div><strong>Admission No:</strong> {{ @$student_detail->admission_no ?? ' ' }}</div>
+  </div>
 
   <!-- Code and Application Details -->
   <div class="code-section">
     <div class="code-item">
       <strong>Class Roll: {{ @$student_detail->roll_no }}</strong>
-      Email: {{ @$student_detail->email }}
+      Shift: {{ @$student_detail->shift ?? '' }}
+
     </div>
     <div class="code-item">
-      <strong>Admission No: {{ @$student_detail->admission_no }}</strong>
+      <strong>Student Type: {{ @$student_detail->student_type ?? '-' }}</strong>
+      Group: {{ @$student_detail->group ?? '-' }}
       Application Date:
       {{ @$student_detail->admission_date ? dateConvert(@$student_detail->admission_date) : '' }}
     </div>
     <div class="code-item">
       <strong>Security Code/PIN:</strong>
-      Shift: {{ @$student_detail->shift ?? '' }}
+      Email: {{ @$student_detail->email }}
     </div>
   </div>
 
