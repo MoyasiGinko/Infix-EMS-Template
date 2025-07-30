@@ -303,7 +303,7 @@ $parents = @$student_detail->parents;
       <h1>{{ $school_name }}</h1>
       <p>@lang('student.student_profile')</p>
       <div style="font-size: 14px; margin-top: 8px;">
-        <div>Department: {{ @$student->class != '' ? @$student->class->class_name : '' }}</div>
+        <div>Class: {{ @$student_detail->class != '' ? @$student_detail->class->class_name : '' }}</div>
         <div>Session: {{ @$student_detail->session ? @$student_detail->session->year : date('Y') }}</div>
       </div>
     </div>
