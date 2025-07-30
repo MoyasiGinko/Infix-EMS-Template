@@ -303,7 +303,15 @@ $parents = @$student_detail->parents;
       <h1>{{ $school_name }}</h1>
       <p>@lang('student.student_profile')</p>
       <div style="font-size: 14px; margin-top: 8px;">
-        <div>Class: {{ @$student_detail->class != '' ? @$student_detail->class->class_name : '' }}</div>
+        <div>
+          @php
+          $className = isset($student_detail->class) && $student_detail->class ? $student_detail->class->class_name :
+          '';
+          $sectionName = isset($student_detail->section) && $student_detail->section ?
+          $student_detail->section->section_name : '';
+          @endphp
+          Class: {{ $className }}@if($sectionName) (Section: {{ $sectionName }})@endif
+        </div>
         <div>Session: {{ @$student_detail->session ? @$student_detail->session->year : date('Y') }}</div>
       </div>
     </div>
@@ -521,18 +529,22 @@ $parents = @$student_detail->parents;
 
   <!-- Subject List -->
   <div class="profile-section">
-    <h3>15. Subject List</h3>
+    <h3>15. @lang('student.assigned_subjects_for_class')</h3>
     <table class="subject-table">
       <thead>
         <tr>
-          <th>Subject Code</th>
-          <th>Subject Name</th>
-          <th>Subject Type</th>
+          <th>@lang('student.subject_code')</th>
+          <th>@lang('student.subject_name')</th>
+          <th>@lang('student.subject_type')</th>
         </tr>
       </thead>
       <tbody>
-        @if(isset($student_detail->subjects) && $student_detail->subjects->count() > 0)
-        @foreach($student_detail->subjects as $subject)
+        @php
+        $assignedSubjects = isset($student_detail->class) && $student_detail->class->subjects ?
+        $student_detail->class->subjects : collect();
+        @endphp
+        @if($assignedSubjects->count() > 0)
+        @foreach($assignedSubjects as $subject)
         <tr>
           <td>{{ $subject->subject_code ?? '' }}</td>
           <td>{{ $subject->subject_name ?? '' }}</td>
@@ -541,19 +553,7 @@ $parents = @$student_detail->parents;
         @endforeach
         @else
         <tr>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-        </tr>
-        <tr>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-        </tr>
-        <tr>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
+          <td colspan="3">@lang('student.no_subjects_assigned')</td>
         </tr>
         @endif
       </tbody>
