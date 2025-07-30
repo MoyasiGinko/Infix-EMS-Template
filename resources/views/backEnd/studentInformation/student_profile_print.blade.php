@@ -313,7 +313,7 @@ $parents = @$student_detail->parents;
           Class: {{ $className }}@if($sectionName) (Section: {{ $sectionName }})@endif
         </div>
         <div>Session:
-          {{ @$student_detail->session ? (@$student_detail->session->year ?? @$student_detail->session->name) : '' }}
+          {{ @$student_detail->session ? (@$student_detail->session->year ?? @$student_detail->session->name) : '2025' }}
         </div>
       </div>
     </div>
@@ -326,17 +326,17 @@ $parents = @$student_detail->parents;
 
   <!-- Track Information -->
   <div class="track-section">
-    <div><strong>Track No:</strong> {{ @$student_detail->admission_no ?? '13321' }}</div>
+    <div><strong>Track No:</strong> {{ @$student_detail->admission_no ?? ' ' }}</div>
   </div>
 
   <!-- Code and Application Details -->
   <div class="code-section">
     <div class="code-item">
-      <strong>Code: {{ @$student_detail->roll_no }}</strong>
+      <strong>Class Roll: {{ @$student_detail->roll_no }}</strong>
       Email: {{ @$student_detail->email }}
     </div>
     <div class="code-item">
-      <strong>Class Roll: {{ @$student_detail->admission_no }}</strong>
+      <strong>Admission No: {{ @$student_detail->admission_no }}</strong>
       Application Date:
       {{ @$student_detail->admission_date ? dateConvert(@$student_detail->admission_date) : '' }}
     </div>
@@ -439,19 +439,19 @@ $parents = @$student_detail->parents;
   </div>
 
   <!-- Guardian Information -->
-  <div class="profile-section">
+  <!-- <div class="profile-section">
     <h3>6. Local Guardian Name, Address & Phone</h3>
     <div class="address-grid" style="grid-template-columns: 1fr;">
       <div class="address-value" style="min-height: 30px;">
         {{ @$student_detail->emergency_contact_name ? @$student_detail->emergency_contact_name . ' - ' . @$student_detail->emergency_contact_number : '-' }}
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Personal and Additional Details -->
   <div class="two-column-section">
     <div class="profile-section">
-      <h3>7-10. Personal Details</h3>
+      <h3>6-9. Personal Details</h3>
       <div class="address-grid" style="grid-template-columns: 80px 1fr;">
         <div class="address-label">Nationality:</div>
         <div class="address-value">{{ @$student_detail->nationality }}</div>
@@ -469,7 +469,7 @@ $parents = @$student_detail->parents;
     </div>
 
     <div class="profile-section">
-      <h3>11-13. Additional Info</h3>
+      <h3>10-12. Additional Info</h3>
       <div class="address-grid" style="grid-template-columns: 100px 1fr;">
         <div class="address-label">Father's Income:</div>
         <div class="address-value">{{ $parents ? $parents->fathers_annual_income : '' }}</div>
@@ -487,7 +487,7 @@ $parents = @$student_detail->parents;
   </div>
 
   <!-- Examination Details -->
-  <div class="profile-section">
+  <!-- <div class="profile-section">
     <h3>14. @lang('exam.examinations_participated')</h3>
     <table class="exam-table">
       <thead>
@@ -519,10 +519,10 @@ $parents = @$student_detail->parents;
         @endif
       </tbody>
     </table>
-  </div>
+  </div> -->
 
   <!-- Subject List -->
-  <div class="profile-section">
+  <!-- <div class="profile-section">
     <h3>15. @lang('student.assigned_subjects_for_class')</h3>
     <table class="subject-table">
       <thead>
@@ -552,7 +552,7 @@ $parents = @$student_detail->parents;
         @endif
       </tbody>
     </table>
-  </div>
+  </div> -->
 
   <!-- Declaration -->
   <div class="declaration">
