@@ -478,41 +478,43 @@ $parents = @$student_detail->parents;
 
   <!-- Examination Details -->
   <div class="profile-section">
-    <h3>14. SSC & HSC/Equivalent Examinations Detail</h3>
+    <h3>14. @lang('exam.examinations_participated')</h3>
     <table class="exam-table">
       <thead>
         <tr>
-          <th>Exam Name</th>
-          <th>Exam Roll</th>
-          <th>Reg No</th>
-          <th>Session</th>
-          <th>Division</th>
-          <th>Exam Year</th>
-          <th>Board/Instit.</th>
-          <th>GPA</th>
+          <th>@lang('exam.exam_name')</th>
+          <th>@lang('exam.exam_type')</th>
+          <th>@lang('exam.session')</th>
+          <th>@lang('exam.year')</th>
+          <th>@lang('exam.result')</th>
         </tr>
       </thead>
       <tbody>
+        @if(isset($student_detail->examResults) && count($student_detail->examResults) > 0)
+        @foreach($student_detail->examResults as $result)
         <tr>
-          <td>SSC</td>
-          <td>{{ @$student_detail->ssc_roll ?? '123298' }}</td>
-          <td>{{ @$student_detail->ssc_reg ?? '1710564671' }}</td>
-          <td>{{ @$student_detail->ssc_session ?? '2018-2019' }}</td>
-          <td>{{ @$student_detail->ssc_group ?? 'Science' }}</td>
-          <td>{{ @$student_detail->ssc_year ?? '2020' }}</td>
-          <td>{{ @$student_detail->ssc_board ?? 'Dhaka' }}</td>
-          <td>{{ @$student_detail->ssc_gpa ?? '5.00' }}</td>
+          <td>{{ $result->exam ? $result->exam->title : '-' }}</td>
+          <td>{{ $result->exam && $result->exam->examType ? $result->exam->examType->title : '-' }}</td>
+          <td>{{ $result->session ?? ($student_detail->session ? $student_detail->session->year : '-') }}</td>
+          <td>{{ $result->year ?? ($result->exam ? $result->exam->year : '-') }}</td>
+          <td>
+            @if(isset($result->is_pass))
+            @if($result->is_pass)
+            <span style="color:green;font-weight:bold">@lang('exam.pass')</span>
+            @else
+            <span style="color:red;font-weight:bold">@lang('exam.fail')</span>
+            @endif
+            @else
+            -
+            @endif
+          </td>
         </tr>
+        @endforeach
+        @else
         <tr>
-          <td>HSC</td>
-          <td>{{ @$student_detail->hsc_roll ?? '140461' }}</td>
-          <td>{{ @$student_detail->hsc_reg ?? '1710564671' }}</td>
-          <td>{{ @$student_detail->hsc_session ?? '2020-2021' }}</td>
-          <td>{{ @$student_detail->hsc_group ?? 'Science' }}</td>
-          <td>{{ @$student_detail->hsc_year ?? '2022' }}</td>
-          <td>{{ @$student_detail->hsc_board ?? 'Dhaka' }}</td>
-          <td>{{ @$student_detail->hsc_gpa ?? '4.83' }}</td>
+          <td colspan="5">@lang('exam.no_exams_found')</td>
         </tr>
+        @endif
       </tbody>
     </table>
   </div>
