@@ -305,14 +305,16 @@ $parents = @$student_detail->parents;
       <div style="font-size: 14px; margin-top: 8px;">
         <div>
           @php
-          $className = isset($student_detail->class) && $student_detail->class ? $student_detail->class->class_name :
-          '';
+          $className = isset($student_detail->class) && $student_detail->class ? ($student_detail->class->class_name ??
+          ($student_detail->class->name ?? '')) : '';
           $sectionName = isset($student_detail->section) && $student_detail->section ?
-          $student_detail->section->section_name : '';
+          ($student_detail->section->section_name ?? ($student_detail->section->name ?? '')) : '';
           @endphp
           Class: {{ $className }}@if($sectionName) (Section: {{ $sectionName }})@endif
         </div>
-        <div>Session: {{ @$student_detail->session ? @$student_detail->session->year : '' }}</div>
+        <div>Session:
+          {{ @$student_detail->session ? (@$student_detail->session->year ?? @$student_detail->session->name) : '' }}
+        </div>
       </div>
     </div>
     <div class="profile-photo">
@@ -331,7 +333,7 @@ $parents = @$student_detail->parents;
   <div class="code-section">
     <div class="code-item">
       <strong>Code: {{ @$student_detail->roll_no }}</strong>
-      Bank Transaction No: {{ @$student_detail->bank_account_no }}</n>
+      Email: {{ @$student_detail->email }}
     </div>
     <div class="code-item">
       <strong>Class Roll: {{ @$student_detail->admission_no }}</strong>
@@ -494,33 +496,25 @@ $parents = @$student_detail->parents;
           <th>@lang('exam.exam_type')</th>
           <th>@lang('exam.session')</th>
           <th>@lang('exam.year')</th>
-          <th>@lang('exam.result')</th>
         </tr>
       </thead>
       <tbody>
-        @if(isset($student_detail->examResults) && count($student_detail->examResults) > 0)
-        @foreach($student_detail->examResults as $result)
+        @php
+        $classExams = (isset($student_detail->class) && isset($student_detail->class->exams)) ?
+        $student_detail->class->exams : collect();
+        @endphp
+        @if($classExams && $classExams->count())
+        @foreach($classExams as $exam)
         <tr>
-          <td>{{ $result->exam ? $result->exam->title : '-' }}</td>
-          <td>{{ $result->exam && $result->exam->examType ? $result->exam->examType->title : '-' }}</td>
-          <td>{{ $result->session ?? ($student_detail->session ? $student_detail->session->year : '-') }}</td>
-          <td>{{ $result->year ?? ($result->exam ? $result->exam->year : '-') }}</td>
-          <td>
-            @if(isset($result->is_pass))
-            @if($result->is_pass)
-            <span style="color:green;font-weight:bold">@lang('exam.pass')</span>
-            @else
-            <span style="color:red;font-weight:bold">@lang('exam.fail')</span>
-            @endif
-            @else
-            -
-            @endif
-          </td>
+          <td>{{ $exam->title ?? '' }}</td>
+          <td>{{ $exam->examType->title ?? '' }}</td>
+          <td>{{ $exam->session->year ?? $exam->session->name ?? '' }}</td>
+          <td>{{ $exam->year ?? '' }}</td>
         </tr>
         @endforeach
         @else
         <tr>
-          <td colspan="5">@lang('exam.no_exams_found')</td>
+          <td colspan="4">@lang('exam.no_exams_found')</td>
         </tr>
         @endif
       </tbody>
@@ -540,10 +534,10 @@ $parents = @$student_detail->parents;
       </thead>
       <tbody>
         @php
-        $assignedSubjects = isset($student_detail->class) && $student_detail->class->subjects ?
+        $assignedSubjects = (isset($student_detail->class) && isset($student_detail->class->subjects)) ?
         $student_detail->class->subjects : collect();
         @endphp
-        @if($assignedSubjects->count() > 0)
+        @if($assignedSubjects && $assignedSubjects->count())
         @foreach($assignedSubjects as $subject)
         <tr>
           <td>{{ $subject->subject_code ?? '' }}</td>
