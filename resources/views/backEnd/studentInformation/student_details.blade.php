@@ -245,14 +245,13 @@ $ajax_url = url('student-list-datatable');
 @include('backEnd.partials.data_table_js')
 @include('backEnd.partials.server_side_datatable')
 
-@push('script')
-<script>
+
 @php
 $columns = [
   ['data' => 'admission_no', 'name' => 'admission_no'],
   ['data' => 'full_name', 'name' => 'full_name'],
 ];
-if (!moduleStatusCheck('University') && generalSetting() - > with_guardian) {
+if (!moduleStatusCheck('University') && generalSetting()->with_guardian) {
   $columns[] = ['data' => 'parents.fathers_name', 'name' => 'parents.fathers_name'];
 }
 $columns[] = ['data' => 'dob', 'name' => 'dob'];
@@ -270,6 +269,8 @@ $columns[] = ['data' => 'first_name', 'name' => 'first_name', 'visible' => false
 $columns[] = ['data' => 'last_name', 'name' => 'last_name', 'visible' => false];
 @endphp
 
+@push('script')
+<script>
 $(document).ready(function() {
   $('.data-table').DataTable({
     processing: true,
@@ -292,7 +293,7 @@ $(document).ready(function() {
       },
       pages: "{{ generalSetting()->ss_page_load }}" // number of pages to cache
     }),
-    columns: @json($columns),
+    columns: {!! json_encode($columns) !!},
     bLengthChange: false,
     bDestroy: true,
     language: {
