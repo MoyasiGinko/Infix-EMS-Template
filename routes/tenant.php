@@ -1,5 +1,3 @@
-// Student Profile Print Route
-Route::get('student-profile-print/{id}', 'Admin\\StudentInfo\\SmStudentAdmissionController@studentProfilePrint')->name('student_profile_print');
 <?php
 
 use App\Http\Controllers\Theme\Edulia\FrontendController;
@@ -47,6 +45,11 @@ Route::group(['middleware' => []], function () {
     // Route::group(['middleware' => ['ThemeCheckMiddleware']], function () {
 
     // });
+
+
+    // Student Profile Print Route
+    Route::get('student-profile-print/{id}', 'Admin\StudentInfo\SmStudentAdmissionController@studentProfilePrint')->name('student_profile_print');
+
 
     Route::get('change-password', 'HomeController@updatePassowrd')->name('updatePassowrd');
     Route::get('/academic_years', 'HomeController@academicUpdate');
