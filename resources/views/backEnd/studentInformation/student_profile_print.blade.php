@@ -312,7 +312,7 @@ $parents = @$student_detail->parents;
           @endphp
           Class: {{ $className }}@if($sectionName) (Section: {{ $sectionName }})@endif
         </div>
-        <div>Session: {{ @$student_detail->session ? @$student_detail->session->year : date('Y') }}</div>
+        <div>Session: {{ @$student_detail->session ? @$student_detail->session->year : '' }}</div>
       </div>
     </div>
     <div class="profile-photo">
@@ -330,17 +330,17 @@ $parents = @$student_detail->parents;
   <!-- Code and Application Details -->
   <div class="code-section">
     <div class="code-item">
-      <strong>Code: {{ @$student_detail->roll_no ?? '6456' }}</strong>
-      Bank Transaction No: {{ @$student_detail->bank_account_no ?? '240612112345' }}
+      <strong>Code: {{ @$student_detail->roll_no }}</strong>
+      Bank Transaction No: {{ @$student_detail->bank_account_no }}</n>
     </div>
     <div class="code-item">
-      <strong>Class Roll: {{ @$student_detail->admission_no ?? '220232426267' }}</strong>
+      <strong>Class Roll: {{ @$student_detail->admission_no }}</strong>
       Application Date:
-      {{ @$student_detail->admission_date ? dateConvert(@$student_detail->admission_date) : date('d-M-Y') }}
+      {{ @$student_detail->admission_date ? dateConvert(@$student_detail->admission_date) : '' }}
     </div>
     <div class="code-item">
       <strong>Security Code/PIN:</strong>
-      Shift: Day
+      Shift: {{ @$student_detail->shift ?? '' }}
     </div>
   </div>
 
@@ -426,13 +426,13 @@ $parents = @$student_detail->parents;
       <div class="address-label">Permanent Address:</div>
       <div class="address-value">{{ @$student_detail->permanent_address }}</div>
       <div class="address-label">District:</div>
-      <div class="address-value">{{ @$student_detail->permanent_district ?? 'Faridpur' }}</div>
+      <div class="address-value">{{ @$student_detail->permanent_district }}</div>
     </div>
     <div class="address-grid">
       <div class="address-label">Present Address:</div>
       <div class="address-value">{{ @$student_detail->current_address }}</div>
       <div class="address-label">District:</div>
-      <div class="address-value">{{ @$student_detail->current_district ?? 'Narayanganj' }}</div>
+      <div class="address-value">{{ @$student_detail->current_district }}</div>
     </div>
   </div>
 
@@ -452,7 +452,7 @@ $parents = @$student_detail->parents;
       <h3>7-10. Personal Details</h3>
       <div class="address-grid" style="grid-template-columns: 80px 1fr;">
         <div class="address-label">Nationality:</div>
-        <div class="address-value">Bangladeshi</div>
+        <div class="address-value">{{ @$student_detail->nationality }}</div>
       </div>
       <div class="address-grid" style="grid-template-columns: 80px 1fr;">
         <div class="address-label">Date of Birth:</div>
@@ -462,7 +462,7 @@ $parents = @$student_detail->parents;
       <div class="address-grid" style="grid-template-columns: 80px 1fr;">
         <div class="address-label">Religion:</div>
         <div class="address-value">
-          {{ @$student_detail->religion ? @$student_detail->religion->base_setup_name : 'Islam(Sunni)' }}</div>
+          {{ @$student_detail->religion ? @$student_detail->religion->base_setup_name : '' }}</div>
       </div>
     </div>
 
@@ -470,16 +470,16 @@ $parents = @$student_detail->parents;
       <h3>11-13. Additional Info</h3>
       <div class="address-grid" style="grid-template-columns: 100px 1fr;">
         <div class="address-label">Father's Income:</div>
-        <div class="address-value">{{ $parents ? $parents->fathers_annual_income ?? '120000' : '120000' }}</div>
+        <div class="address-value">{{ $parents ? $parents->fathers_annual_income : '' }}</div>
       </div>
       <div class="address-grid" style="grid-template-columns: 100px 1fr;">
         <div class="address-label">Quota:</div>
-        <div class="address-value">{{ @$student_detail->quota ?? 'No' }}</div>
+        <div class="address-value">{{ @$student_detail->quota }}</div>
       </div>
       <div class="address-grid" style="grid-template-columns: 100px 1fr;">
         <div class="address-label">Blood Group:</div>
         <div class="address-value">
-          {{ @$student_detail->bloodGroup ? @$student_detail->bloodGroup->base_setup_name : 'B+' }}</div>
+          {{ @$student_detail->bloodGroup ? @$student_detail->bloodGroup->base_setup_name : '' }}</div>
       </div>
     </div>
   </div>
