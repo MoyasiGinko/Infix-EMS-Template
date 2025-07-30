@@ -22,7 +22,8 @@
 <section class="sms-breadcrumb mb-20 up_breadcrumb">
   <div class="container-fluid">
     <div class="row justify-content-between">
-      <h1>@lang('student.manage_student') Hi</h1>
+      <h1>@lang('student.manage_student')</h1>
+      <h1>Testing</h1>
       <div class="bc-pages">
         <a href="{{ route('dashboard') }}">@lang('common.dashboard')</a>
         <a href="#">@lang('student.student_information')</a>
