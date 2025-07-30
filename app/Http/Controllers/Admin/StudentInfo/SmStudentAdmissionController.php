@@ -562,7 +562,7 @@ class SmStudentAdmissionController extends Controller
     public function studentProfilePrint($id)
     {
         $student_detail = \App\SmStudent::with([
-            'class', 'section', 'parents', 'gender', 'bloodGroup', 'religion', 'category', 'studentType', 'session', 'documents'
+            'class', 'section', 'parents', 'gender', 'bloodGroup', 'religion', 'category', 'session', 'documents'
         ])->findOrFail($id);
         return view('backEnd.studentInformation.student_profile_print', compact('student_detail'));
     }
