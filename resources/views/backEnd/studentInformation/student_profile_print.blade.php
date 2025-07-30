@@ -325,9 +325,9 @@ $parents = @$student_detail->parents;
   </div>
 
   <!-- Track Information -->
-  <div class="track-section">
+  <!-- <div class="track-section">
     <div><strong>Track No:</strong> {{ @$student_detail->admission_no ?? ' ' }}</div>
-  </div>
+  </div> -->
 
   <!-- Code and Application Details -->
   <div class="code-section">
