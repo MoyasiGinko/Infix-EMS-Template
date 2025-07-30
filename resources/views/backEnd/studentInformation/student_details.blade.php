@@ -247,6 +247,29 @@ $ajax_url = url('student-list-datatable');
 
 @push('script')
 <script>
+@php
+$columns = [
+  ['data' => 'admission_no', 'name' => 'admission_no'],
+  ['data' => 'full_name', 'name' => 'full_name'],
+];
+if (!moduleStatusCheck('University') && generalSetting() - > with_guardian) {
+  $columns[] = ['data' => 'parents.fathers_name', 'name' => 'parents.fathers_name'];
+}
+$columns[] = ['data' => 'dob', 'name' => 'dob'];
+if (moduleStatusCheck('University')) {
+  $columns[] = ['data' => 'semester_label', 'name' => 'semester_label'];
+  $columns[] = ['data' => 'class_sec', 'name' => 'class_sec'];
+} else {
+  $columns[] = ['data' => 'class_sec', 'name' => 'class_sec'];
+}
+$columns[] = ['data' => 'gender.base_setup_name', 'name' => 'gender.base_setup_name'];
+$columns[] = ['data' => 'category.category_name', 'name' => 'category.category_name'];
+$columns[] = ['data' => 'mobile', 'name' => 'sm_students.mobile'];
+$columns[] = ['data' => 'action', 'name' => 'action', 'orderable' => false, 'searchable' => false];
+$columns[] = ['data' => 'first_name', 'name' => 'first_name', 'visible' => false];
+$columns[] = ['data' => 'last_name', 'name' => 'last_name', 'visible' => false];
+@endphp
+
 $(document).ready(function() {
   $('.data-table').DataTable({
     processing: true,
@@ -269,63 +292,7 @@ $(document).ready(function() {
       },
       pages: "{{ generalSetting()->ss_page_load }}" // number of pages to cache
     }),
-    columns: [{
-        data: 'admission_no',
-        name: 'admission_no'
-      },
-      {
-        data: 'full_name',
-        name: 'full_name'
-      },
-      @if(!moduleStatusCheck('University') && generalSetting() - > with_guardian) {
-        data: 'parents.fathers_name',
-        name: 'parents.fathers_name'
-      },
-      @endif {
-        data: 'dob',
-        name: 'dob'
-      },
-      @if(moduleStatusCheck('University')) {
-        data: 'semester_label',
-        name: 'semester_label'
-      },
-      {
-        data: 'class_sec',
-        name: 'class_sec'
-      },
-      @else {
-        data: 'class_sec',
-        name: 'class_sec'
-      },
-      @endif {
-        data: 'gender.base_setup_name',
-        name: 'gender.base_setup_name'
-      },
-      {
-        data: 'category.category_name',
-        name: 'category.category_name'
-      },
-      {
-        data: 'mobile',
-        name: 'sm_students.mobile'
-      },
-      {
-        data: 'action',
-        name: 'action',
-        orderable: false,
-        searchable: false
-      },
-      {
-        data: 'first_name',
-        name: 'first_name',
-        visible: false
-      },
-      {
-        data: 'last_name',
-        name: 'last_name',
-        visible: false
-      },
-    ],
+    columns: @json($columns),
     bLengthChange: false,
     bDestroy: true,
     language: {
