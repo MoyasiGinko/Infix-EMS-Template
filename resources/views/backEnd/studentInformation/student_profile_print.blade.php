@@ -337,9 +337,7 @@ $parents = @$student_detail->parents;
 
     </div>
     <div class="code-item">
-      @if(isset($student_detail->section) && $student_detail->section)
-      <strong>Section: {{ $student_detail->section->section_name ?? $student_detail->section->name ?? '' }}</strong><br>
-      @endif
+      <strong>Contact: {{ @$student_detail->mobile }}</strong>
       Application Date:
       {{ @$student_detail->admission_date ? dateConvert(@$student_detail->admission_date) : '' }}
     </div>
