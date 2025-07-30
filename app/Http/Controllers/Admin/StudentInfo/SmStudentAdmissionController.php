@@ -548,12 +548,23 @@ class SmStudentAdmissionController extends Controller
             return redirect()->back();
 
         } catch (Exception $exception) {
-           
+
             DB::rollback();
              dd($exception);
             Toastr::error('Operation Failed', 'Failed');
             return redirect()->back();
         }
+    }
+
+        /**
+     * Show a printable student profile for the given student.
+     */
+    public function studentProfilePrint($id)
+    {
+        $student_detail = \App\SmStudent::with([
+            'class', 'section', 'parents', 'gender', 'bloodGroup', 'religion', 'category', 'studentType', 'session', 'documents'
+        ])->findOrFail($id);
+        return view('backEnd.studentInformation.student_profile_print', compact('student_detail'));
     }
 
     public function edit(Request $request, $id)
@@ -860,7 +871,7 @@ class SmStudentAdmissionController extends Controller
 
     public function view(Request $request, $id, $type = null)
     {
-        
+
         /*
         try {
         */
@@ -953,7 +964,7 @@ class SmStudentAdmissionController extends Controller
                 $student_id = $student_detail->id;
                 $studentDetails = SmStudent::find($student_id);
                 $studentRecordDetails = StudentRecord::where('student_id', $student_id);
-                $studentRecords = StudentRecord::where('student_id', $student_id)->distinct('un_academic_id')->get();                
+                $studentRecords = StudentRecord::where('student_id', $student_id)->distinct('un_academic_id')->get();
                 return view('backEnd.studentInformation.student_view', compact('timelines', 'student_detail', 'driver_info', 'exams', 'siblings', 'grades', 'academic_year', 'exam_terms', 'max_gpa', 'fail_gpa_name', 'custom_field_values', 'sessions', 'records', 'next_labels', 'type', 'studentRecordDetails', 'studentDetails', 'studentRecords', 'result_setting', 'assinged_exam_types', 'studentBehaviourRecords', 'behaviourRecordSetting'));
             } else {
                 return view('backEnd.studentInformation.student_view', compact('timelines', 'student_detail', 'driver_info', 'exams', 'siblings', 'grades', 'academic_year', 'exam_terms', 'max_gpa', 'fail_gpa_name', 'custom_field_values', 'sessions', 'records', 'next_labels', 'type', 'result_setting', 'attendance', 'subjectAttendance', 'days', 'year', 'month', 'studentBehaviourRecords', 'behaviourRecordSetting'));
@@ -1442,7 +1453,7 @@ class SmStudentAdmissionController extends Controller
                 ->first();
             $type = $request->type ? 'delete' : 'disable';
 
-            
+
             // code...
 
             if ($record && $type == 'delete') {

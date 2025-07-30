@@ -1,3 +1,5 @@
+// Student Profile Print Route
+Route::get('student-profile-print/{id}', 'Admin\\StudentInfo\\SmStudentAdmissionController@studentProfilePrint')->name('student_profile_print');
 <?php
 
 use App\Http\Controllers\Theme\Edulia\FrontendController;
