@@ -589,10 +589,10 @@ $parents = @$student_detail->parents;
   <button class="primary-btn fix-gr-bg" onclick="window.print()">
     <i class="ti-printer pr-2"></i> @lang('common.print')
   </button>
-  <a href="{{ route('student_profile_print', [$student_detail->id]) }}?pdf=1" class="primary-btn fix-gr-bg"
+  <!-- <a href="{{ route('student_profile_print', [$student_detail->id]) }}?pdf=1" class="primary-btn fix-gr-bg"
     target="_blank">
     <i class="ti-download pr-2"></i> @lang('common.download_pdf')
-  </a>
+  </a> -->
 </div>
 
 @endsection
