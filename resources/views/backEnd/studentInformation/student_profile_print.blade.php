@@ -222,10 +222,6 @@
         <th>@lang('student.category')</th>
         <td>{{ @$student_detail->category ? @$student_detail->category->category_name : '-' }}</td>
       </tr>
-      <tr>
-        <th>@lang('student.type')</th>
-        <td>{{ @$student_detail->studentType ? @$student_detail->studentType->base_setup_name : '-' }}</td>
-      </tr>
     </table>
   </div>
 
