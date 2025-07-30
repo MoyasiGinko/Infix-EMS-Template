@@ -25,12 +25,46 @@
   margin-bottom: 30px;
 }
 
-.profile-header .profile-photo {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+.profile-header .school-logo {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
   overflow: hidden;
   margin-right: 30px;
+  background: #f7f7f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-header .school-logo img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.profile-header .header-info {
+  flex: 1;
+}
+
+.profile-header .header-info h1 {
+  margin: 0 0 8px 0;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary-color, #4e73df);
+}
+
+.profile-header .header-info p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.profile-header .profile-photo {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-left: 30px;
   border: 3px solid var(--primary-color, #4e73df);
   background: #f7f7f7;
 }
@@ -39,19 +73,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.profile-header .profile-info h2 {
-  margin: 0 0 8px 0;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--primary-color, #4e73df);
-}
-
-.profile-header .profile-info p {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #666;
 }
 
 .profile-section {
@@ -84,7 +105,7 @@
   background: #f8f9fa;
   color: #333;
   font-weight: 600;
-  width: 200px;
+  width: 220px;
 }
 
 .profile-table tr:last-child td {
@@ -112,31 +133,59 @@
   }
 }
 </style>
+@php
+$setting = app('school_info');
+$school_name = $setting->school_name ?? config('app.name', 'School');
+$school_logo = $setting->logo ? asset($setting->logo) : asset('public/backEnd/img/logo.png');
+$currency = $setting->currency_symbol ?? '$';
+$parents = @$student_detail->parents;
+@endphp
 <div class="profile-print-container">
   <div class="profile-header">
+    <div class="school-logo">
+      <img src="{{ $school_logo }}" alt="{{ $school_name }}">
+    </div>
+    <div class="header-info">
+      <h1>{{ $school_name }}</h1>
+      <p>@lang('student.student_profile_form')</p>
+    </div>
     <div class="profile-photo">
       <img
         src="{{ file_exists(@$student_detail->student_photo) ? asset(@$student_detail->student_photo) : asset('public/backEnd/img/student/default.png') }}"
         alt="{{ @$student_detail->full_name }}">
     </div>
-    <div class="profile-info">
-      <h2>{{ @$student_detail->full_name }}</h2>
-      <p>@lang('student.class'): {{ @$student_detail->class->class_name ?? '-' }}
-        @if(@$student_detail->section)
-        | @lang('student.section'): {{ @$student_detail->section->section_name }}
-        @endif
-      </p>
-      <p>@lang('student.admission_no'): {{ @$student_detail->admission_no ?? '-' }}</p>
-      <p>@lang('student.roll_number'): {{ @$student_detail->roll_no ?? '-' }}</p>
-    </div>
   </div>
 
   <div class="profile-section">
-    <h3>@lang('student.personal_information')</h3>
+    <h3>1. @lang('student.student_information')</h3>
     <table class="profile-table">
       <tr>
         <th>@lang('common.name')</th>
         <td>{{ @$student_detail->full_name }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.admission_no')</th>
+        <td>{{ @$student_detail->admission_no ?? '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.roll_number')</th>
+        <td>{{ @$student_detail->roll_no ?? '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.class')</th>
+        <td>{{ @$student_detail->class->class_name ?? '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.section')</th>
+        <td>{{ @$student_detail->section->section_name ?? '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.session')</th>
+        <td>{{ @$student_detail->session ? @$student_detail->session->year : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.category')</th>
+        <td>{{ @$student_detail->category ? @$student_detail->category->category_name : '-' }}</td>
       </tr>
       <tr>
         <th>@lang('student.date_of_birth')</th>
@@ -154,6 +203,102 @@
         <th>@lang('student.religion')</th>
         <td>{{ @$student_detail->religion ? @$student_detail->religion->base_setup_name : '-' }}</td>
       </tr>
+    </table>
+  </div>
+
+  <div class="profile-section">
+    <h3>2. @lang('student.father_information')</h3>
+    <table class="profile-table">
+      <tr>
+        <th>@lang('student.father_name')</th>
+        <td>{{ $parents ? $parents->fathers_name : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.father_phone')</th>
+        <td>{{ $parents ? $parents->fathers_mobile : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.father_email')</th>
+        <td>{{ $parents ? $parents->fathers_email : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.father_occupation')</th>
+        <td>{{ $parents ? $parents->fathers_occupation : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.father_nid')</th>
+        <td>{{ $parents ? $parents->fathers_nid : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.father_address')</th>
+        <td>{{ $parents ? $parents->fathers_address : '-' }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="profile-section">
+    <h3>3. @lang('student.mother_information')</h3>
+    <table class="profile-table">
+      <tr>
+        <th>@lang('student.mother_name')</th>
+        <td>{{ $parents ? $parents->mothers_name : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.mother_phone')</th>
+        <td>{{ $parents ? $parents->mothers_mobile : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.mother_email')</th>
+        <td>{{ $parents ? $parents->mothers_email : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.mother_occupation')</th>
+        <td>{{ $parents ? $parents->mothers_occupation : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.mother_nid')</th>
+        <td>{{ $parents ? $parents->mothers_nid : '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.mother_address')</th>
+        <td>{{ $parents ? $parents->mothers_address : '-' }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="profile-section">
+    <h3>4. @lang('student.address_information')</h3>
+    <table class="profile-table">
+      <tr>
+        <th>@lang('student.current_address')</th>
+        <td>{{ @$student_detail->current_address ?? '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.permanent_address')</th>
+        <td>{{ @$student_detail->permanent_address ?? '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.national_id_number')</th>
+        <td>{{ @$student_detail->national_id_no ?? '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.local_id_number')</th>
+        <td>{{ @$student_detail->local_id_no ?? '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.bank_account_number')</th>
+        <td>{{ @$student_detail->bank_account_no ?? '-' }}</td>
+      </tr>
+      <tr>
+        <th>@lang('student.bank_name')</th>
+        <td>{{ @$student_detail->bank_name ?? '-' }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="profile-section">
+    <h3>5. @lang('student.contact_information')</h3>
+    <table class="profile-table">
       <tr>
         <th>@lang('student.email')</th>
         <td>{{ @$student_detail->email ?? '-' }}</td>
@@ -162,72 +307,6 @@
         <th>@lang('student.phone_number')</th>
         <td>{{ @$student_detail->mobile ?? '-' }}</td>
       </tr>
-      <tr>
-        <th>@lang('student.address')</th>
-        <td>{{ @$student_detail->current_address ?? '-' }}</td>
-      </tr>
-    </table>
-  </div>
-
-  <div class="profile-section">
-    <h3>@lang('student.guardian_information')</h3>
-    <table class="profile-table">
-      <tr>
-        <th>@lang('student.guardian_name')</th>
-        <td>{{ @$student_detail->parents ? @$student_detail->parents->guardians_name : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.guardian_phone')</th>
-        <td>{{ @$student_detail->parents ? @$student_detail->parents->guardians_mobile : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.guardian_email')</th>
-        <td>{{ @$student_detail->parents ? @$student_detail->parents->guardians_email : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.guardian_occupation')</th>
-        <td>{{ @$student_detail->parents ? @$student_detail->parents->guardians_occupation : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.guardian_address')</th>
-        <td>{{ @$student_detail->parents ? @$student_detail->parents->guardians_address : '-' }}</td>
-      </tr>
-    </table>
-  </div>
-
-  <div class="profile-section">
-    <h3>@lang('student.academic_information')</h3>
-    <table class="profile-table">
-      <tr>
-        <th>@lang('student.class')</th>
-        <td>{{ @$student_detail->class->class_name ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.section')</th>
-        <td>{{ @$student_detail->section->section_name ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.admission_no')</th>
-        <td>{{ @$student_detail->admission_no ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.roll_number')</th>
-        <td>{{ @$student_detail->roll_no ?? '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.session')</th>
-        <td>{{ @$student_detail->session ? @$student_detail->session->year : '-' }}</td>
-      </tr>
-      <tr>
-        <th>@lang('student.category')</th>
-        <td>{{ @$student_detail->category ? @$student_detail->category->category_name : '-' }}</td>
-      </tr>
-    </table>
-  </div>
-
-  <div class="profile-section">
-    <h3>@lang('student.emergency_contact')</h3>
-    <table class="profile-table">
       <tr>
         <th>@lang('student.emergency_contact_name')</th>
         <td>{{ @$student_detail->emergency_contact_name ?? '-' }}</td>
@@ -253,8 +332,8 @@
         </tr>
       </thead>
       <tbody>
-        @if(isset($student_detail->documents) && count($student_detail->documents))
-        @foreach($student_detail->documents as $doc)
+        @if(isset($student_detail->studentDocument) && count($student_detail->studentDocument))
+        @foreach($student_detail->studentDocument as $doc)
         <tr>
           <td>{{ $doc->title }}</td>
           <td>
