@@ -194,7 +194,7 @@ class DatatableQueryController extends Controller
                             '<a onclick="deleteId(' . $row->id . ');" class="dropdown-item" href="#" data-toggle="modal" data-target="#deleteStudentModal" data-id="' . $row->id . '"  >' . app('translator')->get('common.disable') . '</a>') : '') .
 
                         // Download Form PDF
-                        '<a class="dropdown-item" target="_blank" href="' . route('student_profile_print', [$row->id]) . '?pdf=1">' . app('translator')->get('common.download_form', [], 'en') . '</a>' .
+                        '<a class="dropdown-item" target="_blank" href="' . route('student_profile_print', [$row->id]) . '?pdf=1">Download Form</a>' .
 
                         '</div>
                                 </div>';

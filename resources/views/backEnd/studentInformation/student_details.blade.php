@@ -269,7 +269,8 @@ $(document).ready(function() {
       },
       pages: "{{ generalSetting()->ss_page_load }}" // number of pages to cache
     }),
-    columns: [{
+    columns: [
+      {
         data: 'admission_no',
         name: 'admission_no'
       },
@@ -277,26 +278,32 @@ $(document).ready(function() {
         data: 'full_name',
         name: 'full_name'
       },
-      @if(!moduleStatusCheck('University') && generalSetting() - > with_guardian) {
+@if(!moduleStatusCheck('University') && generalSetting()->with_guardian)
+      {
         data: 'parents.fathers_name',
         name: 'parents.fathers_name'
       },
-      @endif {
+@endif
+      {
         data: 'dob',
         name: 'dob'
       },
-      @if(moduleStatusCheck('University')) {
+@if(moduleStatusCheck('University'))
+      {
         data: 'semester_label',
         name: 'semester_label'
-      }, {
+      },
+      {
         data: 'class_sec',
         name: 'class_sec'
       },
-      @else {
+@else
+      {
         data: 'class_sec',
         name: 'class_sec'
       },
-      @endif {
+@endif
+      {
         data: 'gender.base_setup_name',
         name: 'gender.base_setup_name'
       },
