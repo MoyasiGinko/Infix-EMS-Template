@@ -157,7 +157,7 @@ $(document).ready(function() {
     bDestroy: true,
     language: {
       search: "<i class='ti-search'></i>",
-      searchPlaceholder: "Quick Search Now",
+      searchPlaceholder: "Quick Search",
       paginate: {
         next: "<i class='ti-arrow-right'></i>",
         previous: "<i class='ti-arrow-left'></i>",
