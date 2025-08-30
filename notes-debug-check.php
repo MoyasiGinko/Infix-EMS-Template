@@ -258,9 +258,57 @@ try {
             echo "<p>Notes parent logic seems OK...</p>";
         }
 
-        echo "<h4>SOLUTION OPTIONS:</h4>";
-        echo "<p><strong>Option 1 (Recommended):</strong> Set Notes parent to NULL to make it a standalone menu item</p>";
-        echo "<p><strong>Option 2:</strong> Make sure Notes parent is also inactive (active_status=0)</p>";
+        echo "<h4>DEEPER ANALYSIS - Why Notes is being filtered:</h4>";
+
+        // Notes is a section (permission_id=1847 is in section_ids)
+        echo "<p>✅ Notes (1847) IS a section (parent=null)</p>";
+
+        // Step 2: Look for items that have Notes as parent and are inactive
+        $itemsWithNotesAsParent = DB::table('sidebars')
+            ->where('parent', 1847)  // Items that have Notes as parent
+            ->where('role_id', 1)
+            ->where('active_status', 0)
+            ->whereNull('user_id')
+            ->pluck('permission_id')
+            ->toArray();
+        echo "<p>Items with Notes as parent (inactive): " . json_encode($itemsWithNotesAsParent) . "</p>";
+
+        // Step 3: The issue - Notes itself is a section, not an item with a parent
+        echo "<p><strong>THE PROBLEM:</strong></p>";
+        echo "<p>- Notes (1847) is treated as a SECTION because its parent=null</p>";
+        echo "<p>- The controller looks for ITEMS that have parents in sections</p>";
+        echo "<p>- But Notes itself (as a section) doesn't get included in the final result!</p>";
+
+        echo "<h4>SOLUTION: Make Notes an ITEM, not a SECTION</h4>";
+        echo "<p>We need to give Notes a parent so it becomes an item under a section</p>";
+
+        // Find a good parent section for Notes
+        $activeSections = DB::table('sidebars')
+            ->join('permissions', 'sidebars.permission_id', '=', 'permissions.id')
+            ->where('sidebars.role_id', 1)
+            ->where('sidebars.active_status', 1)
+            ->whereNull('sidebars.parent')
+            ->whereNull('sidebars.user_id')
+            ->select('sidebars.permission_id', 'permissions.name', 'permissions.lang_name')
+            ->get();
+
+        echo "<p><strong>Available sections Notes could be placed under:</strong></p>";
+        foreach ($activeSections->take(5) as $section) {
+            echo "<p>- {$section->lang_name} (permission_id: {$section->permission_id})</p>";
+        }
+
+        echo "</div>";
+
+        echo "<div class='section'>";
+        echo "<h2>8. RECOMMENDED FIX</h2>";
+        echo "<p class='found'><strong>SOLUTION: Place Notes under a relevant section</strong></p>";
+        echo "<p>Instead of making Notes a top-level section, place it under an existing section like:</p>";
+        echo "<ul>";
+        echo "<li><strong>Academic</strong> section (if exists)</li>";
+        echo "<li><strong>Student</strong> section (if exists)</li>";
+        echo "<li><strong>Reports</strong> section (if exists)</li>";
+        echo "</ul>";
+        echo "<p>This will make Notes appear in the Available Menu Items as an item under that section.</p>";
     }
 
     echo "</div>";
