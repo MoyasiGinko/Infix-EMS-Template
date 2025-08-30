@@ -483,7 +483,7 @@ if(!function_exists('getUnusedMenus'))
                 )
                 ->orderBy('sidebars.position')
                 ->get()
-                ->map(function($row){
+                ->map(function($row) use ($role_id){
                     $o = new \stdClass();
                     $o->id = (int) $row->permission_id; // unify id
                     $o->permission_id = (int) $row->permission_id;
@@ -494,6 +494,8 @@ if(!function_exists('getUnusedMenus'))
                     $o->parent = $row->parent; // legacy structure
                     $o->parent_id = $row->parent_id; // structural hint
                     $o->position = $row->position;
+                    // Important: preserve role so orderMenu() stores correct role_id instead of defaulting to 1
+                    $o->role_id = $role_id;
                     $o->deActiveChild = collect();
                     return $o;
                 });

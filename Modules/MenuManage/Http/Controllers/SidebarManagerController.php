@@ -398,6 +398,8 @@ class SidebarManagerController extends Controller
                 $obj->module = $sb->module;
                 $obj->route = $sb->route;
                 $obj->position = $sb->position;
+                // Critical so new SmMenu rows inherit correct role when dragged from unused -> used
+                $obj->role_id = $role_id;
                 // Provide empty collection for deActiveChild relationship usage in view
                 $obj->deActiveChild = collect();
                 $unused_menus[] = $obj;
