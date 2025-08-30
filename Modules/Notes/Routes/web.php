@@ -104,6 +104,127 @@ Route::get('notes-final-fix', function () {
     return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
 });
 
+// Notes DEBUG UNUSED MENU - Check what Sidebar Manager unused menu query returns
+Route::get('notes-debug-unused-menu', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        try {
+            $html = "<h1>Debug Unused Menu Query for Staff Role</h1>";
+
+            $role_id = 1; // Staff role
+
+            // Check if there's sidebar data for this role (we know there is now)
+            $hasSidebarData = DB::table('sidebars')->where('role_id', $role_id)->whereNull('user_id')->exists();
+            $html .= "<p><strong>Has sidebar data for role {$role_id}:</strong> " . ($hasSidebarData ? "Yes" : "No") . "</p>";
+
+            if ($hasSidebarData) {
+                $html .= "<p>Since sidebar data exists, using the existing sidebar logic...</p>";
+
+                // This is the logic when sidebar data exists - let's replicate it
+                // First get permissions that are assigned but not in sidebar
+                $assignedPermissions = DB::table('assign_permissions')
+                    ->where('role_id', $role_id)
+                    ->where('status', 1)
+                    ->where('menu_status', 1)
+                    ->pluck('permission_id')
+                    ->toArray();
+
+                $html .= "<p><strong>Assigned permissions count:</strong> " . count($assignedPermissions) . "</p>";
+
+                // Check if our Notes permission is in assigned permissions
+                $notesPermission = DB::table('permissions')->where('route', 'notes.index')->first();
+                $isNotesAssigned = in_array($notesPermission->id, $assignedPermissions);
+                $html .= "<p><strong>Is Notes in assigned permissions:</strong> " . ($isNotesAssigned ? "Yes" : "No") . "</p>";
+
+                // Get sidebar permissions that are already used
+                $sidebarPermissions = DB::table('sidebars')
+                    ->where('role_id', $role_id)
+                    ->whereNull('user_id')
+                    ->pluck('permission_id')
+                    ->toArray();
+
+                $html .= "<p><strong>Sidebar permissions count:</strong> " . count($sidebarPermissions) . "</p>";
+
+                // Check if our Notes permission is in sidebar
+                $isNotesInSidebar = in_array($notesPermission->id, $sidebarPermissions);
+                $html .= "<p><strong>Is Notes in sidebar:</strong> " . ($isNotesInSidebar ? "Yes" : "No") . "</p>";
+
+                // The unused permissions should be: assigned but not in sidebar, OR in sidebar but inactive
+                $unusedFromAssigned = array_diff($assignedPermissions, $sidebarPermissions);
+                $inactiveInSidebar = DB::table('sidebars')
+                    ->where('role_id', $role_id)
+                    ->where('active_status', 0)
+                    ->whereNull('user_id')
+                    ->pluck('permission_id')
+                    ->toArray();
+
+                $html .= "<p><strong>Unused from assigned:</strong> " . count($unusedFromAssigned) . " permissions</p>";
+                $html .= "<p><strong>Inactive in sidebar:</strong> " . count($inactiveInSidebar) . " permissions</p>";
+
+                // Check if Notes is in inactive sidebar
+                $isNotesInactive = in_array($notesPermission->id, $inactiveInSidebar);
+                $html .= "<p><strong>Is Notes in inactive sidebar:</strong> " . ($isNotesInactive ? "✅ Yes - Should appear as unused!" : "❌ No - This is the problem!") . "</p>";
+
+                if (!$isNotesInactive) {
+                    // Check the exact sidebar record
+                    $notesSidebarRecord = DB::table('sidebars')
+                        ->where('permission_id', $notesPermission->id)
+                        ->where('role_id', $role_id)
+                        ->first();
+
+                    if ($notesSidebarRecord) {
+                        $html .= "<h2>Notes Sidebar Record Details:</h2>";
+                        $html .= "<pre>" . json_encode($notesSidebarRecord, JSON_PRETTY_PRINT) . "</pre>";
+
+                        if ($notesSidebarRecord->active_status != 0) {
+                            $html .= "<p>❌ <strong>PROBLEM FOUND:</strong> active_status is {$notesSidebarRecord->active_status}, should be 0 for unused menu!</p>";
+                        }
+
+                        if ($notesSidebarRecord->user_id !== null) {
+                            $html .= "<p>❌ <strong>PROBLEM FOUND:</strong> user_id is {$notesSidebarRecord->user_id}, should be NULL for role-level menu!</p>";
+                        }
+                    } else {
+                        $html .= "<p>❌ <strong>PROBLEM:</strong> No sidebar record found for Notes permission!</p>";
+                    }
+                }
+
+                // Show what the actual unused menu query would return
+                $actualUnusedQuery = DB::table('sidebars')
+                    ->join('permissions', 'sidebars.permission_id', '=', 'permissions.id')
+                    ->where('sidebars.role_id', $role_id)
+                    ->where('sidebars.active_status', 0)
+                    ->whereNull('sidebars.user_id')
+                    ->where('permissions.status', 1)
+                    ->where('permissions.menu_status', 1)
+                    ->select('permissions.name', 'permissions.route', 'permissions.lang_name', 'sidebars.id as sidebar_id')
+                    ->get();
+
+                $html .= "<h2>Actual Unused Menu Results:</h2>";
+                $html .= "<p><strong>Count:</strong> " . count($actualUnusedQuery) . "</p>";
+
+                $notesInResults = $actualUnusedQuery->where('route', 'notes.index')->first();
+                if ($notesInResults) {
+                    $html .= "<p>✅ <strong>Notes found in unused menu results!</strong></p>";
+                    $html .= "<pre>" . json_encode($notesInResults, JSON_PRETTY_PRINT) . "</pre>";
+                } else {
+                    $html .= "<p>❌ <strong>Notes NOT found in unused menu results</strong></p>";
+                }
+
+                // Show first few results for comparison
+                $html .= "<h3>Sample unused menu items:</h3>";
+                foreach ($actualUnusedQuery->take(5) as $item) {
+                    $html .= "<p>• <strong>{$item->name}</strong> (route: {$item->route})</p>";
+                }
+            }
+
+            return $html;
+
+        } catch (\Exception $e) {
+            return "<h1>❌ ERROR!</h1><p>Debug failed: " . $e->getMessage() . "</p>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
 // Notes ADD TO SIDEBAR FIXED - Add Notes using correct sidebars table structure
 Route::get('notes-add-to-sidebar-fixed', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
