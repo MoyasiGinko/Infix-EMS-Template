@@ -5,6 +5,158 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+// Notes PROPER DIAGNOSIS - Find the exact issue
+Route::get('notes-diagnose-issue', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        $html = "<h1>Notes Permission Insertion Diagnosis</h1>";
+
+        try {
+            // Step 1: Check permissions table structure
+            $html .= "<h2>Step 1: Permissions Table Structure</h2>";
+            $columns = DB::select("DESCRIBE permissions");
+            $columnNames = array_map(function($col) { return $col->Field; }, $columns);
+            $html .= "<p>Available columns: " . implode(', ', $columnNames) . "</p>";
+
+            // Step 2: Check what we're trying to insert vs what exists
+            $html .= "<h2>Step 2: Data Validation</h2>";
+            $permission = [
+                'name' => 'notes_menu',
+                'route' => 'notes.index',
+                'status' => 1,
+                'menu_status' => 1,
+                'position' => 500,
+                'is_saas' => 0,
+                'relate_to_child' => 0,
+                'is_menu' => 1,
+                'is_admin' => 1,
+                'is_teacher' => 1,
+                'is_student' => 0,
+                'is_parent' => 0,
+                'type' => 1,
+                'permission_section' => 0,
+                'lang_name' => 'Notes',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $insertingColumns = array_keys($permission);
+            $missingColumns = array_diff($insertingColumns, $columnNames);
+            $extraColumns = array_diff($columnNames, $insertingColumns);
+
+            if (!empty($missingColumns)) {
+                $html .= "<p>❌ Columns we're trying to insert that don't exist: " . implode(', ', $missingColumns) . "</p>";
+            }
+
+            $html .= "<p>Columns we're NOT inserting: " . implode(', ', $extraColumns) . "</p>";
+
+            // Step 3: Check for existing duplicate
+            $html .= "<h2>Step 3: Duplicate Check</h2>";
+            $existingByName = DB::table('permissions')->where('name', 'notes_menu')->first();
+            $existingByRoute = DB::table('permissions')->where('route', 'notes.index')->first();
+
+            $html .= "<p>Existing by name: " . ($existingByName ? "❌ Found (ID: {$existingByName->id})" : "✅ None") . "</p>";
+            $html .= "<p>Existing by route: " . ($existingByRoute ? "❌ Found (ID: {$existingByRoute->id})" : "✅ None") . "</p>";
+
+            // Step 4: Test actual insertion with proper error handling
+            $html .= "<h2>Step 4: Test Insertion</h2>";
+
+            if (!$existingByRoute) {
+                // Remove any columns that don't exist in the table
+                $filteredPermission = array_intersect_key($permission, array_flip($columnNames));
+                $html .= "<p>Filtered data for insertion:</p><pre>" . json_encode($filteredPermission, JSON_PRETTY_PRINT) . "</pre>";
+
+                // Try the insertion
+                DB::beginTransaction();
+                try {
+                    $permissionId = DB::table('permissions')->insertGetId($filteredPermission);
+                    DB::rollback(); // Don't actually save, just test
+                    $html .= "<p>✅ Test insertion successful! Would create ID: {$permissionId}</p>";
+                } catch (\Exception $e) {
+                    DB::rollback();
+                    $html .= "<p>❌ Test insertion failed: " . $e->getMessage() . "</p>";
+                }
+            } else {
+                $html .= "<p>⚠️ Cannot test insertion - duplicate exists</p>";
+            }
+
+            // Step 5: Check seeder class exists and is valid
+            $html .= "<h2>Step 5: Seeder Class Check</h2>";
+            $seederPath = app_path('../Modules/Notes/Database/Seeders/NotesPermissionSeeder.php');
+            $html .= "<p>Seeder file exists: " . (file_exists($seederPath) ? "✅ Yes" : "❌ No") . "</p>";
+
+            if (file_exists($seederPath)) {
+                $html .= "<p>Seeder path: {$seederPath}</p>";
+            }
+
+            return $html;
+
+        } catch (\Exception $e) {
+            return $html . "<h2>❌ DIAGNOSIS ERROR</h2><p>" . $e->getMessage() . "</p><pre>" . $e->getTraceAsString() . "</pre>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
+// Notes FORCE INSERT - Guaranteed database insertion
+Route::get('notes-force-insert', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        try {
+            // First, delete any existing Notes permission to avoid conflicts
+            $existingPermission = DB::table('permissions')->where('route', 'notes.index')->first();
+            if ($existingPermission) {
+                DB::table('role_has_permissions')->where('permission_id', $existingPermission->id)->delete();
+                DB::table('permissions')->where('id', $existingPermission->id)->delete();
+            }
+
+            // Force insert with raw SQL to ensure it works
+            $permissionId = DB::table('permissions')->insertGetId([
+                'name' => 'notes_menu',
+                'route' => 'notes.index',
+                'status' => 1,
+                'menu_status' => 1,
+                'position' => 500,
+                'is_saas' => 0,
+                'relate_to_child' => 0,
+                'is_menu' => 1,
+                'is_admin' => 1,
+                'is_teacher' => 1,
+                'is_student' => 0,
+                'is_parent' => 0,
+                'type' => 1,
+                'permission_section' => 0,
+                'lang_name' => 'Notes',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Force assign to Super Admin role
+            DB::table('role_has_permissions')->insert([
+                'role_id' => 1,
+                'permission_id' => $permissionId,
+            ]);
+
+            // Verify insertion
+            $inserted = DB::table('permissions')->where('id', $permissionId)->first();
+            $roleAssigned = DB::table('role_has_permissions')->where('permission_id', $permissionId)->first();
+
+            $html = "<h1>✅ FORCE INSERT COMPLETED!</h1>";
+            $html .= "<p><strong>Permission ID:</strong> {$permissionId}</p>";
+            $html .= "<p><strong>Verification:</strong></p>";
+            $html .= "<pre>Permission: " . ($inserted ? "✅ Found" : "❌ Not Found") . "</pre>";
+            $html .= "<pre>Role Assignment: " . ($roleAssigned ? "✅ Found" : "❌ Not Found") . "</pre>";
+            $html .= "<p><strong>Now check:</strong></p>";
+            $html .= "<p>• Role Permission: <a href='/rolepermission/assign-permission/2' target='_blank'>Check Role Permission</a></p>";
+            $html .= "<p>• Sidebar Manager: <a href='/menumanage' target='_blank'>Check Sidebar Manager</a></p>";
+
+            return $html;
+
+        } catch (\Exception $e) {
+            return "<h1>❌ ERROR!</h1><p>Force insert failed: " . $e->getMessage() . "</p><p>Stack trace:</p><pre>" . $e->getTraceAsString() . "</pre>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
 // Notes diagnostic route - Check database
 Route::get('notes-check-db', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
