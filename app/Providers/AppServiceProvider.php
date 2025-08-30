@@ -21,6 +21,8 @@ use Modules\RolePermission\Entities\AssignPermission;
 use Modules\RolePermission\Entities\InfixModuleInfo;
 use Modules\RolePermission\Entities\InfixRole;
 use Modules\RolePermission\Entities\Permission;
+use Spatie\Valuestore\Valuestore;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -147,6 +149,36 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('sidebar_news', function () {
             return Sidebar::get();
         });
+
+        // Fallback binding for general_settings to avoid: Target class [general_settings] does not exist.
+        // Normally SubdomainMiddleware binds this per request (scoped) after resolving SaasSchool().
+        // Some routes/views (e.g. error pages, early boots, CLI, or requests without that middleware)
+        // still reference app('general_settings'). Provide a safe minimal Valuestore.
+        if (! $this->app->bound('general_settings')) {
+            $this->app->scoped('general_settings', function () : Valuestore {
+                $prefix = 'default';
+                try {
+                    if (app()->bound('school') && ($school = app('school')) && isset($school->domain)) {
+                        $prefix = Str::lower(str_replace(' ', '_', $school->domain));
+                    }
+                } catch (\Throwable $e) {
+                    // ignore
+                }
+                $dir = storage_path('app/chat');
+                if (! is_dir($dir)) {
+                    @mkdir($dir, 0775, true);
+                }
+                $defaultFile = $dir.'/default_settings.json';
+                if (! file_exists($defaultFile)) {
+                    @file_put_contents($defaultFile, json_encode([], JSON_PRETTY_PRINT));
+                }
+                $target = $dir.'/'.$prefix.'_settings.json';
+                if (! file_exists($target)) {
+                    @copy($defaultFile, $target);
+                }
+                return Valuestore::make($target);
+            });
+        }
 
     }
 }
