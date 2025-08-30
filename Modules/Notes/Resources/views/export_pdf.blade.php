@@ -33,7 +33,7 @@
                 <td>{{ $note->tags }}</td>
                 <td>{{ $note->quantity }}</td>
                 <td>{{ $note->amount }}</td>
-                <td>{{ $note->created_by }}</td>
+                <td>{{ optional($note->user)->name }}</td>
                 <td>{{ $note->created_at }}</td>
             </tr>
             @endforeach

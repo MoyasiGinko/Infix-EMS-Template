@@ -3,6 +3,7 @@
 namespace Modules\Notes\Entities;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Note extends Model
 {
@@ -16,4 +17,9 @@ class Note extends Model
         'amount',
         'created_by',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

@@ -1406,6 +1406,8 @@ Route::get('notes-seed', function () {
 
 Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'notes', 'as' => 'notes.'], function () {
     Route::get('/', 'Modules\Notes\Http\Controllers\NoteController@index')->name('index');
+    // Super admin only: view all notes across users
+    Route::get('/all', 'Modules\Notes\Http\Controllers\NoteController@all')->name('all');
     Route::get('create', 'Modules\Notes\Http\Controllers\NoteController@create')->name('create');
     Route::post('/', 'Modules\Notes\Http\Controllers\NoteController@store')->name('store');
     Route::get('{note}', 'Modules\Notes\Http\Controllers\NoteController@show')->name('show');

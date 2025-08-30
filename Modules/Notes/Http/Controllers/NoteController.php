@@ -9,13 +9,30 @@ use Modules\Notes\Http\Requests\NoteRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class NoteController extends Controller
 {
     public function index()
     {
-        $notes = Note::latest()->paginate(20);
-        return view('notes::index', compact('notes'));
+        $query = Note::with('user')->latest();
+        $isSuperAdmin = Auth::check() && Auth::user()->role_id == 1;
+        if (! $isSuperAdmin) {
+            $query->where('created_by', Auth::id());
+        }
+    $notes = $query->paginate(20);
+    $showingAll = false; // for super admin toggle button state
+    return view('notes::index', compact('notes', 'isSuperAdmin', 'showingAll'));
+    }
+
+    // Super admin dedicated view to see all notes regardless of owner
+    public function all()
+    {
+        abort_unless(Auth::check() && Auth::user()->role_id == 1, 403);
+        $notes = Note::with('user')->latest()->paginate(50);
+    $isSuperAdmin = true;
+    $showingAll = true;
+    return view('notes::index', compact('notes', 'isSuperAdmin', 'showingAll'));
     }
 
     public function create()
@@ -26,6 +43,8 @@ class NoteController extends Controller
     {
         $data = $request->validated();
         $data['created_by'] = Auth::id();
+    // reference_id is optional and can map to a related entity (e.g. expense/income/event id) or external system id.
+    // Leave null if not linking to another record. You could later extend with polymorphic relation.
         Note::create($data);
         return redirect()->route('notes.index')->with('success', 'Note created successfully.');
     }
@@ -33,22 +52,36 @@ class NoteController extends Controller
 
     public function show(Note $note)
     {
+        // Authorization: non super admin can only view own note
+        if (Auth::user()->role_id != 1 && $note->created_by != Auth::id()) {
+            abort(403);
+        }
+        $note->loadMissing('user');
         return view('notes::show', compact('note'));
     }
 
     public function edit(Note $note)
     {
+        if (Auth::user()->role_id != 1 && $note->created_by != Auth::id()) {
+            abort(403);
+        }
         return view('notes::edit', compact('note'));
     }
 
     public function update(NoteRequest $request, Note $note)
     {
+        if (Auth::user()->role_id != 1 && $note->created_by != Auth::id()) {
+            abort(403);
+        }
         $note->update($request->validated());
         return redirect()->route('notes.index')->with('success', 'Note updated successfully.');
     }
 
     public function destroy(Note $note)
     {
+        if (Auth::user()->role_id != 1 && $note->created_by != Auth::id()) {
+            abort(403);
+        }
         $note->delete();
         return redirect()->route('notes.index')->with('success', 'Note deleted successfully.');
     }
@@ -56,32 +89,40 @@ class NoteController extends Controller
     // Category-specific methods
     public function expenses()
     {
-        $notes = Note::where('type', 'expense')->latest()->paginate(20);
+        $notes = Note::with('user')->where('type', 'expense')
+            ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
+            ->latest()->paginate(20);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Expense Notes');
     }
 
     public function incomes()
     {
-        $notes = Note::where('type', 'income')->latest()->paginate(20);
+        $notes = Note::with('user')->where('type', 'income')
+            ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
+            ->latest()->paginate(20);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Income Notes');
     }
 
     public function events()
     {
-        $notes = Note::where('type', 'event')->latest()->paginate(20);
+        $notes = Note::with('user')->where('type', 'event')
+            ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
+            ->latest()->paginate(20);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Event Notes');
     }
 
     public function incidents()
     {
-        $notes = Note::where('type', 'incident')->latest()->paginate(20);
+        $notes = Note::with('user')->where('type', 'incident')
+            ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
+            ->latest()->paginate(20);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Incident Notes');
     }
 
     // Placeholder for export methods (Excel/PDF)
     public function exportExcel(Request $request)
     {
-        $notes = Note::all();
+    $notes = Note::with('user')->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
         $exportData = $notes->map(function ($note) {
             return [
                 'Title' => $note->title,
@@ -91,7 +132,7 @@ class NoteController extends Controller
                 'Tags' => $note->tags,
                 'Quantity' => $note->quantity,
                 'Amount' => $note->amount,
-                'Created By' => $note->created_by,
+        'Created By' => optional($note->user)->name,
                 'Created At' => $note->created_at,
             ];
         });
@@ -100,7 +141,7 @@ class NoteController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $notes = Note::all();
+    $notes = Note::with('user')->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
         $pdf = Pdf::loadView('notes::export_pdf', compact('notes'));
         return $pdf->download('notes.pdf');
     }
