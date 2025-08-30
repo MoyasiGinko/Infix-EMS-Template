@@ -17,7 +17,7 @@ class NotesPermissionSeeder extends Seeder
         // Insert permissions for Notes module
         $permissions = [
             [
-                'name' => 'notes_view',
+                'name' => 'notes.menu',
                 'guard_name' => 'web',
                 'module' => 'Notes',
                 'route' => 'notes.index',
@@ -27,41 +27,41 @@ class NotesPermissionSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'notes_add',
+                'name' => 'notes.expense-list',
                 'guard_name' => 'web',
                 'module' => 'Notes',
-                'route' => 'notes.store',
-                'type' => 2,
+                'route' => 'notes.expenses.index',
+                'type' => 1,
                 'status' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'notes_edit',
+                'name' => 'notes.income-list',
                 'guard_name' => 'web',
                 'module' => 'Notes',
-                'route' => 'notes.edit',
-                'type' => 3,
+                'route' => 'notes.incomes.index',
+                'type' => 1,
                 'status' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'notes_delete',
+                'name' => 'notes.event-list',
                 'guard_name' => 'web',
                 'module' => 'Notes',
-                'route' => 'notes.destroy',
-                'type' => 4,
+                'route' => 'notes.events.index',
+                'type' => 1,
                 'status' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'notes_export',
+                'name' => 'notes.incident-list',
                 'guard_name' => 'web',
                 'module' => 'Notes',
-                'route' => 'notes.export.excel',
-                'type' => 5,
+                'route' => 'notes.incidents.index',
+                'type' => 1,
                 'status' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -76,9 +76,37 @@ class NotesPermissionSeeder extends Seeder
             }
         }
 
+        // Insert menu entries
+        $menus = [
+            [
+                'name' => 'Notes',
+                'module' => 'Notes',
+                'route' => 'notes.index',
+                'lang_name' => 'Notes',
+                'icon' => 'fas fa-sticky-note',
+                'status' => 1,
+                'menu_status' => 1,
+                'position' => 999,
+                'default_position' => 999,
+                'parent' => null,
+                'parent_id' => null,
+                'permission_section' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        foreach ($menus as $menu) {
+            // Check if menu already exists
+            $exists = DB::table('sm_menus')->where('name', $menu['name'])->where('module', $menu['module'])->exists();
+            if (!$exists) {
+                DB::table('sm_menus')->insert($menu);
+            }
+        }
+
         // Assign permissions to Super Admin role (role_id = 1)
         $permissionIds = DB::table('permissions')
-            ->whereIn('name', ['notes_view', 'notes_add', 'notes_edit', 'notes_delete', 'notes_export'])
+            ->whereIn('name', ['notes.menu', 'notes.expense-list', 'notes.income-list', 'notes.event-list', 'notes.incident-list'])
             ->pluck('id');
 
         foreach ($permissionIds as $permissionId) {
