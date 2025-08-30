@@ -106,4 +106,4 @@
     @endif
 
 @endforeach
-@includeIf('notes::menu.sidebar')
+{{-- Removed hardcoded Notes menu include: now managed entirely by Sidebar Manager (sm_menus). --}}
