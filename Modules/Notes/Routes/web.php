@@ -104,6 +104,75 @@ Route::get('notes-final-fix', function () {
     return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
 });
 
+// Notes SIDEBAR MANAGER DEBUG - Check what SidebarManager sees
+Route::get('notes-sidebar-debug', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        try {
+            $html = "<h1>Sidebar Manager Debug for Staff Role (role_id = 1)</h1>";
+
+            // Simulate the exact query that SidebarManagerController does for Staff role
+            $role_id = 1; // Staff role
+
+            // Check if there's sidebar data for this role
+            $hasSidebarData = DB::table('sidebars')->where('role_id', $role_id)->whereNull('user_id')->exists();
+            $html .= "<p><strong>Has sidebar data for role {$role_id}:</strong> " . ($hasSidebarData ? "Yes" : "No") . "</p>";
+
+            if (!$hasSidebarData) {
+                $html .= "<p>Since no sidebar data exists, querying all available permissions...</p>";
+
+                // This is the exact query from SidebarManagerController
+                $allPermissions = DB::table('permissions')
+                    ->where('status', 1)
+                    ->where('menu_status', 1)
+                    ->where(function($query) {
+                        $query->where('is_admin', 1)->orWhere('is_teacher', 1);
+                    })
+                    ->orderBy('position')
+                    ->get();
+
+                $html .= "<p><strong>Total permissions found:</strong> " . count($allPermissions) . "</p>";
+
+                // Check specifically for Notes
+                $notesPermission = $allPermissions->where('route', 'notes.index')->first();
+                if ($notesPermission) {
+                    $html .= "<h2>✅ Notes Permission Found in Sidebar Manager Query:</h2>";
+                    $html .= "<pre>" . json_encode($notesPermission, JSON_PRETTY_PRINT) . "</pre>";
+                } else {
+                    $html .= "<h2>❌ Notes Permission NOT Found in Sidebar Manager Query</h2>";
+
+                    // Let's check our Notes permission details
+                    $ourNotesPermission = DB::table('permissions')->where('route', 'notes.index')->first();
+                    if ($ourNotesPermission) {
+                        $html .= "<p><strong>Our Notes Permission Details:</strong></p>";
+                        $html .= "<pre>" . json_encode($ourNotesPermission, JSON_PRETTY_PRINT) . "</pre>";
+
+                        // Check each condition
+                        $html .= "<p><strong>Condition Check:</strong></p>";
+                        $html .= "<p>status = 1: " . ($ourNotesPermission->status == 1 ? "✅ Pass" : "❌ Fail ({$ourNotesPermission->status})") . "</p>";
+                        $html .= "<p>menu_status = 1: " . ($ourNotesPermission->menu_status == 1 ? "✅ Pass" : "❌ Fail ({$ourNotesPermission->menu_status})") . "</p>";
+                        $html .= "<p>is_admin = 1: " . ($ourNotesPermission->is_admin == 1 ? "✅ Pass" : "❌ Fail ({$ourNotesPermission->is_admin})") . "</p>";
+                        $html .= "<p>is_teacher = 1: " . ($ourNotesPermission->is_teacher == 1 ? "✅ Pass" : "❌ Fail ({$ourNotesPermission->is_teacher})") . "</p>";
+                    } else {
+                        $html .= "<p>❌ Notes permission not found in database at all!</p>";
+                    }
+                }
+
+                // Show first few results for comparison
+                $html .= "<h2>Sample of permissions that DO appear:</h2>";
+                foreach ($allPermissions->take(5) as $perm) {
+                    $html .= "<p><strong>{$perm->name}</strong> (route: {$perm->route})</p>";
+                }
+            }
+
+            return $html;
+
+        } catch (\Exception $e) {
+            return "<h1>❌ ERROR!</h1><p>Sidebar debug failed: " . $e->getMessage() . "</p>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
 // Notes CHECK ROLE TABLES - Find correct role permission table
 Route::get('notes-check-role-tables', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
