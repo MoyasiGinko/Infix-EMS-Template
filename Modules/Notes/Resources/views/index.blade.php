@@ -1,51 +1,126 @@
-@extends('layouts.app')
+@extends('backEnd.master')
 
-@section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Notes</h2>
-        <a href="{{ route('notes.create') }}" class="btn btn-primary">Add Note</a>
+@section('title')@lang('Notes')@endsection
+
+@section('mainContent')
+<section class="sms-breadcrumb mb-20">
+  <div class="container-fluid">
+    <div class="row justify-content-between">
+      <h1>@lang('Notes')</h1>
+      <div class="bc-pages">
+        <a href="{{ route('dashboard') }}">@lang('common.dashboard')</a>
+        <a href="#">@lang('common.utilities')</a>
+        <a href="#">@lang('Notes')</a>
+      </div>
     </div>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Quantity</th>
-                <th>Amount</th>
-                <th>Created By</th>
-                <th>Created At</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($notes as $note)
-                <tr>
-                    <td>{{ $note->title }}</td>
-                    <td>{{ $note->type }}</td>
-                    <td>{{ $note->quantity }}</td>
-                    <td>{{ $note->amount }}</td>
-                    <td>{{ $note->created_by }}</td>
-                    <td>{{ $note->created_at->format('Y-m-d') }}</td>
-                    <td>
-                        <a href="{{ route('notes.show', $note) }}" class="btn btn-info btn-sm">View</a>
-                        <a href="{{ route('notes.edit', $note) }}" class="btn btn-warning btn-sm">Edit</a>
-                        <form action="{{ route('notes.destroy', $note) }}" method="POST" style="display:inline-block;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7">No notes found.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-    <div class="d-flex justify-content-center">
-        {{ $notes->links() }}
+  </div>
+</section>
+
+<section class="admin-visitor-area up_admin_visitor">
+  <div class="container-fluid p-0">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="white-box">
+          <div class="row mb-20 align-items-center">
+            <div class="col-lg-6 col-md-6">
+              <div class="main-title">
+                <h3 class="mb-0">@lang('Notes') @lang('common.list')</h3>
+              </div>
+            </div>
+            <div class="col-lg-6 col-md-6 text-right">
+              @if(userPermission('notes.create'))
+              <a href="{{ route('notes.create') }}" class="primary-btn small fix-gr-bg">
+                <span class="ti-plus pr-2"></span>@lang('common.add')
+              </a>
+              @endif
+              @if(userPermission('notes.export.excel'))
+              <a href="{{ route('notes.export.excel') }}" class="primary-btn small tr-bg ml-10">@lang('common.export')
+                XLSX</a>
+              @endif
+              @if(userPermission('notes.export.pdf'))
+              <a href="{{ route('notes.export.pdf') }}" class="primary-btn small tr-bg ml-10">@lang('common.export')
+                PDF</a>
+              @endif
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12">
+              <x-table>
+                <table class="table" id="notes_table" cellspacing="0" width="100%">
+                  <thead>
+                    <tr>
+                      <th>@lang('common.title')</th>
+                      <th>@lang('common.type')</th>
+                      <th>@lang('common.quantity')</th>
+                      <th>@lang('common.amount')</th>
+                      <th>@lang('common.created_by')</th>
+                      <th>@lang('common.date')</th>
+                      <th>@lang('common.actions')</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @forelse($notes as $note)
+                    <tr>
+                      <td>{{ $note->title }}</td>
+                      <td>{{ $note->type }}</td>
+                      <td>{{ $note->quantity }}</td>
+                      <td>{{ number_format($note->amount,2) }}</td>
+                      <td>{{ $note->created_by }}</td>
+                      <td>{{ $note->created_at->format('Y-m-d') }}</td>
+                      <td>
+                        <div class="dropdown CRM_dropdown">
+                          <button class="btn btn-secondary dropdown-toggle" type="button"
+                            id="dropdownMenu{{ $note->id }}" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            @lang('common.select')
+                          </button>
+                          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu{{ $note->id }}">
+                            @if(userPermission('notes.show'))
+                            <a class="dropdown-item" href="{{ route('notes.show',$note) }}">@lang('common.view')</a>
+                            @endif
+                            @if(userPermission('notes.edit'))
+                            <a class="dropdown-item" href="{{ route('notes.edit',$note) }}">@lang('common.edit')</a>
+                            @endif
+                            @if(userPermission('notes.destroy'))
+                            <form action="{{ route('notes.destroy',$note) }}" method="POST" class="note-delete-form"
+                              data-confirm="{{ __('common.are_you_sure_to_delete') }}">
+                              @csrf
+                              @method('DELETE')
+                              <button class="dropdown-item" type="submit">@lang('common.delete')</button>
+                            </form>
+                            @endif
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    @empty
+                    <tr>
+                      <td colspan="7" class="text-center">@lang('common.no_data_available')</td>
+                    </tr>
+                    @endforelse
+                  </tbody>
+                </table>
+              </x-table>
+              <div class="mt-20 d-flex justify-content-center">{{ $notes->links() }}</div>
+              @push('script')
+              <script>
+              document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.note-delete-form').forEach(function(f) {
+                  f.addEventListener('submit', function(e) {
+                    var msg = this.getAttribute('data-confirm') || 'Are you sure?';
+                    if (!confirm(msg)) {
+                      e.preventDefault();
+                    }
+                  });
+                });
+              });
+              </script>
+              @endpush
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
+</section>
 @endsection
