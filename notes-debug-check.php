@@ -10,11 +10,22 @@ $kernel->bootstrap();
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
-// Simple authentication check (remove if not needed)
-if (!Auth::check() || Auth::user()->role_id != 1) {
-    echo "<h1>Please login as Super Admin to access this debug</h1>";
-    exit;
+// Authentication debug info
+echo "<h1>Authentication Debug</h1>";
+echo "<p>Auth check: " . (Auth::check() ? 'YES' : 'NO') . "</p>";
+if (Auth::check()) {
+    echo "<p>User ID: " . Auth::user()->id . "</p>";
+    echo "<p>User Role ID: " . Auth::user()->role_id . "</p>";
+    echo "<p>User Email: " . Auth::user()->email . "</p>";
+} else {
+    echo "<p style='color: red;'>Not authenticated. You might need to access this through your admin panel.</p>";
 }
+
+// Skip auth check for now - remove this line if you want to enforce auth
+// if (!Auth::check() || Auth::user()->role_id != 1) {
+//     echo "<h1>Please login as Super Admin to access this debug</h1>";
+//     exit;
+// }
 
 echo "<h1>Notes Module Database Debug</h1>";
 echo "<style>
