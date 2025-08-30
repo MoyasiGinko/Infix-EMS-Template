@@ -10,19 +10,19 @@ Route::get('notes-final-fix', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
         try {
             $html = "<h1>Notes Permission - Final Fix</h1>";
-            
+
             // Check if permission already exists
             $permission = DB::table('permissions')->where('route', 'notes.index')->first();
-            
+
             if ($permission) {
                 $html .= "<p>✅ Permission found with ID: {$permission->id}</p>";
-                
+
                 // Check if already assigned in correct table
                 $assigned = DB::table('assign_permissions')
                     ->where('permission_id', $permission->id)
                     ->where('role_id', 1)
                     ->first();
-                    
+
                 if (!$assigned) {
                     // Insert into correct table
                     DB::table('assign_permissions')->insert([
@@ -36,12 +36,12 @@ Route::get('notes-final-fix', function () {
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
-                    
+
                     $html .= "<p>✅ Permission assigned to Super Admin role in assign_permissions table</p>";
                 } else {
                     $html .= "<p>⚠️ Permission already assigned to Super Admin (ID: {$assigned->id})</p>";
                 }
-                
+
             } else {
                 // Insert permission if doesn't exist
                 $permissionId = DB::table('permissions')->insertGetId([
@@ -63,9 +63,9 @@ Route::get('notes-final-fix', function () {
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-                
+
                 $html .= "<p>✅ Permission created with ID: {$permissionId}</p>";
-                
+
                 // Assign to Super Admin in correct table
                 DB::table('assign_permissions')->insert([
                     'permission_id' => $permissionId,
@@ -78,25 +78,25 @@ Route::get('notes-final-fix', function () {
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-                
+
                 $html .= "<p>✅ Permission assigned to Super Admin role</p>";
             }
-            
+
             // Final verification
             $finalPermission = DB::table('permissions')->where('route', 'notes.index')->first();
             $finalAssignment = DB::table('assign_permissions')->where('permission_id', $finalPermission->id)->first();
-            
+
             $html .= "<h2>Final Verification:</h2>";
             $html .= "<p>Permission in database: " . ($finalPermission ? "✅ Found (ID: {$finalPermission->id})" : "❌ Not found") . "</p>";
             $html .= "<p>Role assignment: " . ($finalAssignment ? "✅ Found (ID: {$finalAssignment->id})" : "❌ Not found") . "</p>";
-            
+
             $html .= "<h2>🎉 SUCCESS! Now check:</h2>";
             $html .= "<p>• <a href='/rolepermission/assign-permission/2' target='_blank'>Role Permission Interface</a></p>";
             $html .= "<p>• <a href='/menumanage' target='_blank'>Sidebar Manager</a></p>";
             $html .= "<p>• <a href='/notes-check-db' target='_blank'>Database Check</a></p>";
-            
+
             return $html;
-            
+
         } catch (\Exception $e) {
             return "<h1>❌ ERROR!</h1><p>Final fix failed: " . $e->getMessage() . "</p><p>Stack trace:</p><pre>" . $e->getTraceAsString() . "</pre>";
         }
@@ -109,7 +109,7 @@ Route::get('notes-check-role-tables', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
         try {
             $html = "<h1>Role Permission Tables Investigation</h1>";
-            
+
             // Check what role-related tables exist
             $tables = DB::select("SHOW TABLES LIKE '%role%'");
             $html .= "<h2>Tables containing 'role':</h2><ul>";
@@ -118,7 +118,7 @@ Route::get('notes-check-role-tables', function () {
                 $html .= "<li>{$tableName}</li>";
             }
             $html .= "</ul>";
-            
+
             // Check permission-related tables
             $tables = DB::select("SHOW TABLES LIKE '%permission%'");
             $html .= "<h2>Tables containing 'permission':</h2><ul>";
@@ -127,11 +127,11 @@ Route::get('notes-check-role-tables', function () {
                 $html .= "<li>{$tableName}</li>";
             }
             $html .= "</ul>";
-            
+
             // Check what table stores role-permission relationships
             $allTables = DB::select("SHOW TABLES");
             $html .= "<h2>Looking for role-permission relationship table...</h2>";
-            
+
             foreach ($allTables as $table) {
                 $tableName = array_values((array)$table)[0];
                 if (stripos($tableName, 'permission') !== false || stripos($tableName, 'role') !== false) {
@@ -141,7 +141,7 @@ Route::get('notes-check-role-tables', function () {
                         $columnNames = array_map(function($col) { return $col->Field; }, $columns);
                         $html .= "<h3>{$tableName}</h3>";
                         $html .= "<p>Columns: " . implode(', ', $columnNames) . "</p>";
-                        
+
                         // Check if this table has role_id and permission_id
                         if (in_array('role_id', $columnNames) && in_array('permission_id', $columnNames)) {
                             $html .= "<p><strong>✅ This looks like the role-permission relationship table!</strong></p>";
@@ -151,9 +151,9 @@ Route::get('notes-check-role-tables', function () {
                     }
                 }
             }
-            
+
             return $html;
-            
+
         } catch (\Exception $e) {
             return "<h1>❌ ERROR!</h1><p>Table check failed: " . $e->getMessage() . "</p>";
         }
@@ -395,7 +395,7 @@ Route::get('notes-check-db', function () {
             $rolePermission = null;
 
             if ($permission) {
-                $rolePermission = DB::table('role_has_permissions')
+                $rolePermission = DB::table('assign_permissions')
                     ->where('permission_id', $permission->id)
                     ->where('role_id', 1)
                     ->first();
