@@ -9,7 +9,7 @@
       <h1>@lang('Notes')</h1>
       <div class="bc-pages">
         <a href="{{ route('dashboard') }}">@lang('common.dashboard')</a>
-  <a href="#">@lang('Notes')</a>
+        <a href="#">@lang('Notes')</a>
       </div>
     </div>
   </div>
@@ -28,11 +28,13 @@
             </div>
             <div class="col-lg-6 col-md-6 text-right">
               @if(isset($isSuperAdmin) && $isSuperAdmin)
-                @if(!empty($showingAll))
-                  <a href="{{ route('notes.index') }}" class="primary-btn small tr-bg mr-10">@lang('common.my') @lang('Notes')</a>
-                @else
-                  <a href="{{ route('notes.all') }}" class="primary-btn small tr-bg mr-10">@lang('common.view') @lang('common.all')</a>
-                @endif
+              @if(!empty($showingAll))
+              <a href="{{ route('notes.index') }}" class="primary-btn small tr-bg mr-10">@lang('common.my')
+                @lang('Notes')</a>
+              @else
+              <a href="{{ route('notes.all') }}" class="primary-btn small tr-bg mr-10">@lang('common.view')
+                @lang('common.all')</a>
+              @endif
               @endif
               @if(userPermission('notes.create'))
               <a href="{{ route('notes.create') }}" class="primary-btn small fix-gr-bg">
@@ -72,12 +74,12 @@
                       <td>{{ $note->type }}</td>
                       <td>{{ $note->quantity }}</td>
                       <td>{{ number_format($note->amount,2) }}</td>
-                      <td>{{ optional($note->user)->name ?? '-' }}</td>
+                      <td>{{ optional($note->user)->full_name ?? '-' }}</td>
                       <td>
                         @if($note->noteable)
-                          {{ class_basename($note->noteable_type) }} #{{ $note->noteable_id }}
+                        {{ class_basename($note->noteable_type) }} #{{ $note->noteable_id }}
                         @else
-                          -
+                        -
                         @endif
                       </td>
                       <td>{{ $note->created_at->format('Y-m-d') }}</td>
