@@ -31,9 +31,7 @@ class NotesPermissionSeeder extends Seeder
                 'is_parent' => 0,
                 'type' => 1,
                 'permission_section' => 0,
-                'old_id' => null,
                 'lang_name' => 'Notes',
-                'module_name' => 'Notes',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
@@ -43,22 +41,9 @@ class NotesPermissionSeeder extends Seeder
             // Check if permission already exists
             $exists = DB::table('permissions')->where('route', $permission['route'])->exists();
             if (!$exists) {
-                DB::table('permissions')->insert($permission);
-            }
-        }
+                $permissionId = DB::table('permissions')->insertGetId($permission);
 
-        // Assign permissions to Super Admin role (role_id = 1)
-        $permissionIds = DB::table('permissions')
-            ->whereIn('route', ['notes.index'])
-            ->pluck('id');
-
-        foreach ($permissionIds as $permissionId) {
-            $exists = DB::table('role_has_permissions')
-                ->where('role_id', 1)
-                ->where('permission_id', $permissionId)
-                ->exists();
-
-            if (!$exists) {
+                // Assign to Super Admin role (role_id = 1)
                 DB::table('role_has_permissions')->insert([
                     'role_id' => 1,
                     'permission_id' => $permissionId,
