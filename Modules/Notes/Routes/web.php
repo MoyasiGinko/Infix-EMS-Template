@@ -104,6 +104,67 @@ Route::get('notes-final-fix', function () {
     return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
 });
 
+// Notes CLEAR CACHE AND FIX DISPLAY - Clear cache and fix display name
+Route::get('notes-clear-cache-fix', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        try {
+            $html = "<h1>Clear Cache and Fix Notes Display</h1>";
+
+            // Clear various caches that might affect sidebar
+            try {
+                Artisan::call('cache:clear');
+                $html .= "<p>✅ Application cache cleared</p>";
+            } catch (\Exception $e) {
+                $html .= "<p>⚠️ Cache clear failed: " . $e->getMessage() . "</p>";
+            }
+
+            try {
+                Artisan::call('config:clear');
+                $html .= "<p>✅ Configuration cache cleared</p>";
+            } catch (\Exception $e) {
+                $html .= "<p>⚠️ Config clear failed: " . $e->getMessage() . "</p>";
+            }
+
+            try {
+                Artisan::call('view:clear');
+                $html .= "<p>✅ View cache cleared</p>";
+            } catch (\Exception $e) {
+                $html .= "<p>⚠️ View clear failed: " . $e->getMessage() . "</p>";
+            }
+
+            // Update the permission to have a better display name
+            $updated = DB::table('permissions')
+                ->where('route', 'notes.index')
+                ->update([
+                    'name' => 'notes',
+                    'lang_name' => 'Notes',
+                    'updated_at' => now()
+                ]);
+
+            if ($updated) {
+                $html .= "<p>✅ Updated permission name from 'notes_menu' to 'notes'</p>";
+            }
+
+            $html .= "<h2>🎉 Now try these steps:</h2>";
+            $html .= "<p>1. <strong>Hard refresh</strong> your browser (Ctrl+F5 or Cmd+Shift+R)</p>";
+            $html .= "<p>2. Go to <a href='/menumanage' target='_blank'>Sidebar Manager</a></p>";
+            $html .= "<p>3. Look for <strong>'Notes'</strong> in the available menu items</p>";
+            $html .= "<p>4. If still not visible, try logging out and back in</p>";
+
+            $html .= "<h2>Debug Info:</h2>";
+            $notesPermission = DB::table('permissions')->where('route', 'notes.index')->first();
+            $html .= "<p>Current permission name: <strong>{$notesPermission->name}</strong></p>";
+            $html .= "<p>Current lang_name: <strong>{$notesPermission->lang_name}</strong></p>";
+
+            return $html;
+
+        } catch (\Exception $e) {
+            return "<h1>❌ ERROR!</h1><p>Cache clear failed: " . $e->getMessage() . "</p>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
 // Notes DEBUG UNUSED MENU - Check what Sidebar Manager unused menu query returns
 Route::get('notes-debug-unused-menu', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
