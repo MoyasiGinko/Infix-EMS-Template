@@ -18,95 +18,37 @@ class NotesPermissionSeeder extends Seeder
         $permissions = [
             [
                 'name' => 'notes.menu',
-                'guard_name' => 'web',
-                'module' => 'Notes',
                 'route' => 'notes.index',
-                'type' => 1,
                 'status' => 1,
+                'menu_status' => 1,
+                'position' => 500,
+                'is_saas' => 0,
+                'relate_to_child' => 0,
+                'is_menu' => 1,
+                'is_admin' => 1,
+                'is_teacher' => 0,
+                'is_student' => 0,
+                'is_parent' => 0,
+                'type' => 1,
+                'permission_section' => 0,
+                'old_id' => 500,
+                'lang_name' => 'Notes',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
-            [
-                'name' => 'notes.expense-list',
-                'guard_name' => 'web',
-                'module' => 'Notes',
-                'route' => 'notes.expenses.index',
-                'type' => 1,
-                'status' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'notes.income-list',
-                'guard_name' => 'web',
-                'module' => 'Notes',
-                'route' => 'notes.incomes.index',
-                'type' => 1,
-                'status' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'notes.event-list',
-                'guard_name' => 'web',
-                'module' => 'Notes',
-                'route' => 'notes.events.index',
-                'type' => 1,
-                'status' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'notes.incident-list',
-                'guard_name' => 'web',
-                'module' => 'Notes',
-                'route' => 'notes.incidents.index',
-                'type' => 1,
-                'status' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+            ]
         ];
 
         foreach ($permissions as $permission) {
             // Check if permission already exists
-            $exists = DB::table('permissions')->where('name', $permission['name'])->exists();
+            $exists = DB::table('permissions')->where('route', $permission['route'])->exists();
             if (!$exists) {
                 DB::table('permissions')->insert($permission);
             }
         }
 
-        // Insert menu entries
-        $menus = [
-            [
-                'name' => 'Notes',
-                'module' => 'Notes',
-                'route' => 'notes.index',
-                'lang_name' => 'Notes',
-                'icon' => 'fas fa-sticky-note',
-                'status' => 1,
-                'menu_status' => 1,
-                'position' => 999,
-                'default_position' => 999,
-                'parent' => null,
-                'parent_id' => null,
-                'permission_section' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ];
-
-        foreach ($menus as $menu) {
-            // Check if menu already exists
-            $exists = DB::table('sm_menus')->where('name', $menu['name'])->where('module', $menu['module'])->exists();
-            if (!$exists) {
-                DB::table('sm_menus')->insert($menu);
-            }
-        }
-
         // Assign permissions to Super Admin role (role_id = 1)
         $permissionIds = DB::table('permissions')
-            ->whereIn('name', ['notes.menu', 'notes.expense-list', 'notes.income-list', 'notes.event-list', 'notes.incident-list'])
+            ->whereIn('route', ['notes.index'])
             ->pluck('id');
 
         foreach ($permissionIds as $permissionId) {
