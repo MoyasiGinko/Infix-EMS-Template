@@ -104,8 +104,11 @@ class MenuManageController extends Controller
             // For role-based sidebar, we need to handle sidebar data differently
             // Skip the old defaultSidebarStore and modulePermissionSidebar methods that expect role_name
             // and use the direct methods instead
-            $data['unused_menus'] = SidebarManagerController::unUsedMenu($role_id);
-            $data['sidebar_menus'] = sidebar_menus($role_id);
+            // Use enhanced merged logic from SidebarManagerController to ensure legacy sidebars + sm_menus appear
+            $sidebarManager = new SidebarManagerController();
+            $merged = $sidebarManager->getMenusData($data['role_name']);
+            $data['unused_menus'] = $merged['unused_menus'];
+            $data['sidebar_menus'] = $merged['sidebar_menus'];
             $data['permission_sections'] = Permission::where('role_id', $role_id)->pluck('id')->toArray();
         } catch (\Exception $e) {
             // If there's an error with sidebar operations, provide fallbacks
