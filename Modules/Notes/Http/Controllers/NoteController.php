@@ -8,6 +8,7 @@ use Modules\Notes\Entities\Note;
 use Modules\Notes\Http\Requests\NoteRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class NoteController extends Controller
 {
@@ -21,14 +22,14 @@ class NoteController extends Controller
     {
         return view('notes::create');
     }
-
     public function store(NoteRequest $request)
     {
         $data = $request->validated();
-        $data['created_by'] = auth()->id();
+        $data['created_by'] = Auth::id();
         Note::create($data);
         return redirect()->route('notes.index')->with('success', 'Note created successfully.');
     }
+
 
     public function show(Note $note)
     {

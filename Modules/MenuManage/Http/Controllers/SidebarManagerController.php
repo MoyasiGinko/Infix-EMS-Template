@@ -24,66 +24,29 @@ class SidebarManagerController extends Controller
 
     public function __construct() {}    public static function unUsedMenu($role_id = null)
     {
-        // Check if there's any sidebar data for this role
-        $hasSidebarData = Sidebar::where('role_id', $role_id)->whereNull('user_id')->exists();
-
-        if (!$hasSidebarData) {
-            // If no sidebar data exists for this role, return all available permissions as unused
-            // This handles the initial case where the role hasn't been set up yet
-
-            // Get all permissions that should be available for this role type
-            $allPermissions = Permission::where('status', 1)
-                ->where('menu_status', 1)
-                ->when($role_id == 2, function ($q) {
-                    $q->where('is_student', 1);
-                })->when($role_id == 3, function ($q) {
-                    $q->where('is_parent', 1);
-                })->when(!in_array($role_id, [2, 3]), function ($q) {
-                    $q->where(function($query) {
-                        $query->where('is_admin', 1)->orWhere('is_teacher', 1);
-                    });
-                })
-                ->orderBy('position')
-                ->get();
-
-            // Convert permissions to sidebar-like structure for compatibility
-            return $allPermissions->map(function($permission) use ($role_id) {
-                return (object) [
-                    'id' => $permission->id,
-                    'permission_id' => $permission->id,
-                    'role_id' => $role_id,
-                    'active_status' => 0, // Mark as inactive/unused
-                    'lang_name' => $permission->lang_name ?? $permission->name,
-                    'name' => $permission->name,
-                    'module' => $permission->module,
-                    'parent' => $permission->parent_id,
-                    'parent_id' => $permission->parent_id,
-                    'route' => $permission->route,
-                    'icon' => $permission->icon,
-                    'type' => $permission->type ?? 1
-                ];
-            });
-        }
-
-        $sectionIds = Sidebar::whereNull('parent')->pluck('permission_id')->toArray();
-
-        $parentSidebars = Sidebar::whereIn('parent', $sectionIds)
-            ->deActiveMenuUser($role_id)
-            ->pluck('permission_id')
-            ->toArray();
-
-        $single = Sidebar::whereNotIn('parent', $parentSidebars)
-            ->deActiveMenuUser($role_id)
-            ->pluck('permission_id')
-            ->toArray();
-        $hasIds = array_merge($parentSidebars, $single);
-
-        $hasIds = (array_unique($hasIds));
-        if ($hasIds !== []) {
-            return Sidebar::whereIn('permission_id', $hasIds)->deActiveMenuUser($role_id)->get();
-        }
-
-        return collect();
+        // Simplified logic: Get ALL unused menu items for the role
+        // This directly returns all sidebar entries with active_status = 0 (unused)
+        // and ensures proper permissions are applied
+        
+        $unusedSidebars = Sidebar::leftJoin('permissions', 'sidebars.permission_id', '=', 'permissions.id')
+            ->where('sidebars.role_id', $role_id)
+            ->whereNull('sidebars.user_id')
+            ->where('sidebars.active_status', 0) // Unused items
+            ->where('sidebars.ignore', 0) // Not ignored
+            ->where('permissions.status', 1) // Permission is active
+            ->where('permissions.menu_status', 1) // Permission allows menu display
+            ->select(
+                'sidebars.*',
+                'permissions.name',
+                'permissions.route', 
+                'permissions.lang_name',
+                'permissions.module',
+                'permissions.icon'
+            )
+            ->orderBy('sidebars.position')
+            ->get();
+        
+        return $unusedSidebars;
     }
 
     public function sectionStore(Request $request)
