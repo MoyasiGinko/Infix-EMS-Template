@@ -3,7 +3,7 @@
 namespace Modules\Notes\Entities;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
+use App\User;
 
 class Note extends Model
 {

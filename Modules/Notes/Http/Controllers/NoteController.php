@@ -9,7 +9,7 @@ use Modules\Notes\Http\Requests\NoteRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use App\User;
 use Modules\Notes\Exports\NotesExport;
 
 class NoteController extends Controller
