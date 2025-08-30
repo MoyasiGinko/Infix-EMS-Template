@@ -52,6 +52,31 @@ class NoteController extends Controller
         return redirect()->route('notes.index')->with('success', 'Note deleted successfully.');
     }
 
+    // Category-specific methods
+    public function expenses()
+    {
+        $notes = Note::where('type', 'expense')->latest()->paginate(20);
+        return view('notes::index', compact('notes'))->with('pageTitle', 'Expense Notes');
+    }
+
+    public function incomes()
+    {
+        $notes = Note::where('type', 'income')->latest()->paginate(20);
+        return view('notes::index', compact('notes'))->with('pageTitle', 'Income Notes');
+    }
+
+    public function events()
+    {
+        $notes = Note::where('type', 'event')->latest()->paginate(20);
+        return view('notes::index', compact('notes'))->with('pageTitle', 'Event Notes');
+    }
+
+    public function incidents()
+    {
+        $notes = Note::where('type', 'incident')->latest()->paginate(20);
+        return view('notes::index', compact('notes'))->with('pageTitle', 'Incident Notes');
+    }
+
     // Placeholder for export methods (Excel/PDF)
     public function exportExcel(Request $request)
     {

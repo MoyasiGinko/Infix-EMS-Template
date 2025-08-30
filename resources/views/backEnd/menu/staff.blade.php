@@ -106,4 +106,4 @@
     @endif
 
 @endforeach
-@includeIf('Notes::menu.sidebar')
+@includeIf('notes::menu.sidebar')
