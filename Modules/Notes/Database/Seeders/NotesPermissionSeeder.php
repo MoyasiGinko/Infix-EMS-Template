@@ -17,7 +17,7 @@ class NotesPermissionSeeder extends Seeder
         // Insert permissions for Notes module
         $permissions = [
             [
-                'name' => 'notes.menu',
+                'name' => 'notes_menu',
                 'route' => 'notes.index',
                 'status' => 1,
                 'menu_status' => 1,
@@ -26,13 +26,14 @@ class NotesPermissionSeeder extends Seeder
                 'relate_to_child' => 0,
                 'is_menu' => 1,
                 'is_admin' => 1,
-                'is_teacher' => 0,
+                'is_teacher' => 1,
                 'is_student' => 0,
                 'is_parent' => 0,
                 'type' => 1,
                 'permission_section' => 0,
-                'old_id' => 500,
+                'old_id' => null,
                 'lang_name' => 'Notes',
+                'module_name' => 'Notes',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
