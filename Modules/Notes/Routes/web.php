@@ -1,6 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+
+// Notes seed route for deployment
+Route::get('notes-seed', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        Artisan::call('db:seed', ['--class' => 'Modules\\Notes\\Database\\Seeders\\NotesPermissionSeeder']);
+        return redirect()->back()->with('success', 'Notes permissions seeded successfully!');
+    }
+    abort(404);
+})->middleware(['web', 'auth']);
 
 Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'notes', 'as' => 'notes.'], function () {
     Route::get('/', 'Modules\Notes\Http\Controllers\NoteController@index')->name('index');
