@@ -5,6 +5,79 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+// Notes DIRECT SEEDER - Run seeder code directly without Artisan
+Route::get('notes-run-direct', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        try {
+            $html = "<h1>Notes Direct Seeder Execution</h1>";
+
+            // Run the exact same code as in the seeder, directly
+            $permissions = [
+                [
+                    'name' => 'notes_menu',
+                    'route' => 'notes.index',
+                    'status' => 1,
+                    'menu_status' => 1,
+                    'position' => 500,
+                    'is_saas' => 0,
+                    'relate_to_child' => 0,
+                    'is_menu' => 1,
+                    'is_admin' => 1,
+                    'is_teacher' => 1,
+                    'is_student' => 0,
+                    'is_parent' => 0,
+                    'type' => 1,
+                    'permission_section' => 0,
+                    'lang_name' => 'Notes',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            ];
+
+            $html .= "<p><strong>Step 1:</strong> Checking for existing permission...</p>";
+
+            foreach ($permissions as $permission) {
+                // Check if permission already exists
+                $exists = DB::table('permissions')->where('route', $permission['route'])->exists();
+
+                if (!$exists) {
+                    $html .= "<p>✅ No existing permission found, proceeding with insertion...</p>";
+
+                    $permissionId = DB::table('permissions')->insertGetId($permission);
+                    $html .= "<p>✅ Permission inserted with ID: {$permissionId}</p>";
+
+                    // Assign to Super Admin role (role_id = 1)
+                    DB::table('role_has_permissions')->insert([
+                        'role_id' => 1,
+                        'permission_id' => $permissionId,
+                    ]);
+                    $html .= "<p>✅ Assigned to Super Admin role</p>";
+
+                    // Verify insertion
+                    $verify = DB::table('permissions')->where('id', $permissionId)->first();
+                    $roleVerify = DB::table('role_has_permissions')->where('permission_id', $permissionId)->first();
+
+                    $html .= "<p><strong>Verification:</strong></p>";
+                    $html .= "<p>Permission in database: " . ($verify ? "✅ Found" : "❌ Not found") . "</p>";
+                    $html .= "<p>Role assignment: " . ($roleVerify ? "✅ Found" : "❌ Not found") . "</p>";
+
+                } else {
+                    $existing = DB::table('permissions')->where('route', $permission['route'])->first();
+                    $html .= "<p>⚠️ Permission already exists with ID: {$existing->id}</p>";
+                }
+            }
+
+            $html .= "<p><strong>Final Check - Run /notes-check-db again to verify!</strong></p>";
+
+            return $html;
+
+        } catch (\Exception $e) {
+            return "<h1>❌ ERROR!</h1><p>Direct seeder failed: " . $e->getMessage() . "</p><p>Stack trace:</p><pre>" . $e->getTraceAsString() . "</pre>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
 // Notes PROPER DIAGNOSIS - Find the exact issue
 Route::get('notes-diagnose-issue', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
