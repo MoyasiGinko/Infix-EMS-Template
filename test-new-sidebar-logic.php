@@ -25,9 +25,9 @@ echo "<style>
 try {
     echo "<div class='section'>";
     echo "<h2>Testing New unUsedMenu Logic for Role 1 (Super Admin)</h2>";
-    
+
     $role_id = 1;
-    
+
     // Test the new simplified logic
     $unusedSidebars = Sidebar::leftJoin('permissions', 'sidebars.permission_id', '=', 'permissions.id')
         ->where('sidebars.role_id', $role_id)
@@ -42,19 +42,19 @@ try {
             'sidebars.active_status',
             'sidebars.position',
             'permissions.name',
-            'permissions.route', 
+            'permissions.route',
             'permissions.lang_name',
             'permissions.module',
             'permissions.icon'
         )
         ->orderBy('sidebars.position')
         ->get();
-    
+
     echo "<p><strong>Total unused menu items found:</strong> " . count($unusedSidebars) . "</p>";
-    
+
     // Check if Notes is included
     $notesFound = $unusedSidebars->where('route', 'notes.index')->first();
-    
+
     if ($notesFound) {
         echo "<p class='success'>✅ NOTES FOUND in unused menu items!</p>";
         echo "<p>Notes Details:</p>";
@@ -69,16 +69,16 @@ try {
     } else {
         echo "<p class='error'>❌ Notes NOT found in unused menu items</p>";
     }
-    
+
     echo "</div>";
-    
+
     echo "<div class='section'>";
     echo "<h3>All Unused Menu Items (First 20):</h3>";
     echo "<table>";
     echo "<thead><tr>";
     echo "<th>Sidebar ID</th><th>Permission ID</th><th>Name</th><th>Route</th><th>Lang Name</th><th>Position</th>";
     echo "</tr></thead><tbody>";
-    
+
     foreach ($unusedSidebars->take(20) as $item) {
         $rowClass = ($item->route == 'notes.index') ? 'notes-row' : '';
         echo "<tr class='{$rowClass}'>";
@@ -90,13 +90,13 @@ try {
         echo "<td>{$item->position}</td>";
         echo "</tr>";
     }
-    
+
     echo "</tbody></table>";
     if (count($unusedSidebars) > 20) {
         echo "<p><em>... and " . (count($unusedSidebars) - 20) . " more items</em></p>";
     }
     echo "</div>";
-    
+
     echo "<div class='section'>";
     echo "<h3>Comparison with Old Logic</h3>";
     echo "<p>The old complex logic was filtering out valid items due to parent-child relationship complications.</p>";
@@ -108,7 +108,7 @@ try {
     echo "<li>✅ Not ignored (ignore = 0)</li>";
     echo "</ul>";
     echo "</div>";
-    
+
 } catch (Exception $e) {
     echo "<div class='section'>";
     echo "<h2 class='error'>❌ Error occurred:</h2>";

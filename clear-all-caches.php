@@ -20,24 +20,24 @@ echo "<style>
 try {
     echo "<div class='section'>";
     echo "<h2>Clearing Laravel Caches...</h2>";
-    
+
     // Clear all cache types
     echo "<p class='info'>1. Clearing application cache...</p>";
     Cache::flush();
     echo "<p class='success'>✅ Application cache cleared</p>";
-    
+
     echo "<p class='info'>2. Clearing config cache...</p>";
     Artisan::call('config:clear');
     echo "<p class='success'>✅ Config cache cleared</p>";
-    
+
     echo "<p class='info'>3. Clearing view cache...</p>";
     Artisan::call('view:clear');
     echo "<p class='success'>✅ View cache cleared</p>";
-    
+
     echo "<p class='info'>4. Clearing route cache...</p>";
     Artisan::call('route:clear');
     echo "<p class='success'>✅ Route cache cleared</p>";
-    
+
     echo "<p class='info'>5. Clearing sidebar cache...</p>";
     // Clear specific sidebar caches
     $roleIds = [1, 2, 3]; // Super Admin, Student, Parent
@@ -46,19 +46,19 @@ try {
         Cache::forget("sidebar_cache_{$roleId}");
         echo "<p class='success'>✅ Sidebar cache cleared for role {$roleId}</p>";
     }
-    
+
     echo "<p class='info'>6. Clearing permission cache...</p>";
     Cache::forget('spatie.permission.cache');
     echo "<p class='success'>✅ Permission cache cleared</p>";
-    
+
     echo "</div>";
-    
+
     echo "<div class='section'>";
     echo "<h2>🎉 All Caches Cleared Successfully!</h2>";
     echo "<p class='success'>You can now check the Sidebar Manager again.</p>";
     echo "<p class='info'>Go to: Settings → General Settings → Sidebar Manager</p>";
     echo "</div>";
-    
+
     echo "<div class='section'>";
     echo "<h3>Next Steps:</h3>";
     echo "<ol>";
@@ -68,7 +68,7 @@ try {
     echo "<li>If still not showing, the issue is in the frontend JavaScript</li>";
     echo "</ol>";
     echo "</div>";
-    
+
 } catch (Exception $e) {
     echo "<div class='section'>";
     echo "<h2 style='color: red;'>❌ Error occurred:</h2>";

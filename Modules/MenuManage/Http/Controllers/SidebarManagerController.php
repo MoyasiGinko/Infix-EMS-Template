@@ -12,6 +12,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
 use Modules\MenuManage\Entities\SmMenu;
 use Modules\MenuManage\Entities\Sidebar;
 use Modules\RolePermission\Entities\InfixRole;
@@ -27,7 +28,7 @@ class SidebarManagerController extends Controller
         // Simplified logic: Get ALL unused menu items for the role
         // This directly returns all sidebar entries with active_status = 0 (unused)
         // and ensures proper permissions are applied
-        
+
         $unusedSidebars = Sidebar::leftJoin('permissions', 'sidebars.permission_id', '=', 'permissions.id')
             ->where('sidebars.role_id', $role_id)
             ->whereNull('sidebars.user_id')
@@ -38,14 +39,14 @@ class SidebarManagerController extends Controller
             ->select(
                 'sidebars.*',
                 'permissions.name',
-                'permissions.route', 
+                'permissions.route',
                 'permissions.lang_name',
                 'permissions.module',
                 'permissions.icon'
             )
             ->orderBy('sidebars.position')
             ->get();
-        
+
         return $unusedSidebars;
     }
 
@@ -90,10 +91,10 @@ class SidebarManagerController extends Controller
         {
             $role_name = $request->role_name;
         }else{
-            if(auth()->user()->role_id == 2)
+            if(Auth::user()->role_id == 2)
             {
                 $role_name = 'student';
-            }elseif(auth()->user()->role_id == 3){
+            }elseif(Auth::user()->role_id == 3){
                 $role_name = 'parent';
             }else{
                 $role_name = 'staff';
@@ -144,7 +145,7 @@ class SidebarManagerController extends Controller
                 $role_id = $request->role_id;
                 $is_role_based_sidebar = is_role_based_sidebar();
                 $section = Sidebar::with('subModule')->where('id', $request->id)->when(! $is_role_based_sidebar, function ($q): void {
-                    $q->where('user_id', auth()->user()->id);
+                    $q->where('user_id', Auth::user()->id);
                 }, function ($q) use ($role_id): void {
                     $q->where('role_id', $role_id);
                 })->first();
@@ -158,7 +159,7 @@ class SidebarManagerController extends Controller
                 if ($section->permissionInfo->permission_section === 1 && count($section->subModule) === 0) {
 
                     Permission::when(! $is_role_based_sidebar, function ($q): void {
-                        $q->where('user_id', auth()->user()->id);
+                        $q->where('user_id', Auth::user()->id);
                     }, function ($q) use ($role_id): void {
                         $q->where('role_id', $role_id);
                     })->where('id', $section->permission_id)->delete();
@@ -211,7 +212,7 @@ class SidebarManagerController extends Controller
                 $q->where('role_id', $role_id)->whereNull('user_id');
             });
         }])->where('id', $request->id)->when(! $is_role_based_sidebar, function ($q): void {
-            $q->where('user_id', auth()->user()->id);
+            $q->where('user_id', Auth::user()->id);
         }, function ($q) use ($role_id): void {
             $q->where('role_id', $role_id);
         })->first();
@@ -300,10 +301,10 @@ class SidebarManagerController extends Controller
             {
                     $role_name = $request->role_name;
             }else{
-                if(auth()->user()->role_id == 2)
+                if(Auth::user()->role_id == 2)
                 {
                     $role_name = 'student';
-                }elseif(auth()->user()->role_id == 3){
+                }elseif(Auth::user()->role_id == 3){
                     $role_name = 'parent';
                 }else{
                     $role_name = 'staff';
@@ -330,7 +331,7 @@ class SidebarManagerController extends Controller
     public function resetWithDefault()
     {
         try {
-            Sidebar::where('user_id', auth()->user()->id)->where('role_id', auth()->user()->role_id)->delete();
+            Sidebar::where('user_id', Auth::user()->id)->where('role_id', Auth::user()->role_id)->delete();
             $this->defaultSidebarStore();
             return redirect()->back();
         } catch (Exception $exception) {
@@ -342,8 +343,73 @@ class SidebarManagerController extends Controller
 
     public function getMenusData($role_name): array
     {
+        // Existing unused menus from sm_menus helper (works for menu builder based items)
         $unused_menus = getUnusedMenus($role_name);
         $sidebar_menus = getMenus($role_name);
+
+        // Also pull any legacy sidebar based items (sidebars table) that are inactive (active_status = 0)
+        // but have valid permissions and are NOT already present in the unused list.
+        try {
+            $role_id = $this->getRoleId($role_name);
+
+            $existingIds = collect($unused_menus)->pluck('id')->map(fn($v) => (int) $v)->all();
+
+            $extraSidebars = Sidebar::leftJoin('permissions', 'sidebars.permission_id', '=', 'permissions.id')
+                ->where('sidebars.role_id', $role_id)
+                ->whereNull('sidebars.user_id')
+                ->where('sidebars.active_status', 0)
+                ->where('sidebars.ignore', 0)
+                ->where('permissions.status', 1)
+                ->where('permissions.menu_status', 1)
+                ->select(
+                    'sidebars.id as sidebar_row_id',
+                    'sidebars.permission_id',
+                    'sidebars.parent',
+                    'sidebars.parent_route',
+                    'sidebars.level',
+                    'sidebars.position',
+                    'permissions.name',
+                    'permissions.lang_name',
+                    'permissions.module',
+                    'permissions.route'
+                )
+                ->orderBy('sidebars.position')
+                ->get();
+
+            foreach ($extraSidebars as $sb) {
+                // Skip if already represented (by permission id or route match)
+                if (in_array((int) $sb->permission_id, $existingIds, true)) {
+                    continue;
+                }
+                $alreadyByRoute = collect($unused_menus)->first(function ($m) use ($sb) {
+                    return isset($m->route) && $m->route === $sb->route;
+                });
+                if ($alreadyByRoute) continue;
+
+                // Build a lightweight pseudo SmMenu-like object for the blade template
+                $obj = new \stdClass();
+                $obj->id = (int) $sb->permission_id; // use permission id as unique id
+                $obj->permission_id = (int) $sb->permission_id;
+                $obj->parent = $sb->parent; // blade uses ->parent
+                $obj->parent_id = $sb->parent_route; // maintain structural hint
+                $obj->lang_name = $sb->lang_name ?? $sb->name ?? 'Undefined';
+                $obj->name = $sb->name ?? $obj->lang_name;
+                $obj->module = $sb->module;
+                $obj->route = $sb->route;
+                $obj->position = $sb->position;
+                // Provide empty collection for deActiveChild relationship usage in view
+                $obj->deActiveChild = collect();
+                $unused_menus[] = $obj;
+            }
+
+            // Sort combined list by position to keep UI consistent
+            $unused_menus = collect($unused_menus)->sortBy(function ($item) {
+                return $item->position ?? 9999;
+            })->values();
+        } catch (\Throwable $e) {
+            // Fail silently; return what we have so UI still works
+        }
+
         return ['unused_menus' => $unused_menus, 'sidebar_menus' => $sidebar_menus];
     }
 
@@ -380,10 +446,10 @@ class SidebarManagerController extends Controller
         if(!empty(request()->role_name)){
             $role_name = request()->role_name;
         }else{
-            if(auth()->user()->role_id == 2)
+            if(Auth::user()->role_id == 2)
             {
                 $role_name = 'student';
-            }elseif(auth()->user()->role_id == 3){
+            }elseif(Auth::user()->role_id == 3){
                 $role_name = 'parent';
             }else{
                 $role_name = 'staff';
@@ -427,9 +493,9 @@ class SidebarManagerController extends Controller
                 return 1;
             }
         }else{
-            if(auth()->user()->role_id == 2){
+            if(Auth::user()->role_id == 2){
                 return 2;
-            }elseif(auth()->user()->role_id == 3){
+            }elseif(Auth::user()->role_id == 3){
                 return 3;
             }else{
                 return 1;
