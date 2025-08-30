@@ -5,6 +5,63 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+// Notes CHECK ROLE TABLES - Find correct role permission table
+Route::get('notes-check-role-tables', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        try {
+            $html = "<h1>Role Permission Tables Investigation</h1>";
+            
+            // Check what role-related tables exist
+            $tables = DB::select("SHOW TABLES LIKE '%role%'");
+            $html .= "<h2>Tables containing 'role':</h2><ul>";
+            foreach ($tables as $table) {
+                $tableName = array_values((array)$table)[0];
+                $html .= "<li>{$tableName}</li>";
+            }
+            $html .= "</ul>";
+            
+            // Check permission-related tables
+            $tables = DB::select("SHOW TABLES LIKE '%permission%'");
+            $html .= "<h2>Tables containing 'permission':</h2><ul>";
+            foreach ($tables as $table) {
+                $tableName = array_values((array)$table)[0];
+                $html .= "<li>{$tableName}</li>";
+            }
+            $html .= "</ul>";
+            
+            // Check what table stores role-permission relationships
+            $allTables = DB::select("SHOW TABLES");
+            $html .= "<h2>Looking for role-permission relationship table...</h2>";
+            
+            foreach ($allTables as $table) {
+                $tableName = array_values((array)$table)[0];
+                if (stripos($tableName, 'permission') !== false || stripos($tableName, 'role') !== false) {
+                    // Get table structure
+                    try {
+                        $columns = DB::select("DESCRIBE {$tableName}");
+                        $columnNames = array_map(function($col) { return $col->Field; }, $columns);
+                        $html .= "<h3>{$tableName}</h3>";
+                        $html .= "<p>Columns: " . implode(', ', $columnNames) . "</p>";
+                        
+                        // Check if this table has role_id and permission_id
+                        if (in_array('role_id', $columnNames) && in_array('permission_id', $columnNames)) {
+                            $html .= "<p><strong>✅ This looks like the role-permission relationship table!</strong></p>";
+                        }
+                    } catch (\Exception $e) {
+                        $html .= "<p>Could not describe table {$tableName}: " . $e->getMessage() . "</p>";
+                    }
+                }
+            }
+            
+            return $html;
+            
+        } catch (\Exception $e) {
+            return "<h1>❌ ERROR!</h1><p>Table check failed: " . $e->getMessage() . "</p>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
 // Notes DIRECT SEEDER - Run seeder code directly without Artisan
 Route::get('notes-run-direct', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
