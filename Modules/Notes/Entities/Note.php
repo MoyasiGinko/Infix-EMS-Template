@@ -12,6 +12,8 @@ class Note extends Model
         'content',
         'type',
         'reference_id',
+    'noteable_id',
+    'noteable_type',
         'tags',
         'quantity',
         'amount',
@@ -21,5 +23,14 @@ class Note extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Polymorphic parent relation (optional). Replaces generic reference_id when set.
+     * Example parents: Expense, Income, Event models, etc.
+     */
+    public function noteable()
+    {
+        return $this->morphTo();
     }
 }

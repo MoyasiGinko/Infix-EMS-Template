@@ -60,6 +60,7 @@
                       <th>@lang('common.quantity')</th>
                       <th>@lang('common.amount')</th>
                       <th>@lang('common.created_by')</th>
+                      <th>@lang('common.related')</th>
                       <th>@lang('common.date')</th>
                       <th>@lang('common.actions')</th>
                     </tr>
@@ -72,6 +73,13 @@
                       <td>{{ $note->quantity }}</td>
                       <td>{{ number_format($note->amount,2) }}</td>
                       <td>{{ optional($note->user)->name ?? '-' }}</td>
+                      <td>
+                        @if($note->noteable)
+                          {{ class_basename($note->noteable_type) }} #{{ $note->noteable_id }}
+                        @else
+                          -
+                        @endif
+                      </td>
                       <td>{{ $note->created_at->format('Y-m-d') }}</td>
                       <td>
                         <div class="dropdown CRM_dropdown">
@@ -101,7 +109,7 @@
                     </tr>
                     @empty
                     <tr>
-                      <td colspan="7" class="text-center">@lang('common.no_data_available')</td>
+                      <td colspan="8" class="text-center">@lang('common.no_data_available')</td>
                     </tr>
                     @endforelse
                   </tbody>

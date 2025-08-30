@@ -30,6 +30,13 @@
                         <div class="row mt-10">
                             <div class="col-lg-6 mb-10"><strong>@lang('common.type'):</strong> {{ $note->type }}</div>
                             <div class="col-lg-6 mb-10"><strong>@lang('common.reference') ID:</strong> {{ $note->reference_id }}</div>
+                            <div class="col-lg-6 mb-10"><strong>@lang('common.related'):</strong>
+                                @if($note->noteable)
+                                    {{ class_basename($note->noteable_type) }} #{{ $note->noteable_id }}
+                                @else
+                                    -
+                                @endif
+                            </div>
                             <div class="col-lg-6 mb-10"><strong>@lang('common.tags'):</strong> {{ $note->tags }}</div>
                             <div class="col-lg-6 mb-10"><strong>@lang('common.quantity'):</strong> {{ $note->quantity }}</div>
                             <div class="col-lg-6 mb-10"><strong>@lang('common.amount'):</strong> {{ number_format($note->amount,2) }}</div>

@@ -25,7 +25,7 @@ class NotesExport implements FromArray, WithHeadings, Responsable
     public function headings(): array
     {
         return [
-            'Title','Type','Content','Reference ID','Tags','Quantity','Amount','Created By','Created At'
+            'Title','Type','Content','Reference ID','Tags','Quantity','Amount','Created By','Related ID','Related Type','Created At'
         ];
     }
 

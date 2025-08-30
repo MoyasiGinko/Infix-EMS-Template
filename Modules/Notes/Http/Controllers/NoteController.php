@@ -3,7 +3,7 @@
 namespace Modules\Notes\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller; // use base app controller that includes AuthorizesRequests
 use Modules\Notes\Entities\Note;
 use Modules\Notes\Http\Requests\NoteRequest;
 use Maatwebsite\Excel\Facades\Excel;
@@ -16,7 +16,7 @@ class NoteController extends Controller
 {
     public function index()
     {
-        $query = Note::with('user')->latest();
+    $query = Note::with(['user','noteable'])->latest();
         $isSuperAdmin = Auth::check() && Auth::user()->role_id == 1;
         if (! $isSuperAdmin) {
             $query->where('created_by', Auth::id());
@@ -30,7 +30,7 @@ class NoteController extends Controller
     public function all()
     {
         abort_unless(Auth::check() && Auth::user()->role_id == 1, 403);
-        $notes = Note::with('user')->latest()->paginate(50);
+    $notes = Note::with(['user','noteable'])->latest()->paginate(50);
     $isSuperAdmin = true;
     $showingAll = true;
     return view('notes::index', compact('notes', 'isSuperAdmin', 'showingAll'));
@@ -46,8 +46,10 @@ class NoteController extends Controller
     $this->authorize('create', Note::class);
         $data = $request->validated();
         $data['created_by'] = Auth::id();
-    // reference_id is optional and can map to a related entity (e.g. expense/income/event id) or external system id.
-    // Leave null if not linking to another record. You could later extend with polymorphic relation.
+        // Drop empty polymorphic inputs to avoid overwriting existing legacy data with nulls
+        if (empty($data['noteable_id']) || empty($data['noteable_type'])) {
+            unset($data['noteable_id'], $data['noteable_type']);
+        }
         Note::create($data);
         return redirect()->route('notes.index')->with('success', 'Note created successfully.');
     }
@@ -56,7 +58,7 @@ class NoteController extends Controller
     public function show(Note $note)
     {
     $this->authorize('view', $note);
-        $note->loadMissing('user');
+    $note->loadMissing(['user','noteable']);
         return view('notes::show', compact('note'));
     }
 
@@ -69,7 +71,11 @@ class NoteController extends Controller
     public function update(NoteRequest $request, Note $note)
     {
     $this->authorize('update', $note);
-        $note->update($request->validated());
+        $payload = $request->validated();
+        if (empty($payload['noteable_id']) || empty($payload['noteable_type'])) {
+            unset($payload['noteable_id'], $payload['noteable_type']);
+        }
+        $note->update($payload);
         return redirect()->route('notes.index')->with('success', 'Note updated successfully.');
     }
 
@@ -83,7 +89,7 @@ class NoteController extends Controller
     // Category-specific methods
     public function expenses()
     {
-        $notes = Note::with('user')->where('type', 'expense')
+    $notes = Note::with(['user','noteable'])->where('type', 'expense')
             ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
             ->latest()->paginate(20);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Expense Notes');
@@ -91,7 +97,7 @@ class NoteController extends Controller
 
     public function incomes()
     {
-        $notes = Note::with('user')->where('type', 'income')
+    $notes = Note::with(['user','noteable'])->where('type', 'income')
             ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
             ->latest()->paginate(20);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Income Notes');
@@ -99,7 +105,7 @@ class NoteController extends Controller
 
     public function events()
     {
-        $notes = Note::with('user')->where('type', 'event')
+    $notes = Note::with(['user','noteable'])->where('type', 'event')
             ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
             ->latest()->paginate(20);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Event Notes');
@@ -107,7 +113,7 @@ class NoteController extends Controller
 
     public function incidents()
     {
-        $notes = Note::with('user')->where('type', 'incident')
+    $notes = Note::with(['user','noteable'])->where('type', 'incident')
             ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
             ->latest()->paginate(20);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Incident Notes');
@@ -117,7 +123,7 @@ class NoteController extends Controller
     public function exportExcel(Request $request)
     {
         $this->authorize('export', Note::class);
-        $notes = Note::with('user')->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
+    $notes = Note::with(['user','noteable'])->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
         $rows = $notes->map(function ($note) {
             return [
                 $note->title,
@@ -128,6 +134,8 @@ class NoteController extends Controller
                 $note->quantity,
                 $note->amount,
                 optional($note->user)->name,
+        optional($note->noteable)->id,
+        class_basename(optional($note->noteable)) ?: null,
                 $note->created_at->format('Y-m-d H:i:s'),
             ];
         })->toArray();
@@ -137,7 +145,7 @@ class NoteController extends Controller
     public function exportPdf(Request $request)
     {
         $this->authorize('export', Note::class);
-        $notes = Note::with('user')->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
+    $notes = Note::with(['user','noteable'])->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
         $pdf = Pdf::loadView('notes::export_pdf', compact('notes'));
         return $pdf->download('notes.pdf');
     }
