@@ -138,7 +138,90 @@ try {
     echo "</div>";
 
     echo "<div class='section'>";
-    echo "<h2>5. DIAGNOSIS</h2>";
+    echo "<h2>5. Frontend Controller Logic Debug</h2>";
+
+    // Simulate exactly what SidebarManagerController::unUsedMenu() does
+    echo "<p>Testing SidebarManagerController::unUsedMenu() logic:</p>";
+
+    $role_id = 1;
+    $hasSidebarData = DB::table('sidebars')->where('role_id', $role_id)->whereNull('user_id')->exists();
+
+    echo "<p><strong>Has sidebar data for role 1:</strong> " . ($hasSidebarData ? 'YES' : 'NO') . "</p>";
+
+    if ($hasSidebarData) {
+        // This replicates the exact SidebarManagerController logic
+        echo "<h4>SidebarManagerController will use this complex query logic:</h4>";
+
+        $sectionIds = DB::table('sidebars')->whereNull('parent')->pluck('permission_id')->toArray();
+        echo "<p>Step 1 - Section IDs (parent = null): " . json_encode($sectionIds) . "</p>";
+
+        $parentSidebars = DB::table('sidebars')
+            ->whereIn('parent', $sectionIds)
+            ->where('role_id', $role_id)
+            ->where('active_status', 0)
+            ->whereNull('user_id')
+            ->pluck('permission_id')
+            ->toArray();
+        echo "<p>Step 2 - Parent Sidebars (active_status=0): " . json_encode($parentSidebars) . "</p>";
+
+        $single = DB::table('sidebars')
+            ->whereNotIn('parent', $parentSidebars)
+            ->where('role_id', $role_id)
+            ->where('active_status', 0)
+            ->whereNull('user_id')
+            ->pluck('permission_id')
+            ->toArray();
+        echo "<p>Step 3 - Single Items (not in parent): " . json_encode($single) . "</p>";
+
+        $hasIds = array_merge($parentSidebars, $single);
+        $hasIds = array_unique($hasIds);
+        echo "<p>Step 4 - Combined IDs: " . json_encode($hasIds) . "</p>";
+
+        // Check if Notes permission ID is in the hasIds
+        $notesPermissionId = 1847;
+        if (in_array($notesPermissionId, $hasIds)) {
+            echo "<p class='found'>✅ Notes permission ID ({$notesPermissionId}) IS in hasIds - will be processed</p>";
+        } else {
+            echo "<p class='not-found'>❌ Notes permission ID ({$notesPermissionId}) is NOT in hasIds - will be filtered out!</p>";
+        }
+
+        if ($hasIds !== []) {
+            $controllerResult = DB::table('sidebars')
+                ->join('permissions', 'sidebars.permission_id', '=', 'permissions.id')
+                ->whereIn('sidebars.permission_id', $hasIds)
+                ->where('sidebars.role_id', $role_id)
+                ->where('sidebars.active_status', 0)
+                ->whereNull('sidebars.user_id')
+                ->select('sidebars.id', 'sidebars.permission_id', 'permissions.name', 'permissions.route', 'permissions.lang_name', 'permissions.module', 'sidebars.parent')
+                ->get();
+
+            echo "<p><strong>Controller result count:</strong> " . count($controllerResult) . "</p>";
+
+            $notesInController = $controllerResult->where('route', 'notes.index')->first();
+            if ($notesInController) {
+                echo "<p class='found'>✅ Notes WILL appear in controller result</p>";
+                echo "<pre>Controller Notes data: " . json_encode($notesInController, JSON_PRETTY_PRINT) . "</pre>";
+            } else {
+                echo "<p class='not-found'>❌ Notes will NOT appear in controller result</p>";
+                if (count($controllerResult) > 0) {
+                    echo "<p><strong>Items that WILL appear:</strong></p>";
+                    foreach ($controllerResult as $item) {
+                        echo "<p>- {$item->name} ({$item->route})</p>";
+                    }
+                } else {
+                    echo "<p>No items will appear at all!</p>";
+                }
+            }
+        } else {
+            echo "<p class='not-found'>❌ hasIds is empty - controller will return empty collection</p>";
+        }
+    } else {
+        echo "<p>No sidebar data exists - controller would show all permissions</p>";
+    }
+    echo "</div>";
+
+    echo "<div class='section'>";
+    echo "<h2>6. DIAGNOSIS</h2>";
     if ($notesInUnused) {
         echo "<p class='found'><strong>BACKEND STATUS: ✅ GOOD</strong></p>";
         echo "<p>Notes appears correctly in the backend unused menu query.</p>";
