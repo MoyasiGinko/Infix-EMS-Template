@@ -418,6 +418,7 @@ class SidebarManagerController extends Controller
     {
 
         foreach ($menuItems as $index => $item) {
+            // Try to find SmMenu row
             $menuItem = SmMenu::where('id', $item->id)
                 ->when(! $un_used, function ($q): void {
                     $q->where('menu_status', 1);
@@ -430,13 +431,33 @@ class SidebarManagerController extends Controller
                 'menu_status' => $menu_status ?? 1,
             ];
 
-            if ($menuItem) {
-                $menuItem->update($data);
-                if (isset($item->children)) {
-                    $this->orderMenu($item->children, $menu_status, $menuItem->permission_id, $un_used);
+            // If not found, create new SmMenu row for sidebar-based item
+            if (!$menuItem) {
+                // Only create if item has route and name (sidebar-based)
+                if (!empty($item->route) && !empty($item->name)) {
+                    $menuItem = new SmMenu();
+                    $menuItem->name = $item->name;
+                    $menuItem->route = $item->route;
+                    $menuItem->lang_name = $item->lang_name ?? $item->name;
+                    $menuItem->module = $item->module ?? null;
+                    $menuItem->parent_id = $parent_id;
+                    $menuItem->position = $index + 1;
+                    $menuItem->menu_status = $menu_status ?? 1;
+                    $menuItem->role_id = $item->role_id ?? 1;
+                    $menuItem->permission_section = 0;
+                    $menuItem->is_saas = 0;
+                    $menuItem->school_id = isset($item->school_id) ? $item->school_id : 1;
+                    $menuItem->save();
+                    // Set id for recursion
+                    $item->id = $menuItem->id;
                 }
+            } else {
+                $menuItem->update($data);
             }
 
+            if ($menuItem && isset($item->children)) {
+                $this->orderMenu($item->children, $menu_status, $menuItem->permission_id, $un_used);
+            }
         }
 
     }

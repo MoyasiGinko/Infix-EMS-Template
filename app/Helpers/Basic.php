@@ -294,12 +294,12 @@ if (!function_exists('subModuleRoute')) {
 // {
 //     function getSubModuleRoutes($menu, $routes = [])
 //     {
-       
+
 //         $routes[] = $menu->route;
 //         if($menu->childs->count() ){
 //             foreach($menu->childs as $child)
 //             {
-                
+
 //                 //$routes = getSubModuleRoutes($child, $routes);
 //             }
 //             return $routes;
@@ -411,8 +411,8 @@ if (!function_exists('sidebar_menus')) {
 if(!function_exists('getMenus'))
 {
     function getMenus($role_name = 'staff')
-    {   
-        
+    {
+
        $menus =  SmMenu::with([
                     'childs' => function($q) use ($role_name) {
                         $q->where('menu_status',1)
@@ -424,14 +424,14 @@ if(!function_exists('getMenus'))
                             ->when($role_name == 'parent',function($q){ $q->where('role_id',3); })
                             ->when($role_name == 'staff',function($q){ $q->where('role_id',1); })->orderBy('position','ASC');
                     }])
-                    ->where('menu_status',1)          
+                    ->where('menu_status',1)
                     ->where('permission_section',1)
                     ->when($role_name == 'student',function($q){ $q->where('role_id',2); })
                     ->when($role_name == 'parent',function($q){ $q->where('role_id',3); })
                     ->when($role_name == 'staff',function($q){ $q->where('role_id',1); })
                     ->orderBy('position','ASC')
-                    ->get();   
-       
+                    ->get();
+
        return $menus;
     }
 }
@@ -439,7 +439,7 @@ if(!function_exists('getMenus'))
 if(!function_exists('getUnusedMenus'))
 {
     function getUnusedMenus($role_name = 'staff')
-    {   
+    {
         // Determine role id mapping used by sm_menus
         $role_id = $role_name === 'student' ? 2 : ($role_name === 'parent' ? 3 : 1);
 
@@ -534,7 +534,7 @@ if(!function_exists('isTeacher'))
 if (!function_exists('storePermissionData')) {
     function storePermissionData($permission, $user_id = null, $school_id = null, $role_id = null)
     {
-        
+
         $is_role_based_sidebar = is_role_based_sidebar();
         Permission::updateOrCreate([
             'module' => $permission['module'],
