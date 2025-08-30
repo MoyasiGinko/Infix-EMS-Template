@@ -15,9 +15,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Modules\RolePermission\Entities\Permission;
 
-require_once __DIR__ . '/bootstrap/app.php';
+// IMPORTANT: load Composer autoloader first so Illuminate classes are available
+// (Fixes: Class "Illuminate\Foundation\Application" not found)
+require_once __DIR__ . '/vendor/autoload.php';
 
-$app = require_once __DIR__ . '/bootstrap/app.php';
+// Bootstrap the Laravel application (once)
+$app = require __DIR__ . '/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
