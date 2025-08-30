@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Modules\Notes\Exports\NotesExport;
 
 class NoteController extends Controller
 {
@@ -37,10 +38,12 @@ class NoteController extends Controller
 
     public function create()
     {
+    $this->authorize('create', Note::class);
         return view('notes::create');
     }
     public function store(NoteRequest $request)
     {
+    $this->authorize('create', Note::class);
         $data = $request->validated();
         $data['created_by'] = Auth::id();
     // reference_id is optional and can map to a related entity (e.g. expense/income/event id) or external system id.
@@ -52,36 +55,27 @@ class NoteController extends Controller
 
     public function show(Note $note)
     {
-        // Authorization: non super admin can only view own note
-        if (Auth::user()->role_id != 1 && $note->created_by != Auth::id()) {
-            abort(403);
-        }
+    $this->authorize('view', $note);
         $note->loadMissing('user');
         return view('notes::show', compact('note'));
     }
 
     public function edit(Note $note)
     {
-        if (Auth::user()->role_id != 1 && $note->created_by != Auth::id()) {
-            abort(403);
-        }
+    $this->authorize('update', $note);
         return view('notes::edit', compact('note'));
     }
 
     public function update(NoteRequest $request, Note $note)
     {
-        if (Auth::user()->role_id != 1 && $note->created_by != Auth::id()) {
-            abort(403);
-        }
+    $this->authorize('update', $note);
         $note->update($request->validated());
         return redirect()->route('notes.index')->with('success', 'Note updated successfully.');
     }
 
     public function destroy(Note $note)
     {
-        if (Auth::user()->role_id != 1 && $note->created_by != Auth::id()) {
-            abort(403);
-        }
+    $this->authorize('delete', $note);
         $note->delete();
         return redirect()->route('notes.index')->with('success', 'Note deleted successfully.');
     }
@@ -122,26 +116,28 @@ class NoteController extends Controller
     // Placeholder for export methods (Excel/PDF)
     public function exportExcel(Request $request)
     {
-    $notes = Note::with('user')->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
-        $exportData = $notes->map(function ($note) {
+        $this->authorize('export', Note::class);
+        $notes = Note::with('user')->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
+        $rows = $notes->map(function ($note) {
             return [
-                'Title' => $note->title,
-                'Type' => $note->type,
-                'Content' => $note->content,
-                'Reference ID' => $note->reference_id,
-                'Tags' => $note->tags,
-                'Quantity' => $note->quantity,
-                'Amount' => $note->amount,
-        'Created By' => optional($note->user)->name,
-                'Created At' => $note->created_at,
+                $note->title,
+                $note->type,
+                $note->content,
+                $note->reference_id,
+                $note->tags,
+                $note->quantity,
+                $note->amount,
+                optional($note->user)->name,
+                $note->created_at->format('Y-m-d H:i:s'),
             ];
-        });
-        return Excel::download(new \ArrayObject([$exportData->toArray()]), 'notes.xlsx');
+        })->toArray();
+        return new NotesExport($rows);
     }
 
     public function exportPdf(Request $request)
     {
-    $notes = Note::with('user')->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
+        $this->authorize('export', Note::class);
+        $notes = Note::with('user')->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
         $pdf = Pdf::loadView('notes::export_pdf', compact('notes'));
         return $pdf->download('notes.pdf');
     }
