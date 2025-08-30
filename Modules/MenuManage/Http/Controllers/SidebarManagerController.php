@@ -104,10 +104,11 @@ class SidebarManagerController extends Controller
         $data = [];
         $role_id = $request->role_id;
         $data['editPermissionSection'] = SmMenu::where('id',$id)->first();
-
-        $data['unused_menus'] = self::unUsedMenu($role_id);
+        // Use unified data builder to ensure merged unused menu list (sm_menus + sidebars)
+        $menusData = $this->getMenusData($role_name);
+        $data['unused_menus'] = $menusData['unused_menus'];
+        $data['sidebar_menus'] = $menusData['sidebar_menus'];
         Cache::forget(sidebar_cache_key($role_id));
-        $data['sidebar_menus'] = sidebar_menus($role_id);
 
         if ($role_id) {
             $data['role'] = InfixRole::find($role_id);
