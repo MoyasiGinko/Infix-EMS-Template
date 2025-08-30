@@ -85,7 +85,7 @@
             @endforeach
           </ol>
           @else
-          <p class="text-muted" style="padding:10px;">{{ __('common.No unused menu items found') }}</p>
+          <p class="text-muted" style="padding:10px;">{{ __('No unused menu items found') }}</p>
           @endif
           @endisset
 
