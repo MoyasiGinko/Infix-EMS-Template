@@ -2,7 +2,7 @@
 deployment:
   tasks:
     # Pull the latest code
-    - export DEPLOYPATH=/home/username/public_html/
+    - export DEPLOYPATH=/home/qlabxcom/markazululoomalislamiahdhaka.com
     - /bin/cp -R * $DEPLOYPATH
 
     # Install/Update Composer dependencies
