@@ -221,7 +221,52 @@ try {
     echo "</div>";
 
     echo "<div class='section'>";
-    echo "<h2>6. DIAGNOSIS</h2>";
+    echo "<h2>7. PARENT FIELD DEBUG - This is the problem!</h2>";
+
+    // Check the parent field for Notes sidebar record
+    $notesSidebar = DB::table('sidebars')->where('permission_id', 1847)->where('role_id', 1)->first();
+    if ($notesSidebar) {
+        echo "<p><strong>Notes sidebar parent field:</strong> " . ($notesSidebar->parent ?? 'NULL') . "</p>";
+
+        // Check what the parent field should be for unused items
+        echo "<h4>Analyzing the parent field logic:</h4>";
+
+        // Get section IDs (these are permissions that have parent=null in sidebars)
+        $sectionIds = DB::table('sidebars')->whereNull('parent')->pluck('permission_id')->toArray();
+        echo "<p>Section IDs (parent=null): " . json_encode($sectionIds) . "</p>";
+
+        // Check if Notes parent field causes the filtering issue
+        if ($notesSidebar->parent && in_array($notesSidebar->parent, $sectionIds)) {
+            echo "<p class='not-found'>❌ PROBLEM: Notes parent ({$notesSidebar->parent}) is in sectionIds</p>";
+            echo "<p>This means Notes is treated as a child item, but its parent might not be inactive</p>";
+
+            // Check if parent is inactive
+            $parentSidebar = DB::table('sidebars')
+                ->where('permission_id', $notesSidebar->parent)
+                ->where('role_id', 1)
+                ->first();
+            if ($parentSidebar) {
+                echo "<p>Parent sidebar active_status: {$parentSidebar->active_status}</p>";
+                if ($parentSidebar->active_status == 1) {
+                    echo "<p class='not-found'>❌ PROBLEM: Parent is active (1), so Notes gets filtered out!</p>";
+                    echo "<p class='found'>✅ SOLUTION: Set Notes parent to NULL or make it standalone</p>";
+                } else {
+                    echo "<p>Parent is inactive, this should work...</p>";
+                }
+            }
+        } else {
+            echo "<p>Notes parent logic seems OK...</p>";
+        }
+
+        echo "<h4>SOLUTION OPTIONS:</h4>";
+        echo "<p><strong>Option 1 (Recommended):</strong> Set Notes parent to NULL to make it a standalone menu item</p>";
+        echo "<p><strong>Option 2:</strong> Make sure Notes parent is also inactive (active_status=0)</p>";
+    }
+
+    echo "</div>";
+
+    echo "<div class='section'>";
+    echo "<h2>8. DIAGNOSIS</h2>";
     if ($notesInUnused) {
         echo "<p class='found'><strong>BACKEND STATUS: ✅ GOOD</strong></p>";
         echo "<p>Notes appears correctly in the backend unused menu query.</p>";
