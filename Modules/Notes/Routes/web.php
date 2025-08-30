@@ -104,6 +104,314 @@ Route::get('notes-final-fix', function () {
     return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
 });
 
+// Notes SIMPLE DEBUG - Quick check for notes in menus
+Route::get('notes-simple-debug', function () {
+    try {
+        $html = "<h1>Notes Simple Debug</h1>";
+        $html .= "<style>
+            .section { margin: 15px 0; padding: 10px; border: 1px solid #ccc; }
+            .found { color: green; font-weight: bold; }
+            .not-found { color: red; font-weight: bold; }
+            .warning { color: orange; font-weight: bold; }
+            pre { background: #f5f5f5; padding: 10px; }
+        </style>";
+
+        $role_id = 1;
+
+        // Quick check 1: Permission exists?
+        $html .= "<div class='section'>";
+        $html .= "<h2>1. Permission Check</h2>";
+        $permission = DB::table('permissions')->where('route', 'notes.index')->first();
+        if ($permission) {
+            $html .= "<p class='found'>✅ Permission exists: ID {$permission->id}, name: {$permission->name}</p>";
+            $html .= "<p>Status: {$permission->status}, Menu Status: {$permission->menu_status}</p>";
+            $html .= "<p>Is Admin: " . ($permission->is_admin ?? 'NULL') . ", Is Teacher: " . ($permission->is_teacher ?? 'NULL') . "</p>";
+        } else {
+            $html .= "<p class='not-found'>❌ No permission found for notes.index</p>";
+        }
+        $html .= "</div>";
+
+        // Quick check 2: Assigned?
+        $html .= "<div class='section'>";
+        $html .= "<h2>2. Assignment Check</h2>";
+        if ($permission) {
+            $assigned = DB::table('assign_permissions')
+                ->where('permission_id', $permission->id)
+                ->where('role_id', $role_id)
+                ->first();
+            if ($assigned) {
+                $html .= "<p class='found'>✅ Permission assigned: ID {$assigned->id}</p>";
+                $html .= "<p>Status: {$assigned->status}, Menu Status: {$assigned->menu_status}</p>";
+            } else {
+                $html .= "<p class='not-found'>❌ Permission not assigned to role {$role_id}</p>";
+            }
+        }
+        $html .= "</div>";
+
+        // Quick check 3: Sidebar entry?
+        $html .= "<div class='section'>";
+        $html .= "<h2>3. Sidebar Check</h2>";
+        if ($permission) {
+            $sidebar = DB::table('sidebars')
+                ->where('permission_id', $permission->id)
+                ->where('role_id', $role_id)
+                ->first();
+            if ($sidebar) {
+                $html .= "<p class='found'>✅ Sidebar entry exists: ID {$sidebar->id}</p>";
+                $html .= "<p>Active Status: {$sidebar->active_status} " . ($sidebar->active_status == 0 ? "(Should be in unused)" : "(Should be in used)") . "</p>";
+                $html .= "<p>Position: {$sidebar->position}</p>";
+            } else {
+                $html .= "<p class='not-found'>❌ No sidebar entry found</p>";
+            }
+        }
+        $html .= "</div>";
+
+        // Quick check 4: What would SidebarManager see?
+        $html .= "<div class='section'>";
+        $html .= "<h2>4. SidebarManager Unused Query Result</h2>";
+        $unused = DB::table('sidebars')
+            ->join('permissions', 'sidebars.permission_id', '=', 'permissions.id')
+            ->where('sidebars.role_id', $role_id)
+            ->where('sidebars.active_status', 0)
+            ->whereNull('sidebars.user_id')
+            ->where('permissions.status', 1)
+            ->where('permissions.menu_status', 1)
+            ->select('sidebars.id as sidebar_id', 'permissions.name', 'permissions.route', 'permissions.lang_name')
+            ->get();
+
+        $notesInUnused = $unused->where('route', 'notes.index')->first();
+        if ($notesInUnused) {
+            $html .= "<p class='found'>✅ Notes appears in unused menu query</p>";
+            $html .= "<pre>" . json_encode($notesInUnused, JSON_PRETTY_PRINT) . "</pre>";
+        } else {
+            $html .= "<p class='not-found'>❌ Notes does NOT appear in unused menu query</p>";
+        }
+
+        $html .= "<p><strong>Total unused items:</strong> " . count($unused) . "</p>";
+        if (count($unused) > 0) {
+            $html .= "<p><strong>First few unused items:</strong></p>";
+            foreach ($unused->take(5) as $item) {
+                $html .= "<p>- {$item->name} ({$item->route}) - {$item->lang_name}</p>";
+            }
+        }
+        $html .= "</div>";
+
+        return $html;
+
+    } catch (\Exception $e) {
+        return "<h1>❌ ERROR!</h1><p>Simple debug failed: " . $e->getMessage() . "</p>";
+    }
+});
+
+// Notes COMPREHENSIVE MENU DEBUG - Check all menu items and states
+Route::get('notes-comprehensive-menu-debug', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        try {
+            $html = "<h1>Comprehensive Menu Debug for Staff Role</h1>";
+            $html .= "<style>
+                .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+                .found { color: green; font-weight: bold; }
+                .not-found { color: red; font-weight: bold; }
+                .highlight { background-color: yellow; }
+                table { border-collapse: collapse; width: 100%; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+            </style>";
+
+            $role_id = 1; // Staff role
+
+            // 1. Check all permissions for this role type
+            $html .= "<div class='debug-section'>";
+            $html .= "<h2>1. All Available Permissions for Admin/Teacher Roles</h2>";
+
+            $allPermissions = DB::table('permissions')
+                ->where('status', 1)
+                ->where('menu_status', 1)
+                ->where(function($query) {
+                    $query->where('is_admin', 1)->orWhere('is_teacher', 1);
+                })
+                ->orderBy('position')
+                ->get();
+
+            $html .= "<p><strong>Total permissions:</strong> " . count($allPermissions) . "</p>";
+
+            $notesInAllPermissions = $allPermissions->where('route', 'notes.index')->first();
+            if ($notesInAllPermissions) {
+                $html .= "<p class='found'>✅ Notes found in all permissions</p>";
+            } else {
+                $html .= "<p class='not-found'>❌ Notes NOT found in all permissions</p>";
+            }
+            $html .= "</div>";
+
+            // 2. Check assigned permissions
+            $html .= "<div class='debug-section'>";
+            $html .= "<h2>2. Assigned Permissions for Staff Role</h2>";
+
+            $assignedPermissions = DB::table('assign_permissions')
+                ->join('permissions', 'assign_permissions.permission_id', '=', 'permissions.id')
+                ->where('assign_permissions.role_id', $role_id)
+                ->where('assign_permissions.status', 1)
+                ->where('assign_permissions.menu_status', 1)
+                ->where('permissions.status', 1)
+                ->where('permissions.menu_status', 1)
+                ->select('permissions.*', 'assign_permissions.id as assign_id')
+                ->get();
+
+            $html .= "<p><strong>Total assigned permissions:</strong> " . count($assignedPermissions) . "</p>";
+
+            $notesInAssigned = $assignedPermissions->where('route', 'notes.index')->first();
+            if ($notesInAssigned) {
+                $html .= "<p class='found'>✅ Notes found in assigned permissions (assign_id: {$notesInAssigned->assign_id})</p>";
+            } else {
+                $html .= "<p class='not-found'>❌ Notes NOT found in assigned permissions</p>";
+            }
+            $html .= "</div>";
+
+            // 3. Check sidebar data
+            $html .= "<div class='debug-section'>";
+            $html .= "<h2>3. Sidebar Data for Staff Role</h2>";
+
+            $sidebarData = DB::table('sidebars')
+                ->join('permissions', 'sidebars.permission_id', '=', 'permissions.id')
+                ->where('sidebars.role_id', $role_id)
+                ->whereNull('sidebars.user_id')
+                ->select('sidebars.*', 'permissions.name as perm_name', 'permissions.route', 'permissions.lang_name')
+                ->orderBy('sidebars.active_status')
+                ->orderBy('sidebars.position')
+                ->get();
+
+            $html .= "<p><strong>Total sidebar items:</strong> " . count($sidebarData) . "</p>";
+
+            $activeSidebar = $sidebarData->where('active_status', 1);
+            $inactiveSidebar = $sidebarData->where('active_status', 0);
+
+            $html .= "<p><strong>Active sidebar items:</strong> " . count($activeSidebar) . "</p>";
+            $html .= "<p><strong>Inactive sidebar items:</strong> " . count($inactiveSidebar) . "</p>";
+
+            $notesInSidebar = $sidebarData->where('route', 'notes.index')->first();
+            if ($notesInSidebar) {
+                $html .= "<p class='found'>✅ Notes found in sidebar data</p>";
+                $html .= "<p><strong>Notes sidebar details:</strong></p>";
+                $html .= "<ul>";
+                $html .= "<li>ID: {$notesInSidebar->id}</li>";
+                $html .= "<li>Active Status: {$notesInSidebar->active_status} " . ($notesInSidebar->active_status == 0 ? "(Inactive - should appear in unused)" : "(Active - should appear in used)") . "</li>";
+                $html .= "<li>Position: {$notesInSidebar->position}</li>";
+                $html .= "<li>Permission Name: {$notesInSidebar->perm_name}</li>";
+                $html .= "<li>Lang Name: {$notesInSidebar->lang_name}</li>";
+                $html .= "<li>User ID: " . ($notesInSidebar->user_id ?? 'NULL') . "</li>";
+                $html .= "</ul>";
+            } else {
+                $html .= "<p class='not-found'>❌ Notes NOT found in sidebar data</p>";
+            }
+            $html .= "</div>";
+
+            // 4. What should appear in unused menu (backend calculation)
+            $html .= "<div class='debug-section'>";
+            $html .= "<h2>4. Backend Calculation: What Should Appear in Unused Menu</h2>";
+
+            $unusedMenuItems = DB::table('sidebars')
+                ->join('permissions', 'sidebars.permission_id', '=', 'permissions.id')
+                ->where('sidebars.role_id', $role_id)
+                ->where('sidebars.active_status', 0)
+                ->whereNull('sidebars.user_id')
+                ->where('permissions.status', 1)
+                ->where('permissions.menu_status', 1)
+                ->select('sidebars.id as sidebar_id', 'permissions.name', 'permissions.route', 'permissions.lang_name', 'sidebars.position')
+                ->orderBy('sidebars.position')
+                ->get();
+
+            $html .= "<p><strong>Unused menu items count:</strong> " . count($unusedMenuItems) . "</p>";
+
+            if (count($unusedMenuItems) > 0) {
+                $html .= "<h3>Unused Menu Items:</h3>";
+                $html .= "<table>";
+                $html .= "<tr><th>Name</th><th>Route</th><th>Lang Name</th><th>Position</th><th>Sidebar ID</th></tr>";
+
+                foreach ($unusedMenuItems as $item) {
+                    $isNotes = $item->route === 'notes.index';
+                    $rowClass = $isNotes ? "class='highlight'" : "";
+                    $html .= "<tr {$rowClass}>";
+                    $html .= "<td>{$item->name}</td>";
+                    $html .= "<td>{$item->route}</td>";
+                    $html .= "<td>{$item->lang_name}</td>";
+                    $html .= "<td>{$item->position}</td>";
+                    $html .= "<td>{$item->sidebar_id}</td>";
+                    $html .= "</tr>";
+                }
+                $html .= "</table>";
+
+                $notesInUnused = $unusedMenuItems->where('route', 'notes.index')->first();
+                if ($notesInUnused) {
+                    $html .= "<p class='found'>✅ Notes found in unused menu calculation</p>";
+                } else {
+                    $html .= "<p class='not-found'>❌ Notes NOT found in unused menu calculation</p>";
+                }
+            } else {
+                $html .= "<p>No unused menu items found</p>";
+            }
+            $html .= "</div>";
+
+            // 5. What should appear in used menu (backend calculation)
+            $html .= "<div class='debug-section'>";
+            $html .= "<h2>5. Backend Calculation: What Should Appear in Used Menu</h2>";
+
+            $usedMenuItems = DB::table('sidebars')
+                ->join('permissions', 'sidebars.permission_id', '=', 'permissions.id')
+                ->where('sidebars.role_id', $role_id)
+                ->where('sidebars.active_status', 1)
+                ->whereNull('sidebars.user_id')
+                ->where('permissions.status', 1)
+                ->where('permissions.menu_status', 1)
+                ->select('sidebars.id as sidebar_id', 'permissions.name', 'permissions.route', 'permissions.lang_name', 'sidebars.position')
+                ->orderBy('sidebars.position')
+                ->get();
+
+            $html .= "<p><strong>Used menu items count:</strong> " . count($usedMenuItems) . "</p>";
+
+            $notesInUsed = $usedMenuItems->where('route', 'notes.index')->first();
+            if ($notesInUsed) {
+                $html .= "<p class='found'>✅ Notes found in used menu calculation</p>";
+            } else {
+                $html .= "<p>Notes not in used menu (expected if inactive)</p>";
+            }
+            $html .= "</div>";
+
+            // 6. Summary and recommendations
+            $html .= "<div class='debug-section'>";
+            $html .= "<h2>6. Summary & Diagnosis</h2>";
+
+            if ($notesInUnused) {
+                $html .= "<p class='found'><strong>BACKEND STATUS: ✅ GOOD</strong></p>";
+                $html .= "<p>Notes appears correctly in backend unused menu calculation.</p>";
+                $html .= "<p><strong>LIKELY ISSUE: Frontend/JavaScript filtering or display problem</strong></p>";
+                $html .= "<p><strong>Recommendations:</strong></p>";
+                $html .= "<ul>";
+                $html .= "<li>Check browser console for JavaScript errors</li>";
+                $html .= "<li>Try in incognito mode</li>";
+                $html .= "<li>Check if frontend JS is filtering based on specific criteria</li>";
+                $html .= "<li>Verify the Sidebar Manager view file isn't filtering out certain items</li>";
+                $html .= "</ul>";
+            } else {
+                $html .= "<p class='not-found'><strong>BACKEND STATUS: ❌ PROBLEM</strong></p>";
+                $html .= "<p>Notes is not appearing in backend unused menu calculation.</p>";
+                $html .= "<p><strong>Check the following:</strong></p>";
+                $html .= "<ul>";
+                $html .= "<li>Permission exists and has correct status/menu_status</li>";
+                $html .= "<li>Sidebar record exists with active_status=0</li>";
+                $html .= "<li>Role assignment exists in assign_permissions</li>";
+                $html .= "</ul>";
+            }
+            $html .= "</div>";
+
+            return $html;
+
+        } catch (\Exception $e) {
+            return "<h1>❌ ERROR!</h1><p>Comprehensive debug failed: " . $e->getMessage() . "</p><p>Stack trace:</p><pre>" . $e->getTraceAsString() . "</pre>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
 // Notes CLEAR CACHE AND FIX DISPLAY - Clear cache and fix display name
 Route::get('notes-clear-cache-fix', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
