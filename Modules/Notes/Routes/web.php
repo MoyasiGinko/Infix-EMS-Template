@@ -104,6 +104,34 @@ Route::get('notes-final-fix', function () {
     return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
 });
 
+// Notes CHECK SIDEBARS TABLE - Find correct columns for sidebars table
+Route::get('notes-check-sidebars-table', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        try {
+            $html = "<h1>Sidebars Table Structure Investigation</h1>";
+
+            // Check sidebars table structure
+            $columns = DB::select("DESCRIBE sidebars");
+            $columnNames = array_map(function($col) { return $col->Field; }, $columns);
+            $html .= "<h2>Sidebars table columns:</h2>";
+            $html .= "<p>" . implode(', ', $columnNames) . "</p>";
+
+            // Show a sample record from sidebars table
+            $sampleRecord = DB::table('sidebars')->where('role_id', 1)->first();
+            if ($sampleRecord) {
+                $html .= "<h2>Sample sidebar record:</h2>";
+                $html .= "<pre>" . json_encode($sampleRecord, JSON_PRETTY_PRINT) . "</pre>";
+            }
+
+            return $html;
+
+        } catch (\Exception $e) {
+            return "<h1>❌ ERROR!</h1><p>Table check failed: " . $e->getMessage() . "</p>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
 // Notes ADD TO SIDEBAR DATA - Add Notes to existing sidebar data for Staff role
 Route::get('notes-add-to-sidebar', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
