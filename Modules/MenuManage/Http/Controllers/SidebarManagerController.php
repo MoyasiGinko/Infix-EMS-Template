@@ -435,6 +435,8 @@ class SidebarManagerController extends Controller
             if (!$menuItem) {
                 // Only create if item has route and name (sidebar-based)
                 if (!empty($item->route) && !empty($item->name)) {
+                    // Keep original permission id (pseudo id from available list)
+                    $originalPermissionId = $item->permission_id ?? $item->id ?? null;
                     $menuItem = new SmMenu();
                     $menuItem->name = $item->name;
                     $menuItem->route = $item->route;
@@ -447,7 +449,18 @@ class SidebarManagerController extends Controller
                     $menuItem->permission_section = 0;
                     $menuItem->is_saas = 0;
                     $menuItem->school_id = isset($item->school_id) ? $item->school_id : 1;
+                    // Link back to permission so future lookups / resets work & prevent duplicates
+                    if ($originalPermissionId) {
+                        $menuItem->permission_id = $originalPermissionId;
+                    }
                     $menuItem->save();
+                    // Mark related legacy sidebar row as active so it disappears from unused list next reload
+                    if ($originalPermissionId) {
+                        Sidebar::where('permission_id', $originalPermissionId)
+                            ->whereNull('user_id')
+                            ->when(isset($menuItem->role_id), function($q) use ($menuItem){ $q->where('role_id', $menuItem->role_id); })
+                            ->update(['active_status' => 1]);
+                    }
                     // Set id for recursion
                     $item->id = $menuItem->id;
                 }
@@ -456,7 +469,8 @@ class SidebarManagerController extends Controller
             }
 
             if ($menuItem && isset($item->children)) {
-                $this->orderMenu($item->children, $menu_status, $menuItem->permission_id, $un_used);
+                // Use the sm_menus primary key for parent/child linkage, not permission_id
+                $this->orderMenu($item->children, $menu_status, $menuItem->id, $un_used);
             }
         }
 

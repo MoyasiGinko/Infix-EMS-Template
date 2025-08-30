@@ -16,7 +16,7 @@ class NotesDatabaseSeeder extends Seeder
     public function run()
     {
         Model::unguard();
-
-        $this->call(NotesPermissionSeeder::class);
+    $this->call(NotesPermissionSeeder::class);
+    $this->call(NotesMenuSeeder::class);
     }
 }
