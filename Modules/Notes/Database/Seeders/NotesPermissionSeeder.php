@@ -43,10 +43,17 @@ class NotesPermissionSeeder extends Seeder
             if (!$exists) {
                 $permissionId = DB::table('permissions')->insertGetId($permission);
 
-                // Assign to Super Admin role (role_id = 1)
-                DB::table('role_has_permissions')->insert([
-                    'role_id' => 1,
+                // Assign to Super Admin role (role_id = 1) using correct table
+                DB::table('assign_permissions')->insert([
                     'permission_id' => $permissionId,
+                    'role_id' => 1,
+                    'status' => 1,
+                    'menu_status' => 1,
+                    'saas_schools' => 0,
+                    'created_by' => 1,
+                    'school_id' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
             }
         }

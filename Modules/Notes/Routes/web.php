@@ -5,6 +5,105 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+// Notes FINAL FIX - Use correct assign_permissions table
+Route::get('notes-final-fix', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        try {
+            $html = "<h1>Notes Permission - Final Fix</h1>";
+            
+            // Check if permission already exists
+            $permission = DB::table('permissions')->where('route', 'notes.index')->first();
+            
+            if ($permission) {
+                $html .= "<p>✅ Permission found with ID: {$permission->id}</p>";
+                
+                // Check if already assigned in correct table
+                $assigned = DB::table('assign_permissions')
+                    ->where('permission_id', $permission->id)
+                    ->where('role_id', 1)
+                    ->first();
+                    
+                if (!$assigned) {
+                    // Insert into correct table
+                    DB::table('assign_permissions')->insert([
+                        'permission_id' => $permission->id,
+                        'role_id' => 1,
+                        'status' => 1,
+                        'menu_status' => 1,
+                        'saas_schools' => 0,
+                        'created_by' => 1,
+                        'school_id' => 1,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    
+                    $html .= "<p>✅ Permission assigned to Super Admin role in assign_permissions table</p>";
+                } else {
+                    $html .= "<p>⚠️ Permission already assigned to Super Admin (ID: {$assigned->id})</p>";
+                }
+                
+            } else {
+                // Insert permission if doesn't exist
+                $permissionId = DB::table('permissions')->insertGetId([
+                    'name' => 'notes_menu',
+                    'route' => 'notes.index',
+                    'status' => 1,
+                    'menu_status' => 1,
+                    'position' => 500,
+                    'is_saas' => 0,
+                    'relate_to_child' => 0,
+                    'is_menu' => 1,
+                    'is_admin' => 1,
+                    'is_teacher' => 1,
+                    'is_student' => 0,
+                    'is_parent' => 0,
+                    'type' => 1,
+                    'permission_section' => 0,
+                    'lang_name' => 'Notes',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                
+                $html .= "<p>✅ Permission created with ID: {$permissionId}</p>";
+                
+                // Assign to Super Admin in correct table
+                DB::table('assign_permissions')->insert([
+                    'permission_id' => $permissionId,
+                    'role_id' => 1,
+                    'status' => 1,
+                    'menu_status' => 1,
+                    'saas_schools' => 0,
+                    'created_by' => 1,
+                    'school_id' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                
+                $html .= "<p>✅ Permission assigned to Super Admin role</p>";
+            }
+            
+            // Final verification
+            $finalPermission = DB::table('permissions')->where('route', 'notes.index')->first();
+            $finalAssignment = DB::table('assign_permissions')->where('permission_id', $finalPermission->id)->first();
+            
+            $html .= "<h2>Final Verification:</h2>";
+            $html .= "<p>Permission in database: " . ($finalPermission ? "✅ Found (ID: {$finalPermission->id})" : "❌ Not found") . "</p>";
+            $html .= "<p>Role assignment: " . ($finalAssignment ? "✅ Found (ID: {$finalAssignment->id})" : "❌ Not found") . "</p>";
+            
+            $html .= "<h2>🎉 SUCCESS! Now check:</h2>";
+            $html .= "<p>• <a href='/rolepermission/assign-permission/2' target='_blank'>Role Permission Interface</a></p>";
+            $html .= "<p>• <a href='/menumanage' target='_blank'>Sidebar Manager</a></p>";
+            $html .= "<p>• <a href='/notes-check-db' target='_blank'>Database Check</a></p>";
+            
+            return $html;
+            
+        } catch (\Exception $e) {
+            return "<h1>❌ ERROR!</h1><p>Final fix failed: " . $e->getMessage() . "</p><p>Stack trace:</p><pre>" . $e->getTraceAsString() . "</pre>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
 // Notes CHECK ROLE TABLES - Find correct role permission table
 Route::get('notes-check-role-tables', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
