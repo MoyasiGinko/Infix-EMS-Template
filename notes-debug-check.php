@@ -42,12 +42,24 @@ try {
     echo "<h2>1. Permission Check</h2>";
 
     $permission = DB::table('permissions')->where('route', 'notes.index')->first();
-    if ($permission) {
-        echo "<p class='found'>✅ Permission exists: ID {$permission->id}, name: {$permission->name}</p>";
-        echo "<p>Status: {$permission->status}, Menu Status: {$permission->menu_status}</p>";
-        echo "<p>Is Admin: " . ($permission->is_admin ?? 'NULL') . ", Is Teacher: " . ($permission->is_teacher ?? 'NULL') . "</p>";
+        if ($permission) {
+            echo "<p class='found'>✅ Permission exists: ID {$permission->id}, name: {$permission->name}</p>";
+            echo "<p>Status: {$permission->status}, Menu Status: {$permission->menu_status}</p>";
+            echo "<p>Is Admin: " . ($permission->is_admin ?? 'NULL') . ", Is Teacher: " . ($permission->is_teacher ?? 'NULL') . "</p>";
+            echo "<p><strong>Module: '" . ($permission->module ?? 'NULL') . "'</strong> (This could be the filtering issue!)</p>";
 
-        echo "<h2>2. Assignment Check (Role 1 - Super Admin)</h2>";
+            // Check if Notes module is in the paid modules list that gets filtered
+            $paid_modules = ['Zoom','University','Gmeet','QRCodeAttendance','BBB','ParentRegistration','InfixBiometrics','AiContent','Lms','Certificate','Jitsi','WhatsappSupport','InAppLiveClass'];
+
+            if (!empty($permission->module)) {
+                if (in_array($permission->module, $paid_modules)) {
+                    echo "<p class='warning'>⚠️ Notes module '{$permission->module}' is in paid modules list - needs moduleStatusCheck()</p>";
+                } else {
+                    echo "<p class='found'>✅ Notes module '{$permission->module}' is NOT in paid modules list - should show normally</p>";
+                }
+            } else {
+                echo "<p class='found'>✅ Notes has no module set - should show in else block</p>";
+            }        echo "<h2>2. Assignment Check (Role 1 - Super Admin)</h2>";
         $assigned = DB::table('assign_permissions')
             ->where('permission_id', $permission->id)
             ->where('role_id', 1)
