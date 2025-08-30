@@ -759,8 +759,8 @@ class ComposerStaticInit27aa3f36a16a55eb215d64c4ff0b8416
         ),
         'Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/php-http/message-factory/src',
-            1 => __DIR__ . '/..' . '/php-http/message/src',
+            0 => __DIR__ . '/..' . '/php-http/message/src',
+            1 => __DIR__ . '/..' . '/php-http/message-factory/src',
         ),
         'Http\\Discovery\\' => 
         array (
@@ -7257,6 +7257,13 @@ class ComposerStaticInit27aa3f36a16a55eb215d64c4ff0b8416
         'Modules\\MenuManage\\Http\\Requests\\SectionRequestFrom' => __DIR__ . '/../..' . '/Modules/MenuManage/Http/Requests/SectionRequestFrom.php',
         'Modules\\MenuManage\\Providers\\MenuManageServiceProvider' => __DIR__ . '/../..' . '/Modules/MenuManage/Providers/MenuManageServiceProvider.php',
         'Modules\\MenuManage\\Providers\\RouteServiceProvider' => __DIR__ . '/../..' . '/Modules/MenuManage/Providers/RouteServiceProvider.php',
+        'Modules\\Notes\\Database\\Seeders\\NotesDatabaseSeeder' => __DIR__ . '/../..' . '/Modules/Notes/Database/Seeders/NotesDatabaseSeeder.php',
+        'Modules\\Notes\\Database\\Seeders\\NotesPermissionSeeder' => __DIR__ . '/../..' . '/Modules/Notes/Database/Seeders/NotesPermissionSeeder.php',
+        'Modules\\Notes\\Entities\\Note' => __DIR__ . '/../..' . '/Modules/Notes/Entities/Note.php',
+        'Modules\\Notes\\Http\\Controllers\\NoteController' => __DIR__ . '/../..' . '/Modules/Notes/Http/Controllers/NoteController.php',
+        'Modules\\Notes\\Http\\Requests\\NoteRequest' => __DIR__ . '/../..' . '/Modules/Notes/Http/Requests/NoteRequest.php',
+        'Modules\\Notes\\Providers\\NotesServiceProvider' => __DIR__ . '/../..' . '/Modules/Notes/Providers/NotesServiceProvider.php',
+        'Modules\\Notes\\Providers\\RouteServiceProvider' => __DIR__ . '/../..' . '/Modules/Notes/Providers/RouteServiceProvider.php',
         'Modules\\RolePermission\\Database\\Seeders\\RolePermissionDatabaseSeeder' => __DIR__ . '/../..' . '/Modules/RolePermission/Database/Seeders/RolePermissionDatabaseSeeder.php',
         'Modules\\RolePermission\\Entities\\AssignPermission' => __DIR__ . '/../..' . '/Modules/RolePermission/Entities/AssignPermission.php',
         'Modules\\RolePermission\\Entities\\InfixModuleInfo' => __DIR__ . '/../..' . '/Modules/RolePermission/Entities/InfixModuleInfo.php',
@@ -9569,6 +9576,8 @@ class ComposerStaticInit27aa3f36a16a55eb215d64c4ff0b8416
         'SpondonIt\\SchoolService\\Repositories\\InstallRepository' => __DIR__ . '/..' . '/spondonit/school-service/src/Repositories/InstallRepository.php',
         'SpondonIt\\SchoolService\\Requests\\UserRequest' => __DIR__ . '/..' . '/spondonit/school-service/src/Requests/UserRequest.php',
         'SpondonIt\\SchoolService\\SpondonItSchoolServiceProvider' => __DIR__ . '/..' . '/spondonit/school-service/src/SpondonItSchoolServiceProvider.php',
+        'SpondonIt\\Service\\Repositories\\InitRepository' => __DIR__ . '/..' . '/spondonit/service/src/Repositories/InitRepository.php',
+        'SpondonIt\\Service\\Repositories\\InstallRepository' => __DIR__ . '/..' . '/spondonit/service/src/Repositories/InstallRepository.php',
         'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'Stripe\\Account' => __DIR__ . '/..' . '/stripe/stripe-php/lib/Account.php',
         'Stripe\\AccountLink' => __DIR__ . '/..' . '/stripe/stripe-php/lib/AccountLink.php',

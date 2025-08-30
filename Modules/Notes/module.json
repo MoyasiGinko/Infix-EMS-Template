@@ -1,0 +1,11 @@
+{
+  "name": "Notes",
+  "alias": "notes",
+  "description": "Notes Management Module for Infix EMS",
+  "keywords": ["notes", "management", "expense", "income", "events"],
+  "priority": 0,
+  "providers": ["Modules\\Notes\\Providers\\NotesServiceProvider"],
+  "aliases": {},
+  "files": [],
+  "requires": []
+}
