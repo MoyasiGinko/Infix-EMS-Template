@@ -104,6 +104,107 @@ Route::get('notes-final-fix', function () {
     return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
 });
 
+// Notes ADD TO SIDEBAR FIXED - Add Notes using correct sidebars table structure
+Route::get('notes-add-to-sidebar-fixed', function () {
+    if (Auth::check() && Auth::user()->role_id == 1) {
+        try {
+            $html = "<h1>Add Notes to Sidebar Data - FIXED</h1>";
+
+            // Get our Notes permission
+            $notesPermission = DB::table('permissions')->where('route', 'notes.index')->first();
+
+            if (!$notesPermission) {
+                return "<h1>❌ ERROR!</h1><p>Notes permission not found in database!</p>";
+            }
+
+            $html .= "<p>✅ Found Notes permission with ID: {$notesPermission->id}</p>";
+
+            // Check if already in sidebar data
+            $existingInSidebar = DB::table('sidebars')
+                ->where('permission_id', $notesPermission->id)
+                ->where('role_id', 1)
+                ->first();
+
+            if ($existingInSidebar) {
+                $html .= "<p>⚠️ Notes already exists in sidebar data (ID: {$existingInSidebar->id})</p>";
+            } else {
+                // Add to sidebar data for Staff role using correct columns
+                $sidebarId = DB::table('sidebars')->insertGetId([
+                    'permission_id' => $notesPermission->id,
+                    'position' => 500,
+                    'section_id' => 1, // Using section_id from sample record
+                    'parent' => null,
+                    'parent_route' => null,
+                    'level' => null,
+                    'user_id' => null,
+                    'is_saas' => 0,
+                    'ignore' => 0,
+                    'role_id' => 1,
+                    'active_status' => 0, // Set as unused initially so it appears in unused menu
+                    'school_id' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $html .= "<p>✅ Added Notes to sidebar data with ID: {$sidebarId}</p>";
+            }
+
+            // Also check other admin/teacher roles if they exist
+            $adminTeacherRoles = DB::table('roles')
+                ->whereIn('id', [1, 4, 5]) // Common admin/teacher role IDs
+                ->get();
+
+            $html .= "<h2>Adding to other admin/teacher roles:</h2>";
+            foreach ($adminTeacherRoles as $role) {
+                if ($role->id == 1) continue; // Already handled above
+
+                $existingInRole = DB::table('sidebars')
+                    ->where('permission_id', $notesPermission->id)
+                    ->where('role_id', $role->id)
+                    ->first();
+
+                if (!$existingInRole) {
+                    $roleHasSidebarData = DB::table('sidebars')->where('role_id', $role->id)->exists();
+                    if ($roleHasSidebarData) {
+                        $roleSidebarId = DB::table('sidebars')->insertGetId([
+                            'permission_id' => $notesPermission->id,
+                            'position' => 500,
+                            'section_id' => 1,
+                            'parent' => null,
+                            'parent_route' => null,
+                            'level' => null,
+                            'user_id' => null,
+                            'is_saas' => 0,
+                            'ignore' => 0,
+                            'role_id' => $role->id,
+                            'active_status' => 0,
+                            'school_id' => 1,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                        $html .= "<p>✅ Added to role {$role->id} ({$role->name}) with sidebar ID: {$roleSidebarId}</p>";
+                    } else {
+                        $html .= "<p>⚠️ Role {$role->id} ({$role->name}) has no sidebar data, skipping</p>";
+                    }
+                } else {
+                    $html .= "<p>⚠️ Role {$role->id} ({$role->name}) already has Notes in sidebar</p>";
+                }
+            }
+
+            $html .= "<h2>🎉 SUCCESS! Now check:</h2>";
+            $html .= "<p>• <a href='/menumanage' target='_blank'>Sidebar Manager for Staff role</a></p>";
+            $html .= "<p>• Notes should appear in the <strong>unused menu</strong> section</p>";
+            $html .= "<p>• You can now drag Notes into the active sidebar</p>";
+
+            return $html;
+
+        } catch (\Exception $e) {
+            return "<h1>❌ ERROR!</h1><p>Add to sidebar failed: " . $e->getMessage() . "</p><p>Stack trace:</p><pre>" . $e->getTraceAsString() . "</pre>";
+        }
+    }
+    return "<h1>ACCESS DENIED</h1><p>You must be logged in as Super Admin</p>";
+});
+
 // Notes CHECK SIDEBARS TABLE - Find correct columns for sidebars table
 Route::get('notes-check-sidebars-table', function () {
     if (Auth::check() && Auth::user()->role_id == 1) {
