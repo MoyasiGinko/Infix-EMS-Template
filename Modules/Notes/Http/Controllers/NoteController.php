@@ -21,7 +21,9 @@ class NoteController extends Controller
         if (! $isSuperAdmin) {
             $query->where('created_by', Auth::id());
         }
-    $notes = $query->paginate(20);
+    $perPage = (int) request('per_page', 20);
+    if($perPage < 1) { $perPage = 20; }
+    $notes = $query->paginate($perPage)->appends(['per_page'=>$perPage]);
     $showingAll = false; // for super admin toggle button state
     return view('notes::index', compact('notes', 'isSuperAdmin', 'showingAll'));
     }
@@ -30,7 +32,9 @@ class NoteController extends Controller
     public function all()
     {
         abort_unless(Auth::check() && Auth::user()->role_id == 1, 403);
-    $notes = Note::with(['user','noteable'])->latest()->paginate(50);
+    $perPage = (int) request('per_page', 50);
+    if($perPage < 1) { $perPage = 50; }
+    $notes = Note::with(['user','noteable'])->latest()->paginate($perPage)->appends(['per_page'=>$perPage]);
     $isSuperAdmin = true;
     $showingAll = true;
     return view('notes::index', compact('notes', 'isSuperAdmin', 'showingAll'));
