@@ -1,6 +1,26 @@
+@php
+    $perPageKey = 'per_page';
+    $perPageCurrent = (int) request($perPageKey, $paginator->perPage());
+    $perPageOptions = [10,50,100,250,500];
+    if(!in_array($perPageCurrent,$perPageOptions)) { $perPageOptions[] = $perPageCurrent; sort($perPageOptions); }
+    $query = request()->except('page');
+@endphp
 @if ($paginator->hasPages())
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-2">
-        @include('components.per-page-selector', ['paginator'=>$paginator])
+        <form method="GET" class="form-inline mb-2 mb-md-0">
+            @foreach($query as $qk=>$qv)
+                @if($qk !== 'per_page')
+                    <input type="hidden" name="{{ $qk }}" value="{{ $qv }}" />
+                @endif
+            @endforeach
+            <label class="mr-2 mb-0" for="per_page_select" style="font-weight:500;">Show</label>
+            <select id="per_page_select" name="per_page" class="primary_select" onchange="this.form.submit()" style="min-width:100px;">
+                @foreach($perPageOptions as $opt)
+                    <option value="{{ $opt }}" @selected($opt==$perPageCurrent)>{{ $opt }}</option>
+                @endforeach
+            </select>
+            <span class="ml-2">per page</span>
+        </form>
         <div class="notification_pagination_container notification_list mt-2 mt-md-0">
         <ul class="d-flex justify-content-center">
             @if ($paginator->onFirstPage())

@@ -1,6 +1,5 @@
 @if ($paginator->hasPages())
-    @include('components.per-page-selector', ['paginator'=>$paginator])
-    <div class="ui pagination menu" role="navigation" style="margin-top:.5rem;">
+    <div class="ui pagination menu" role="navigation">
         {{-- Previous Page Link --}}
         @if ($paginator->onFirstPage())
             <a class="icon item disabled" aria-disabled="true" aria-label="@lang('pagination.previous')"> <i class="left chevron icon"></i> </a>

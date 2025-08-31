@@ -86,9 +86,6 @@
 // DataTables initialisation
 //
 $(document).ready(function() {
-  const dtLenKey = 'dt_global_length';
-  let savedLen = parseInt(localStorage.getItem(dtLenKey) || '10');
-  if(![10,50,100,250,500].includes(savedLen)) savedLen = 10;
   $('.data-table').DataTable({
     processing: true,
     serverSide: true,
@@ -105,24 +102,34 @@ $(document).ready(function() {
         data: 'full_name',
         name: 'full_name'
       },
-    @if(generalSetting()->multiple_roll==0)
-    { data: 'roll_no', name: 'roll_no' },
-    @else
-      @if(!moduleStatusCheck('University'))
-      { data: 'parents.fathers_name', name: 'parents.fathers_name' },
+      @if(generalSetting() - > multiple_roll == 0) {
+        data: 'roll_no',
+        name: 'roll_no'
+      },
+      @else
+      @if(!moduleStatusCheck('University')) {
+        data: 'parents.fathers_name',
+        name: 'parents.fathers_name'
+      },
       @endif
-    @endif
+      @endif
 
       {
         data: 'dob',
         name: 'dob'
       },
-  @if(moduleStatusCheck('University'))
-  { data: 'fac_dept', name: 'fac_dept' },
-  @else
-  { data: 'class_sec', name: 'class_sec' },
-  @endif
-  { data: 'gender.base_setup_name', name: 'gender.base_setup_name' },
+      @if(moduleStatusCheck('University')) {
+        data: 'fac_dept',
+        name: 'fac_dept'
+      },
+      @else {
+        data: 'class_sec',
+        name: 'class_sec'
+      },
+      @endif {
+        data: 'gender.base_setup_name',
+        name: 'gender.base_setup_name'
+      },
       {
         data: 'category.category_name',
         name: 'category.category_name'
@@ -146,9 +153,7 @@ $(document).ready(function() {
         searchable: false
       },
     ],
-  bLengthChange: true,
-  lengthMenu: [[10,50,100,250,500,-1],[10,50,100,250,500,'All']],
-  pageLength: savedLen,
+    bLengthChange: false,
     bDestroy: true,
     language: {
       search: "<i class='ti-search'></i>",
@@ -158,7 +163,7 @@ $(document).ready(function() {
         previous: "<i class='ti-arrow-left'></i>",
       },
     },
-  dom: "lBfrtip",
+    dom: "Bfrtip",
     buttons: [{
         extend: "copyHtml5",
         text: '<i class="fa fa-files-o"></i>',
@@ -229,8 +234,7 @@ $(document).ready(function() {
     columnDefs: [{
       visible: false,
     }, ],
-  responsive: true,
-  drawCallback: function(){ localStorage.setItem(dtLenKey, this.api().page.len()); },
+    responsive: true,
   });
 });
 </script>

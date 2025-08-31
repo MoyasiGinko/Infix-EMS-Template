@@ -283,8 +283,7 @@ class FrontendController extends Controller
 
     public function allBlogList()
     {
-            $perPage=(function(){ $p=(int)request('per_page',8); $allowed=[10,50,100,250,500]; return in_array($p,$allowed)?$p:8; })();
-            $data['news'] = SmNews::where('school_id', app('school')->id)->where('mark_as_archive', 0)->paginate($perPage)->appends(['per_page'=>$perPage]);
+            $data['news'] = SmNews::where('school_id', app('school')->id)->where('mark_as_archive', 0)->paginate(8);
             $data['newsPage'] = SmNewsPage::where('school_id', app('school')->id)->first();
             return view('frontEnd.theme.' . activeTheme() . '.news.all_news_list', $data);
     }
@@ -489,7 +488,7 @@ class FrontendController extends Controller
                             $q->whereYear('created_at', '=', $year, 'or');
                         }
                     });
-                })->paginate((function(){ $p=(int)request('per_page',5); $allowed=[10,50,100,250,500]; return in_array($p,$allowed)?$p:5; })())->appends(['per_page'=>(int)request('per_page',5)]);
+                })->paginate(5);
             $html = view('frontEnd.theme.'.activeTheme().'.archive.archive_year_filter', $data)->render();
 
             return response()->json(['success' => true, 'html' => $html]);
