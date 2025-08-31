@@ -111,7 +111,8 @@ class DatatableQueryController extends Controller
             }
 
 
-            $student_records = $records->whereHas('student')->get(['student_id'])->unique('student_id')->toArray();
+            // get a flat array of student_id scalars so whereIn() works correctly
+            $student_records = $records->whereHas('student')->pluck('student_id')->unique()->toArray();
             $all_students = SmStudent::with('studentRecords', 'studentRecords.class', 'studentRecords.section', 'studentRecords.shift')->whereIn('id', $student_records)
                 ->where('active_status', 1)
                 ->with(['parents' => function ($query): void {
