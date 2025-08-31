@@ -306,9 +306,7 @@ $(document).ready(function() {
       },
       pages: "{{ generalSetting()->ss_page_load }}" // number of pages to cache
     }),
-    columns: {
-      !!json_encode($columns) !!
-    },
+    columns: @json($columns),
     bLengthChange: true,
     lengthMenu: [
       [10, 50, 100, 250, 500, -1],
