@@ -1454,7 +1454,7 @@ class FeesController extends Controller
 
         $studentInvoices = FmFeesInvoice::where('type', $fees_type)
             ->with(['studentInfo' => function ($query): void {
-                $query->select(['id', 'admission_no', 'first_name', 'last_name']);
+                $query->select(['id', 'admission_no', 'first_name', 'last_name','roll_no']);
             }, 'invoiceDetails' => function ($query): void {
                 $query->select(['amount', 'weaver', 'fine', 'paid_amount', 'sub_total', 'id']);
             }])
@@ -1471,7 +1471,11 @@ class FeesController extends Controller
                     return '<a href="'.route('fees.fees-invoice-view', ['id' => $row->id, 'state' => 'view']).'target="_blank">'.@$row->studentInfo->full_name.'</a>';
                 })
                 ->addColumn('admission_no', function ($row) {
+                    // Display roll number instead of admission no as per updated requirement
                     return $row->studentInfo->admission_no;
+                })
+                ->addColumn('roll_no', function ($row) {
+                    return $row->studentInfo->roll_no;
                 })
                 ->addColumn('amount', function ($row) {
                     return $row->Tamount;
@@ -1517,9 +1521,9 @@ class FeesController extends Controller
 
                     return $btn;
                 })
-                ->filterColumn('admission_no', function ($query, $keyword): void {
+                ->filterColumn('roll_no', function ($query, $keyword): void {
                     $query->whereHas('studentInfo', function ($query) use ($keyword): void {
-                        $query->where('admission_no', 'like', '%'.$keyword.'%');
+                        $query->where('roll_no', 'like', '%'.$keyword.'%');
                     });
                 })->filterColumn('amount', function ($query, $keyword): void {
                     $query->whereHas('invoiceDetails', function ($query) use ($keyword): void {

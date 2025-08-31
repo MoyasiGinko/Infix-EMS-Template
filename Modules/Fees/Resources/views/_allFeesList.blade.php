@@ -59,6 +59,7 @@
                                         <th>@lang('common.sl')</th>
                                         <th>@lang('common.student')</th>
                                         <th>@lang('admin.admission_no')</th>
+                                        <th>@lang('student.roll_no')</th>
                                         <th>@lang('accounts.amount')</th>
                                         <th>@lang('fees::feesModule.waiver')</th>
                                         <th>@lang('fees.fine')</th>
@@ -257,31 +258,37 @@
                     data: 'admission_no',
                     name: 'admission_no',
                     orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'roll_no',
+                    name: 'roll_no',
+                    orderable: false,
                     searchable: true
                 },
                 {
                     data: 'amount',
                     name: 'amount',
                     orderable: false,
-                    searchable: true
+                    searchable: false
                 },
                 {
                     data: 'weaver',
                     name: 'weaver',
                     orderable: false,
-                    searchable: true
+                    searchable: false
                 },
                 {
                     data: 'fine',
                     name: 'fine',
                     orderable: false,
-                    searchable: true
+                    searchable: false
                 },
                 {
                     data: 'paid_amount',
                     name: 'paid_amount',
                     orderable: false,
-                    searchable: true
+                    searchable: false
                 },
                 {
                     data: 'balance',
@@ -299,7 +306,7 @@
                     data: 'create_date',
                     name: 'create_date',
                     orderable: true,
-                    searchable: true
+                    searchable: false
                 },
                 {
                     data: 'action',
@@ -317,7 +324,7 @@
             bDestroy: true,
             language: {
                 search: "<i class='ti-search'></i>",
-                searchPlaceholder: window.jsLang('quick_search'),
+                searchPlaceholder: 'Search student name or roll',
                 paginate: {
                     next: "<i class='ti-arrow-right'></i>",
                     previous: "<i class='ti-arrow-left'></i>",
