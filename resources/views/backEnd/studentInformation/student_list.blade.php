@@ -153,6 +153,27 @@
 <script>
 // Persist DataTable page length for student list (mirrors fees invoice behavior)
 $(document).ready(function() {
+  // Debug: report table and DataTables availability
+  try {
+    console.log('student_list: init', {
+      tableExists: $('#table_id').length,
+      serverRows: $('#table_id tbody tr').length,
+      dataTableAvailable: typeof $.fn.DataTable !== 'undefined'
+    });
+  } catch (e) {
+    console.error('student_list: debug probe failed', e);
+  }
+
+  // If server-side didn't render any rows, show a small visible hint to help debugging
+  if ($('#table_id tbody tr').length === 0) {
+    const $hint = $('<div id="student_list_debug_hint" class="alert alert-info">')
+      .text('Notice: no student rows rendered by server (@foreach produced 0 rows).')
+      .css({
+        margin: '10px 0'
+      });
+    // place the hint above the table
+    $('#table_id').closest('.col-lg-12').prepend($hint);
+  }
   const lengthKey = 'studentList_pageLength';
   const validLengths = [10, 50, 100, 250, 500, -1];
   const urlParams = new URLSearchParams(window.location.search);
