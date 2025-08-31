@@ -248,7 +248,6 @@ $ajax_url = url('student-list-datatable');
 $columns = [
 ['data' => 'admission_no', 'name' => 'admission_no'],
 ['data' => 'full_name', 'name' => 'full_name'],
-['data' => 'roll_no', 'name' => 'roll_no', 'visible' => false],
 ];
 
 if (!moduleStatusCheck('University') && generalSetting()->with_guardian) {
@@ -285,29 +284,6 @@ $(document).ready(function() {
   if (!validLengths.includes(savedLength)) savedLength = 10;
   const initialLength = urlLen !== null ? urlLen : savedLength;
 
-  // Prepare columns from server-side PHP array, then tweak client-only props
-  // Safe embedding: put JSON into a JS string and parse to avoid Blade parsing issues
-  let colsJsonStr = '@json($columns)';
-  let dtColumns = JSON.parse(colsJsonStr);
-  // Make only student name and roll searchable for the quick search
-  dtColumns = dtColumns.map(function(col) {
-    if (col.name === 'full_name' || col.name === 'roll_no') {
-      col.searchable = true;
-    } else {
-      col.searchable = false;
-    }
-    return col;
-  });
-  // Render admission_no column to include roll number beside it
-  if (dtColumns.length > 0) {
-    dtColumns[0].render = function(data, type, row) {
-      if (type === 'display' || type === 'filter') {
-        return data + (row.roll_no ? ' (' + row.roll_no + ')' : '');
-      }
-      return data;
-    };
-  }
-
   const dt = $('.data-table').DataTable({
     processing: true,
     serverSide: true,
@@ -329,7 +305,7 @@ $(document).ready(function() {
       },
       pages: "{{ generalSetting()->ss_page_load }}" // number of pages to cache
     }),
-    columns: dtColumns,
+    columns: @json($columns),
     bLengthChange: true,
     lengthMenu: [
       [10, 50, 100, 250, 500, -1],
