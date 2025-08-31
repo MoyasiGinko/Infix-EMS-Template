@@ -143,3 +143,128 @@
 </section>
 @endsection
 @include('backEnd.partials.data_table_js')
+@push('script')
+<script>
+// Persist DataTable page length for student list (mirrors fees invoice behavior)
+$(document).ready(function() {
+  const lengthKey = 'studentList_pageLength';
+  const validLengths = [10, 50, 100, 250, 500, -1];
+  const urlParams = new URLSearchParams(window.location.search);
+  let urlLen = parseInt(urlParams.get('show_entries'));
+  if (!validLengths.includes(urlLen)) urlLen = null;
+  let savedLength = parseInt(localStorage.getItem(lengthKey) || '10');
+  if (!validLengths.includes(savedLength)) savedLength = 10;
+  const initialLength = urlLen !== null ? urlLen : savedLength;
+
+  // If already initialized elsewhere, destroy to re-init with persistence settings
+  if ($.fn.DataTable.isDataTable('#table_id')) {
+    $('#table_id').DataTable().destroy();
+  }
+
+  const dt = $('#table_id').DataTable({
+    bLengthChange: true,
+    lengthMenu: [
+      [10, 50, 100, 250, 500, -1],
+      [10, 50, 100, 250, 500, 'All']
+    ],
+    pageLength: initialLength,
+    language: {
+      search: "<i class='ti-search'></i>",
+      searchPlaceholder: (window.jsLang ? window.jsLang('quick_search') : 'Search'),
+      paginate: {
+        next: "<i class='ti-arrow-right'></i>",
+        previous: "<i class='ti-arrow-left'></i>",
+      },
+    },
+    dom: "lBfrtip",
+    buttons: [{
+        extend: "copyHtml5",
+        text: '<i class="fa fa-files-o"></i>',
+        title: $("#logo_title").val(),
+        titleAttr: window.jsLang ? window.jsLang('copy_table') : 'Copy table',
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
+        },
+      },
+      {
+        extend: "excelHtml5",
+        text: '<i class="fa fa-file-excel-o"></i>',
+        titleAttr: window.jsLang ? window.jsLang('export_to_excel') : 'Export to Excel',
+        title: $("#logo_title").val(),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
+        },
+      },
+      {
+        extend: "csvHtml5",
+        text: '<i class="fa fa-file-text-o"></i>',
+        titleAttr: window.jsLang ? window.jsLang('export_to_csv') : 'Export to CSV',
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
+        },
+      },
+      {
+        extend: "pdfHtml5",
+        text: '<i class="fa fa-file-pdf-o"></i>',
+        title: $("#logo_title").val(),
+        titleAttr: window.jsLang ? window.jsLang('export_to_pdf') : 'Export to PDF',
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
+        },
+        orientation: "landscape",
+        pageSize: "A4",
+        margin: [0, 0, 0, 12],
+        alignment: "center",
+        header: true,
+        customize: function(doc) {
+          if ($('#logo_img').length) {
+            doc.content[1].margin = [100, 0, 100, 0];
+            doc.content.splice(1, 0, {
+              margin: [0, 0, 0, 12],
+              alignment: "center",
+              image: "data:image/png;base64," + $("#logo_img").val(),
+            });
+          }
+          doc.defaultStyle = {
+            font: 'DejaVuSans'
+          };
+        },
+      },
+      {
+        extend: "print",
+        text: '<i class="fa fa-print"></i>',
+        titleAttr: window.jsLang ? window.jsLang('print') : 'Print',
+        title: $("#logo_title").val(),
+        exportOptions: {
+          columns: ':visible:not(.not-export-col)'
+        },
+      },
+      {
+        extend: "colvis",
+        text: '<i class="fa fa-columns"></i>',
+        postfixButtons: ["colvisRestore"],
+      },
+    ],
+    responsive: true,
+    drawCallback: function() {
+      const len = this.api().page.len();
+      localStorage.setItem(lengthKey, len);
+      const p = new URLSearchParams(window.location.search);
+      if (len === 10) {
+        p.delete('show_entries');
+      } else {
+        p.set('show_entries', len);
+      }
+      const params = p.toString();
+      const newUrl = window.location.pathname + (params ? '?' + params : '');
+      window.history.replaceState({}, '', newUrl);
+    },
+  });
+
+  // If URL had show_entries but DataTable didn't match (e.g., invalid fallback), ensure sync
+  if (urlLen && urlLen !== dt.page.len()) {
+    dt.page.len(urlLen).draw(false);
+  }
+});
+</script>
+@endpush

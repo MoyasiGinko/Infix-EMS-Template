@@ -233,6 +233,16 @@ input:checked+.slider:before {
 
 <script>
 $(document).ready(function() {
+  // Helper: get desired page length from URL (?show_entries=50) fallback to localStorage
+  const lsKey = 'staffList_pageLength';
+  const validLengths = [10, 50, 100, 250, 500, -1];
+  const urlParams = new URLSearchParams(window.location.search);
+  let urlLen = parseInt(urlParams.get('show_entries'));
+  if (!validLengths.includes(urlLen)) urlLen = null;
+  let storedLen = parseInt(localStorage.getItem(lsKey) || '10');
+  if (!validLengths.includes(storedLen)) storedLen = 10;
+  const initialPageLength = urlLen !== null ? urlLen : storedLen;
+
   $('.data-table').DataTable({
     processing: true,
     serverSide: true,
@@ -241,12 +251,7 @@ $(document).ready(function() {
       [10, 50, 100, 250, 500, -1],
       [10, 50, 100, 250, 500, 'All']
     ],
-    pageLength: (function() {
-      let k = 'dt_global_length';
-      let v = parseInt(localStorage.getItem(k) || '10');
-      if (![10, 50, 100, 250, 500].includes(v)) v = 10;
-      return v;
-    })(),
+    pageLength: initialPageLength,
     "ajax": $.fn.dataTable.pipeline({
       url: "{{route('staff_directory_ajax')}}",
       data: {
@@ -379,7 +384,18 @@ $(document).ready(function() {
     }, ],
     responsive: true,
     drawCallback: function() {
-      localStorage.setItem('dt_global_length', this.api().page.len());
+      const len = this.api().page.len();
+      localStorage.setItem(lsKey, len);
+      // Update/insert show_entries in URL without reloading
+      const p = new URLSearchParams(window.location.search);
+      if (len === 10) {
+        p.delete('show_entries');
+      } else {
+        p.set('show_entries', len);
+      }
+      const params = p.toString();
+      const newUrl = window.location.pathname + (params ? '?' + params : '');
+      window.history.replaceState({}, '', newUrl);
     },
   });
 });

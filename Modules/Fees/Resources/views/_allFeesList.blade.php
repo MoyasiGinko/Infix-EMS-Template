@@ -231,11 +231,17 @@ function viewPaymentDetailModal(id) {
   });
 }
 $(document).ready(function() {
-  // Persist chosen page length using localStorage
+  // Hybrid: URL param ?show_entries= overrides localStorage, cleans URL when default
   const lengthKey = 'feesInvoice_pageLength';
+  const validLengths = [10, 50, 100, 250, 500, -1];
+  const urlParams = new URLSearchParams(window.location.search);
+  let urlLen = parseInt(urlParams.get('show_entries'));
+  if (!validLengths.includes(urlLen)) urlLen = null;
   let savedLength = parseInt(localStorage.getItem(lengthKey) || '10');
-  if (![10, 50, 100, 250, 500].includes(savedLength)) savedLength = 10;
-  $('.data-table').DataTable({
+  if (!validLengths.includes(savedLength)) savedLength = 10;
+  const initialLength = urlLen !== null ? urlLen : savedLength;
+
+  const dt = $('.data-table').DataTable({
     processing: true,
     serverSide: true,
     "ajax": $.fn.dataTable.pipeline({
@@ -318,7 +324,7 @@ $(document).ready(function() {
       [10, 50, 100, 250, 500, -1],
       [10, 50, 100, 250, 500, 'All']
     ],
-    pageLength: savedLength,
+    pageLength: initialLength,
     bDestroy: true,
     language: {
       search: "<i class='ti-search'></i>",
@@ -405,7 +411,22 @@ $(document).ready(function() {
       const api = this.api();
       const currentLength = api.page.len();
       localStorage.setItem(lengthKey, currentLength);
+      // Hybrid: update/clean show_entries in URL
+      const p = new URLSearchParams(window.location.search);
+      if (currentLength === 10) {
+        p.delete('show_entries');
+      } else {
+        p.set('show_entries', currentLength);
+      }
+      const params = p.toString();
+      const newUrl = window.location.pathname + (params ? '?' + params : '');
+      window.history.replaceState({}, '', newUrl);
     },
   });
+
+  // If URL had show_entries but DataTable didn't match (e.g., invalid fallback), ensure sync
+  if (urlLen && urlLen !== dt.page.len()) {
+    dt.page.len(urlLen).draw(false);
+  }
 });
 </script>
