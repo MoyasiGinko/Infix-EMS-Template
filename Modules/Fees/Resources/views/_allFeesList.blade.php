@@ -231,6 +231,10 @@ function viewPaymentDetailModal(id) {
   });
 }
 $(document).ready(function() {
+  // Persist chosen page length using localStorage
+  const lengthKey = 'feesInvoice_pageLength';
+  let savedLength = parseInt(localStorage.getItem(lengthKey) || '10');
+  if (![10, 50, 100, 250, 500].includes(savedLength)) savedLength = 10;
   $('.data-table').DataTable({
     processing: true,
     serverSide: true,
@@ -309,7 +313,12 @@ $(document).ready(function() {
       //     visible: false
       // },
     ],
-    bLengthChange: false,
+    bLengthChange: true,
+    lengthMenu: [
+      [10, 50, 100, 250, 500, -1],
+      [10, 50, 100, 250, 500, 'All']
+    ],
+    pageLength: savedLength,
     bDestroy: true,
     language: {
       search: "<i class='ti-search'></i>",
@@ -319,7 +328,7 @@ $(document).ready(function() {
         previous: "<i class='ti-arrow-left'></i>",
       },
     },
-    dom: "Bfrtip",
+    dom: "lBfrtip",
     buttons: [{
         extend: "copyHtml5",
         text: '<i class="fa fa-files-o"></i>',
@@ -391,6 +400,12 @@ $(document).ready(function() {
       visible: false,
     }, ],
     responsive: true,
+    drawCallback: function(settings) {
+      // Save current length after each draw (covers user changes)
+      const api = this.api();
+      const currentLength = api.page.len();
+      localStorage.setItem(lengthKey, currentLength);
+    },
   });
 });
 </script>
