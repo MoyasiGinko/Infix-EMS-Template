@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\Config;
 use App\Scopes\ActiveStatusSchoolScope;
 use App\Scopes\StatusAcademicSchoolScope;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class DatatableQueryController extends Controller
 {
@@ -113,6 +114,31 @@ class DatatableQueryController extends Controller
 
             // get a flat array of student_id scalars so whereIn() works correctly
             $student_records = $records->whereHas('student')->pluck('student_id')->unique()->toArray();
+
+            // Debug logging to help trace why DataTable returns no rows.
+            // This will write request payload, computed ids and query info to the laravel log.
+            try {
+                Log::debug('student-list-datatable: debug', [
+                    'request' => $request->all(),
+                    'student_records_count' => count($student_records),
+                    'student_records_sample' => array_slice($student_records, 0, 20),
+                    'records_sql' => $records->toSql(),
+                    'records_bindings' => $records->getBindings(),
+                ]);
+            } catch (\Throwable $e) {
+                // suppress logging errors in case of any unexpected issues
+            }
+
+            // If caller requests debug response directly, return JSON with diagnostics.
+            if ($request->filled('debug')) {
+                return response()->json([
+                    'request' => $request->all(),
+                    'student_records_count' => count($student_records),
+                    'student_records' => $student_records,
+                    'records_sql' => $records->toSql(),
+                    'records_bindings' => $records->getBindings(),
+                ]);
+            }
             $all_students = SmStudent::with('studentRecords', 'studentRecords.class', 'studentRecords.section', 'studentRecords.shift')->whereIn('id', $student_records)
                 ->where('active_status', 1)
                 ->with(['parents' => function ($query): void {
