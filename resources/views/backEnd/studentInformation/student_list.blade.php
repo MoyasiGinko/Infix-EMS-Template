@@ -167,125 +167,161 @@ $(document).ready(function() {
     $('#table_id').DataTable().destroy();
   }
 
-  const dt = $('#table_id').DataTable({
-    bLengthChange: true,
-    lengthMenu: [
-      [10, 50, 100, 250, 500, -1],
-      [10, 50, 100, 250, 500, 'All']
-    ],
-    pageLength: initialLength,
-    language: {
-      search: "<i class='ti-search'></i>",
-      searchPlaceholder: (window.jsLang ? window.jsLang('quick_search') : 'Search'),
-      paginate: {
-        next: "<i class='ti-arrow-right'></i>",
-        previous: "<i class='ti-arrow-left'></i>",
-      },
-    },
-    dom: "lBfrtip",
-    buttons: [{
-        extend: "copyHtml5",
-        text: '<i class="fa fa-files-o"></i>',
-        title: $("#logo_title").val(),
-        titleAttr: window.jsLang ? window.jsLang('copy_table') : 'Copy table',
-        exportOptions: {
-          columns: ':visible:not(.not-export-col)'
-        },
-      },
-      {
-        extend: "excelHtml5",
-        text: '<i class="fa fa-file-excel-o"></i>',
-        titleAttr: window.jsLang ? window.jsLang('export_to_excel') : 'Export to Excel',
-        title: $("#logo_title").val(),
-        exportOptions: {
-          columns: ':visible:not(.not-export-col)'
-        },
-      },
-      {
-        extend: "csvHtml5",
-        text: '<i class="fa fa-file-text-o"></i>',
-        titleAttr: window.jsLang ? window.jsLang('export_to_csv') : 'Export to CSV',
-        exportOptions: {
-          columns: ':visible:not(.not-export-col)'
-        },
-      },
-      {
-        extend: "pdfHtml5",
-        text: '<i class="fa fa-file-pdf-o"></i>',
-        title: $("#logo_title").val(),
-        titleAttr: window.jsLang ? window.jsLang('export_to_pdf') : 'Export to PDF',
-        exportOptions: {
-          columns: ':visible:not(.not-export-col)'
-        },
-        orientation: "landscape",
-        pageSize: "A4",
-        margin: [0, 0, 0, 12],
-        alignment: "center",
-        header: true,
-        customize: function(doc) {
-          if ($('#logo_img').length) {
-            doc.content[1].margin = [100, 0, 100, 0];
-            doc.content.splice(1, 0, {
-              margin: [0, 0, 0, 12],
-              alignment: "center",
-              image: "data:image/png;base64," + $("#logo_img").val(),
-            });
-          }
-          doc.defaultStyle = {
-            font: 'DejaVuSans'
-          };
-        },
-      },
-      {
-        extend: "print",
-        text: '<i class="fa fa-print"></i>',
-        titleAttr: window.jsLang ? window.jsLang('print') : 'Print',
-        title: $("#logo_title").val(),
-        exportOptions: {
-          columns: ':visible:not(.not-export-col)'
-        },
-      },
-      {
-        extend: "colvis",
-        text: '<i class="fa fa-columns"></i>',
-        postfixButtons: ["colvisRestore"],
-      },
-    ],
-    responsive: true,
-    drawCallback: function() {
-      const len = this.api().page.len();
-      localStorage.setItem(lengthKey, len);
+  var dt = null;
+
+  function showFallbackSelect(current) {
+    // Build a simple select to control show_entries when DataTables isn't available
+    const $container = $('#studentLengthContainer');
+    $container.empty();
+    const $sel = $('<select>').addClass('form-control w-auto d-inline-block').attr('id', 'student_length_fallback');
+    const opts = [10, 50, 100, 250, 500, -1];
+    opts.forEach(function(o) {
+      const label = o === -1 ? 'All' : o;
+      const $opt = $('<option>').val(o).text(label);
+      if (String(o) === String(current)) $opt.prop('selected', true);
+      $sel.append($opt);
+    });
+    $sel.on('change', function() {
+      const v = $(this).val();
+      localStorage.setItem(lengthKey, v);
       const p = new URLSearchParams(window.location.search);
-      if (len === 10) {
-        p.delete('show_entries');
-      } else {
-        p.set('show_entries', len);
-      }
+      if (String(v) === '10') p.delete('show_entries');
+      else p.set('show_entries', v);
       const params = p.toString();
       const newUrl = window.location.pathname + (params ? '?' + params : '');
       window.history.replaceState({}, '', newUrl);
-    },
-  });
+      // reload to apply new page length when DataTables becomes available, or let server paginate
+      window.location.reload();
+    });
+    $container.append($('<label>').addClass('mr-2').text('Show entries:')).append($sel);
+  }
 
-  // Move the DataTables length selector (entries dropdown) into our custom container
-  // so it appears below the "Student List" title like other pages.
-  // DataTables creates the length selector with class 'dataTables_length' inside the wrapper.
-  const moveLength = function() {
-    const $len = $('#table_id_wrapper').find('.dataTables_length');
-    if ($len.length) {
-      $('#studentLengthContainer').empty().append($len.show());
-    }
-  };
+  try {
+    dt = $('#table_id').DataTable({
+      bLengthChange: true,
+      lengthMenu: [
+        [10, 50, 100, 250, 500, -1],
+        [10, 50, 100, 250, 500, 'All']
+      ],
+      pageLength: initialLength,
+      language: {
+        search: "<i class='ti-search'></i>",
+        searchPlaceholder: (window.jsLang ? window.jsLang('quick_search') : 'Search'),
+        paginate: {
+          next: "<i class='ti-arrow-right'></i>",
+          previous: "<i class='ti-arrow-left'></i>",
+        },
+      },
+      dom: "lBfrtip",
+      buttons: [{
+          extend: "copyHtml5",
+          text: '<i class="fa fa-files-o"></i>',
+          title: $("#logo_title").val(),
+          titleAttr: window.jsLang ? window.jsLang('copy_table') : 'Copy table',
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "excelHtml5",
+          text: '<i class="fa fa-file-excel-o"></i>',
+          titleAttr: window.jsLang ? window.jsLang('export_to_excel') : 'Export to Excel',
+          title: $("#logo_title").val(),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "csvHtml5",
+          text: '<i class="fa fa-file-text-o"></i>',
+          titleAttr: window.jsLang ? window.jsLang('export_to_csv') : 'Export to CSV',
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "pdfHtml5",
+          text: '<i class="fa fa-file-pdf-o"></i>',
+          title: $("#logo_title").val(),
+          titleAttr: window.jsLang ? window.jsLang('export_to_pdf') : 'Export to PDF',
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+          orientation: "landscape",
+          pageSize: "A4",
+          margin: [0, 0, 0, 12],
+          alignment: "center",
+          header: true,
+          customize: function(doc) {
+            if ($('#logo_img').length) {
+              doc.content[1].margin = [100, 0, 100, 0];
+              doc.content.splice(1, 0, {
+                margin: [0, 0, 0, 12],
+                alignment: "center",
+                image: "data:image/png;base64," + $("#logo_img").val(),
+              });
+            }
+            doc.defaultStyle = {
+              font: 'DejaVuSans'
+            };
+          },
+        },
+        {
+          extend: "print",
+          text: '<i class="fa fa-print"></i>',
+          titleAttr: window.jsLang ? window.jsLang('print') : 'Print',
+          title: $("#logo_title").val(),
+          exportOptions: {
+            columns: ':visible:not(.not-export-col)'
+          },
+        },
+        {
+          extend: "colvis",
+          text: '<i class="fa fa-columns"></i>',
+          postfixButtons: ["colvisRestore"],
+        },
+      ],
+      responsive: true,
+      drawCallback: function() {
+        const len = this.api().page.len();
+        localStorage.setItem(lengthKey, len);
+        const p = new URLSearchParams(window.location.search);
+        if (len === 10) {
+          p.delete('show_entries');
+        } else {
+          p.set('show_entries', len);
+        }
+        const params = p.toString();
+        const newUrl = window.location.pathname + (params ? '?' + params : '');
+        window.history.replaceState({}, '', newUrl);
+      }
+    });
 
-  // Move immediately after init and also when table is drawn (in case of re-render)
-  moveLength();
-  dt.on('draw', function() {
+    // Move the DataTables length selector (entries dropdown) into our custom container
+    // so it appears below the "Student List" title like other pages.
+    // DataTables creates the length selector with class 'dataTables_length' inside the wrapper.
+    const moveLength = function() {
+      const $len = $('#table_id_wrapper').find('.dataTables_length');
+      if ($len.length) {
+        $('#studentLengthContainer').empty().append($len.show());
+      }
+    };
+
+    // Move immediately after init and also when table is drawn (in case of re-render)
     moveLength();
-  });
+    dt.on('draw', function() {
+      moveLength();
+    });
 
-  // If URL had show_entries but DataTable didn't match (e.g., invalid fallback), ensure sync
-  if (urlLen && urlLen !== dt.page.len()) {
-    dt.page.len(urlLen).draw(false);
+    // If URL had show_entries but DataTable didn't match (e.g., invalid fallback), ensure sync
+    if (urlLen && urlLen !== dt.page.len()) {
+      dt.page.len(urlLen).draw(false);
+    }
+  } catch (e) {
+    console.error('DataTable init failed on student list:', e);
+    // show a fallback selector so the user still has control over entries
+    const fallbackCurrent = urlLen !== null ? urlLen : savedLength;
+    showFallbackSelect(fallbackCurrent);
   }
 });
 </script>
