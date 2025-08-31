@@ -124,7 +124,7 @@ class NoteController extends Controller
     {
         $this->authorize('export', Note::class);
     $notes = Note::with(['user','noteable'])->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })->get();
-        $rows = $notes->map(function ($note) {
+    $rows = $notes->map(function ($note) {
             return [
                 $note->title,
                 $note->type,
@@ -133,7 +133,7 @@ class NoteController extends Controller
                 $note->tags,
                 $note->quantity,
                 $note->amount,
-                optional($note->user)->name,
+        optional($note->user)->full_name ?? optional($note->user)->name,
         optional($note->noteable)->id,
         class_basename(optional($note->noteable)) ?: null,
                 $note->created_at->format('Y-m-d H:i:s'),

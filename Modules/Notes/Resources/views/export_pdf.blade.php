@@ -20,6 +20,7 @@
                 <th>Quantity</th>
                 <th>Amount</th>
                 <th>Created By</th>
+                <th>Related</th>
                 <th>Created At</th>
             </tr>
         </thead>
@@ -33,7 +34,12 @@
                 <td>{{ $note->tags }}</td>
                 <td>{{ $note->quantity }}</td>
                 <td>{{ $note->amount }}</td>
-                <td>{{ optional($note->user)->name }}</td>
+                <td>{{ optional($note->user)->full_name ?? optional($note->user)->name }}</td>
+                <td>
+                    @if($note->noteable)
+                        {{ class_basename($note->noteable_type) }} #{{ $note->noteable_id }}
+                    @else - @endif
+                </td>
                 <td>{{ $note->created_at }}</td>
             </tr>
             @endforeach

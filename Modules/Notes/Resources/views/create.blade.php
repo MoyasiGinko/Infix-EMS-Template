@@ -38,7 +38,7 @@
                                 <div class="col-lg-12 mt-15">
                                     <div class="primary_input">
                                         <label class="primary_input_label" for="content">@lang('common.content') <span class="text-danger">*</span></label>
-                                        <textarea class="primary_input_field" name="content" id="content" rows="4" required>{{ old('content') }}</textarea>
+                                        <textarea class="primary_input_field" name="content" id="content" rows="8" style="min-height:180px" placeholder="@lang('common.enter') @lang('common.content')..." required>{{ old('content') }}</textarea>
                                         @error('content')<span class="text-danger">{{ $message }}</span>@enderror
                                     </div>
                                 </div>

@@ -40,7 +40,7 @@
                             <div class="col-lg-6 mb-10"><strong>@lang('common.tags'):</strong> {{ $note->tags }}</div>
                             <div class="col-lg-6 mb-10"><strong>@lang('common.quantity'):</strong> {{ $note->quantity }}</div>
                             <div class="col-lg-6 mb-10"><strong>@lang('common.amount'):</strong> {{ number_format($note->amount,2) }}</div>
-                            <div class="col-lg-6 mb-10"><strong>@lang('common.created_by'):</strong> {{ optional($note->user)->name }}</div>
+                            <div class="col-lg-6 mb-10"><strong>@lang('common.created_by'):</strong> {{ optional($note->user)->full_name ?? optional($note->user)->name }}</div>
                             <div class="col-lg-12 mb-10"><strong>@lang('common.content'):</strong><br>{{ $note->content }}</div>
                             <div class="col-lg-6 mb-10"><strong>@lang('common.date'):</strong> {{ $note->created_at->format('Y-m-d H:i') }}</div>
                         </div>
