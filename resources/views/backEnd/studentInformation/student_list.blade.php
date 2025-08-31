@@ -90,7 +90,7 @@
             <table id="table_id" class="table" cellspacing="0" width="100%">
               <thead>
                 <tr>
-                  <th>Admission No.</th>
+                  <th>Admission No.....</th>
                   <th>Name</th>
                   <th>Class</th>
                   <th>Fathers Name</th>
