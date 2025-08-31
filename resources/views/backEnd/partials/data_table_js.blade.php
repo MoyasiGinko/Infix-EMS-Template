@@ -18,6 +18,7 @@
 <script src="{{asset('public/backEnd/')}}/vendors/js/dataTables.rowReorder.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/vendors/js/dataTables.responsive.min.js"></script>
 <script src="{{asset('public/backEnd/')}}/vendors/js/buttons.colVis.min.js"></script>
+<script src="{{ asset('public/backEnd/js/datatable-helper.js') }}"></script>
 
 <script type="text/javascript">
 $('#table_id thead th').each(function(index) {
@@ -29,26 +30,11 @@ $('#table_id thead th').each(function(index) {
     });
   }
 });
-if ($("#table_id, .school-table-data").length) {
-    window.table = $("#table_id, .school-table-data").DataTable({
-      bLengthChange: false,
-      bDestroy: true,
-      language: {
-        search: "<i class='ti-search'></i>",
-        searchPlaceholder: window.jsLang("search"),
-        paginate: {
-          next: "<i class='ti-arrow-right'></i>",
-          previous: "<i class='ti-arrow-left'></i>",
-        },
-      },
-      columnDefs: [
-        {
-          targets: 'no-search',
-          searchable: false
-        }
-      ],
-      dom: "Bfrtip",
-      buttons: [
+// Initialize common tables via helper
+if (jQuery("#table_id, .school-table-data").length) {
+  window.table = initDataTable("#table_id, .school-table-data", {
+    bDestroy: true,
+    buttons: [
         {
           extend: "copyHtml5",
           text: '<i class="fa fa-files-o"></i>',
@@ -99,8 +85,8 @@ if ($("#table_id, .school-table-data").length) {
               image: "data:image/png;base64," + $("#logo_img").val(),
               width: 150
             });
-            let table = doc.content[doc.content.length - 1]; 
-            table.table.widths = '*'.repeat(table.table.body[0].length).split(''); 
+            let table = doc.content[doc.content.length - 1];
+            table.table.widths = '*'.repeat(table.table.body[0].length).split('');
             table.alignment = 'center';
             doc.defaultStyle = {
               font: "DejaVuSans",
@@ -124,29 +110,13 @@ if ($("#table_id, .school-table-data").length) {
           titleAttr: window.jsLang("action"),
           postfixButtons: ["colvisRestore"],
         },
-      ],
-      // columnDefs: [
-      //   {
-      //     visible: false,
-      //   },
-      // ],
-      responsive: true,
-    });
-  }
+    ],
+  });
+}
 
-  if ($("#tableWithoutSort").length) {
-    $("#tableWithoutSort").DataTable({
-      bLengthChange: false,
+  if (jQuery("#tableWithoutSort").length) {
+    initDataTable("#tableWithoutSort", {
       bDestroy: true,
-      language: {
-        search: "<i class='ti-search'></i>",
-        searchPlaceholder: window.jsLang("search"),
-        paginate: {
-          next: "<i class='ti-arrow-right'></i>",
-          previous: "<i class='ti-arrow-left'></i>",
-        },
-      },
-      dom: "Bfrtip",
       buttons: [
         {
           extend: "copyHtml5",
@@ -220,29 +190,14 @@ if ($("#table_id, .school-table-data").length) {
           postfixButtons: ["colvisRestore"],
         },
       ],
-      columnDefs: [
-        {
-          visible: false,
-        },
-      ],
-      responsive: true,
+      columnDefs: [{ visible: false }],
       ordering: false,
     });
   }
 
-  if ($("#noSearch").length) {
-    $("#noSearch").DataTable({
-      bLengthChange: false,
+  if (jQuery("#noSearch").length) {
+    initDataTable("#noSearch", {
       bDestroy: true,
-      language: {
-        search: "<i class='ti-search'></i>",
-        searchPlaceholder: window.jsLang("search"),
-        paginate: {
-          next: "<i class='ti-arrow-right'></i>",
-          previous: "<i class='ti-arrow-left'></i>",
-        },
-      },
-      dom: "Bfrtip",
       buttons: [
         {
           extend: "copyHtml5",
@@ -316,18 +271,12 @@ if ($("#table_id, .school-table-data").length) {
           postfixButtons: ["colvisRestore"],
         },
       ],
-      columnDefs: [
-        {
-          visible: false,
-        },
-      ],
-      responsive: true,
+      columnDefs: [{ visible: false }],
       ordering: false,
       searching: false,
-      
     });
   }
-  
+
      pdfMake.fonts = {
          DejaVuSans: {
              normal: 'DejaVuSans.ttf',
@@ -337,4 +286,4 @@ if ($("#table_id, .school-table-data").length) {
          }
      };
 </script>
-@endpush 
+@endpush

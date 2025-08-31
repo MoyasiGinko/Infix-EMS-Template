@@ -95,7 +95,7 @@
                                     <h3 class="mb-15">@lang('common.select_criteria') </h3>
                                 </div>
                             </div>
-            
+
                             @if (userPermission('addStaff'))
                                 <div class="col-lg-4 text-sm-right text-left col-md-6 mb-30-lg col-sm-6 text_sm_right mb-4 mb-sm-0">
                                     <a href="{{ route('addStaff') }}" class="primary-btn small fix-gr-bg">
@@ -187,9 +187,9 @@
                                             <th>@lang('common.action')</th>
                                         </tr>
                                     </thead>
-        
+
                                     <tbody>
-                                
+
                                     </tbody>
                                 </table>
                             </x-table>
@@ -207,14 +207,14 @@
                     <h4 class="modal-title">{{ __('hr.Confirmation Required') }}</h4>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
-                <div class="modal-body">  
+                <div class="modal-body">
                     <div class="text-center">
                         <h4>@lang('common.are_you_sure_to_delete')</h4>
                     </div>
                     <div class="mt-40 d-flex justify-content-between">
 
                         <button type="button" class="primary-btn tr-bg" data-dismiss="modal">@lang('common.cancel')</button>
-    
+
                         {{ html()->form('POST', route('delete_staff'))->attribute('enctype', 'multipart/form-data')->open() }}
                         <input type="hidden" name="id" value="">
                         <button class="primary-btn fix-gr-bg" type="submit">@lang('common.delete')</button>
@@ -229,22 +229,25 @@
 
 @include('backEnd.partials.data_table_js')
 @include('backEnd.partials.server_side_datatable')
-@push('script')  
+@push('script')
 
 <script>
    $(document).ready(function() {
        $('.data-table').DataTable({
                      processing: true,
                      serverSide: true,
+                     bLengthChange: true,
+                     lengthMenu: [[10,50,100,250,500,-1],[10,50,100,250,500,'All']],
+                     pageLength: (function(){ let k='dt_global_length'; let v=parseInt(localStorage.getItem(k)||'10'); if(![10,50,100,250,500].includes(v)) v=10; return v; })(),
                      "ajax": $.fn.dataTable.pipeline( {
                            url: "{{route('staff_directory_ajax')}}",
-                           data: { 
+                           data: {
                             role_id  : $('#role_id').val(),
                             staff_no : $('#staff_no').val(),
                             staff_name : $('#staff_name').val()
                             },
                            pages: "{{generalSetting()->ss_page_load}}" // number of pages to cache
-                           
+
                        } ),
                        columns: [
                            {data: 'staff_no', name: 'staff_no'},
@@ -257,7 +260,6 @@
                            {data: 'switch', name: 'switch'},
                            {data: 'action', name: 'action', orderable: false, searchable: true},
                         ],
-                        bLengthChange: false,
                         bDestroy: true,
                         language: {
                             search: "<i class='ti-search'></i>",
@@ -267,7 +269,7 @@
                                 previous: "<i class='ti-arrow-left'></i>",
                             },
                         },
-                        dom: "Bfrtip",
+                        dom: "lBfrtip",
                         buttons: [{
                             extend: "copyHtml5",
                             text: '<i class="fa fa-files-o"></i>',
@@ -340,6 +342,7 @@
                         visible: false,
                     }, ],
                     responsive: true,
+                    drawCallback: function(){ localStorage.setItem('dt_global_length', this.api().page.len()); },
                 });
             } );
 </script>

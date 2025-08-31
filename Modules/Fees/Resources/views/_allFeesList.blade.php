@@ -231,6 +231,7 @@ function viewPaymentDetailModal(id) {
   });
 }
 $(document).ready(function() {
+  1
   // Persist chosen page length using localStorage
   const lengthKey = 'feesInvoice_pageLength';
   let savedLength = parseInt(localStorage.getItem(lengthKey) || '10');

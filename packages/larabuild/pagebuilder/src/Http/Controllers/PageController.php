@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Larabuild\Pagebuilder\Facades\PageSettings;
 use Larabuild\Pagebuilder\Models\Page;
+use Illuminate\Support\Facades\Auth;
 
 class PageController extends Controller
 {
@@ -20,10 +21,13 @@ class PageController extends Controller
     public function index(Request $request)
     {
         $edit = false;
-        $pages = Page::orderBy('home_page', 'desc')->where('school_id', auth()->user()->school_id)->whereNotIn('name', ['header_menu', 'footer_menu'])
+        $perPage = (int) $request->input('per_page', 10);
+        $allowed = [10,50,100,250,500];
+        if(!in_array($perPage,$allowed)) $perPage = 10;
+    $pages = Page::orderBy('home_page', 'desc')->where('school_id', Auth::user()->school_id)->whereNotIn('name', ['header_menu', 'footer_menu'])
             ->when($request->input('search'), fn ($q) => $q->where('name', 'like', '%'.$request->input('search').'%'))
             ->orderBy('id', $request->input('sort') ?? 'asc')
-            ->paginate($request->input('per_page') ?? 10);
+            ->paginate($perPage)->appends(['per_page'=>$perPage]);
         $pagesList = view('pagebuilder::components.pages-list', compact('pages'))->render();
 
         $per_page_opt = perPageOpt();
@@ -46,7 +50,10 @@ class PageController extends Controller
 
         $page = [];
 
-        $pages = Page::where('school_id', auth()->user()->school_id)->paginate(10);
+    $perPage = (int) $request->input('per_page', 10);
+    $allowed = [10,50,100,250,500];
+    if(!in_array($perPage,$allowed)) $perPage = 10;
+    $pages = Page::where('school_id', Auth::user()->school_id)->paginate($perPage)->appends(['per_page'=>$perPage]);
         $per_page_opt = perPageOpt();
         if ($request->ajax()) {
             return response()->json(['success' => true, 'html' => view('pagebuilder::components.update-page', compact('edit', 'page'))->render()]);
@@ -102,7 +109,7 @@ class PageController extends Controller
     {
         $edit = true;
 
-        $page = Page::where('school_id', auth()->user()->school_id)->where('id', $id)->firstOrFail();
+    $page = Page::where('school_id', Auth::user()->school_id)->where('id', $id)->firstOrFail();
         if ($request->ajax()) {
             return response()->json(['success' => true, 'status' => $page->status, 'html' => view('pagebuilder::components.update-page', compact('edit', 'page'))->render()]);
         }
@@ -136,7 +143,7 @@ class PageController extends Controller
         if (isDemoSite()) {
             return response()->json(['success' => 'demo']);
         }
-        $deletePage = Page::where('school_id', auth()->user()->school_id)->where('id', $id)->first();
+    $deletePage = Page::where('school_id', Auth::user()->school_id)->where('id', $id)->first();
         if ($deletePage->home_page === 1) {
             return response()->json(['error' => true]);
         }

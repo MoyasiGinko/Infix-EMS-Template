@@ -271,7 +271,8 @@ class SmFrontendController extends Controller
     public function newsPage()
     {
         try {
-            $news = SmNews::where('school_id', app('school')->id)->where('mark_as_archive', 0)->paginate(8);
+            $perPage=(function(){ $p=(int)request('per_page',8); $allowed=[10,50,100,250,500]; return in_array($p,$allowed)?$p:8; })();
+            $news = SmNews::where('school_id', app('school')->id)->where('mark_as_archive', 0)->paginate($perPage)->appends(['per_page'=>$perPage]);
             $newsPage = SmNewsPage::where('school_id', app('school')->id)->first();
 
             return view('frontEnd.home.light_news', ['news' => $news, 'newsPage' => $newsPage]);
@@ -436,7 +437,8 @@ class SmFrontendController extends Controller
     {
         try {
             $exams = SmExam::where('school_id', app('school')->id)->get();
-            $course = SmCourse::where('school_id', app('school')->id)->paginate(3);
+            $perPageCourses=(function(){ $p=(int)request('per_page',3); $allowed=[10,50,100,250,500]; return in_array($p,$allowed)?$p:3; })();
+            $course = SmCourse::where('school_id', app('school')->id)->paginate($perPageCourses)->appends(['per_page'=>$perPageCourses]);
             $news = SmNews::where('school_id', app('school')->id)->where('mark_as_archive', 0)->orderBy('order', 'asc')->limit(4)->get();
             $exams_types = SmExamType::where('school_id', app('school')->id)->get();
             $coursePage = SmCoursePage::where('school_id', app('school')->id)->first();

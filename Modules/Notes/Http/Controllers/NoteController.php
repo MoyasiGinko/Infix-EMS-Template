@@ -93,33 +93,37 @@ class NoteController extends Controller
     // Category-specific methods
     public function expenses()
     {
+    $perPage = (int) request('per_page', 20); if($perPage < 1) { $perPage = 20; } if(!in_array($perPage,[10,50,100,250,500,20])) $perPage = 20;
     $notes = Note::with(['user','noteable'])->where('type', 'expense')
             ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
-            ->latest()->paginate(20);
+            ->latest()->paginate($perPage)->appends(['per_page'=>$perPage]);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Expense Notes');
     }
 
     public function incomes()
     {
+    $perPage = (int) request('per_page', 20); if($perPage < 1) { $perPage = 20; } if(!in_array($perPage,[10,50,100,250,500,20])) $perPage = 20;
     $notes = Note::with(['user','noteable'])->where('type', 'income')
             ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
-            ->latest()->paginate(20);
+            ->latest()->paginate($perPage)->appends(['per_page'=>$perPage]);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Income Notes');
     }
 
     public function events()
     {
+    $perPage = (int) request('per_page', 20); if($perPage < 1) { $perPage = 20; } if(!in_array($perPage,[10,50,100,250,500,20])) $perPage = 20;
     $notes = Note::with(['user','noteable'])->where('type', 'event')
             ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
-            ->latest()->paginate(20);
+            ->latest()->paginate($perPage)->appends(['per_page'=>$perPage]);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Event Notes');
     }
 
     public function incidents()
     {
+    $perPage = (int) request('per_page', 20); if($perPage < 1) { $perPage = 20; } if(!in_array($perPage,[10,50,100,250,500,20])) $perPage = 20;
     $notes = Note::with(['user','noteable'])->where('type', 'incident')
             ->when(!(Auth::user()->role_id == 1), function ($q) { $q->where('created_by', Auth::id()); })
-            ->latest()->paginate(20);
+            ->latest()->paginate($perPage)->appends(['per_page'=>$perPage]);
         return view('notes::index', compact('notes'))->with('pageTitle', 'Incident Notes');
     }
 

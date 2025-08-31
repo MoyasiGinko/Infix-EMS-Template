@@ -1,5 +1,6 @@
 @if ($paginator->hasPages())
-<nav class="pb-pagination_nav">
+@include('components.per-page-selector', ['paginator'=>$paginator])
+<nav class="pb-pagination_nav" style="margin-top:.5rem;">
     <input type="hidden" name="current_page" id="current_page" value="{{$paginator->currentPage()}}" />
     <ul class="pb-pagination">
         @if ($paginator->onFirstPage())

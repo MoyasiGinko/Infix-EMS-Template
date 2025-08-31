@@ -86,7 +86,7 @@ class SmNotificationController extends Controller
                 ->where('user_id', auth()->user()->id)
                 ->where('is_read', 0)
                 ->where('active_status', 1)
-                ->paginate(10);
+                ->paginate((function(){ $p=(int)request('per_page',10); return in_array($p,[10,50,100,250,500])?$p:10; })())->appends(['per_page'=>(int)request('per_page',10)]);
 
             return view('backEnd.notification_list.notification_list', ['notifications' => $notifications]);
         } catch (Throwable $throwable) {
