@@ -245,22 +245,25 @@ $ajax_url = url('student-list-datatable');
 @include('backEnd.partials.data_table_js')
 @include('backEnd.partials.server_side_datatable')
 
-
 @php
 $columns = [
 ['data' => 'admission_no', 'name' => 'admission_no'],
 ['data' => 'full_name', 'name' => 'full_name'],
 ];
+
 if (!moduleStatusCheck('University') && generalSetting()->with_guardian) {
 $columns[] = ['data' => 'parents.fathers_name', 'name' => 'parents.fathers_name'];
 }
+
 $columns[] = ['data' => 'dob', 'name' => 'dob'];
+
 if (moduleStatusCheck('University')) {
 $columns[] = ['data' => 'semester_label', 'name' => 'semester_label'];
 $columns[] = ['data' => 'class_sec', 'name' => 'class_sec'];
 } else {
 $columns[] = ['data' => 'class_sec', 'name' => 'class_sec'];
 }
+
 $columns[] = ['data' => 'gender.base_setup_name', 'name' => 'gender.base_setup_name'];
 $columns[] = ['data' => 'category.category_name', 'name' => 'category.category_name'];
 $columns[] = ['data' => 'mobile', 'name' => 'sm_students.mobile'];
@@ -293,9 +296,7 @@ $(document).ready(function() {
       },
       pages: "{{ generalSetting()->ss_page_load }}" // number of pages to cache
     }),
-    columns: {
-      !!json_encode($columns) !!
-    },
+    columns: @json($columns),
     bLengthChange: false,
     bDestroy: true,
     language: {
@@ -376,7 +377,7 @@ $(document).ready(function() {
     ],
     columnDefs: [{
       visible: false,
-    }, ],
+    }],
     responsive: true,
   });
 });
