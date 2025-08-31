@@ -243,7 +243,7 @@ $(document).ready(function() {
   if (!validLengths.includes(storedLen)) storedLen = 10;
   const initialPageLength = urlLen !== null ? urlLen : storedLen;
 
-  $('.data-table').DataTable({
+  const dt = $('.data-table').DataTable({
     processing: true,
     serverSide: true,
     bLengthChange: true,
@@ -397,6 +397,13 @@ $(document).ready(function() {
       const newUrl = window.location.pathname + (params ? '?' + params : '');
       window.history.replaceState({}, '', newUrl);
     },
+  });
+  // Robust handling for "All" selection: convert -1 to a very large length before AJAX
+  dt.on('preXhr.dt', function(e, settings, data) {
+    if (data.length === -1) {
+      data.start = 0;
+      data.length = 1000000000;
+    }
   });
 });
 </script>

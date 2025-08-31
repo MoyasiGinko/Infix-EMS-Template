@@ -306,7 +306,9 @@ $(document).ready(function() {
       },
       pages: "{{ generalSetting()->ss_page_load }}" // number of pages to cache
     }),
-    columns: @json($columns),
+    columns: {
+      !!json_encode($columns) !!
+    },
     bLengthChange: true,
     lengthMenu: [
       [10, 50, 100, 250, 500, -1],
@@ -416,6 +418,16 @@ $(document).ready(function() {
   if (urlLen && urlLen !== dt.page.len()) {
     dt.page.len(urlLen).draw(false);
   }
+  // Robust handling for "All" selection: convert -1 to a very large length before AJAX so
+  // server-side processing returns the full dataset instead of paginated subset.
+  // This avoids changing server code and covers servers that don't honor -1.
+  dt.on('preXhr.dt', function(e, settings, data) {
+    if (data.length === -1) {
+      // set to a large number (1e9) and start at 0 to request all records
+      data.start = 0;
+      data.length = 1000000000;
+    }
+  });
 });
 </script>
 @endpush

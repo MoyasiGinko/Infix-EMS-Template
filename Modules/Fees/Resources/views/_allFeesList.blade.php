@@ -424,6 +424,14 @@ $(document).ready(function() {
     },
   });
 
+  // Robust handling for "All" selection: convert -1 to a very large length before AJAX
+  dt.on('preXhr.dt', function(e, settings, data) {
+    if (data.length === -1) {
+      data.start = 0;
+      data.length = 1000000000;
+    }
+  });
+
   // If URL had show_entries but DataTable didn't match (e.g., invalid fallback), ensure sync
   if (urlLen && urlLen !== dt.page.len()) {
     dt.page.len(urlLen).draw(false);
