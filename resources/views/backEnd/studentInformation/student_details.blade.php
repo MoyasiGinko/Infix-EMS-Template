@@ -23,7 +23,7 @@
   <div class="container-fluid">
     <div class="row justify-content-between">
       <h1>@lang('student.manage_student')</h1>
-      <h1>Testing</h1>
+      <!-- <h1>Testing</h1> -->
       <div class="bc-pages">
         <a href="{{ route('dashboard') }}">@lang('common.dashboard')</a>
         <a href="#">@lang('student.student_information')</a>
@@ -97,6 +97,7 @@
             'selected' => [
             'shift_id' => @$shift_id,
             'class_id' => @$class_id,
+            var columns = @json($columns);
             'section_id' => @$section_id,
             ],
             ])
@@ -128,7 +129,7 @@
           </div>
         </div>
       </div>
-    </div>
+              columns: columns,
     <input type="hidden" id="academic_id" value="{{ @$academic_year }}">
     <input type="hidden" id="class" value="{{ @$class_id }}">
     <input type="hidden" id="section" value="{{ @$section_id }}">
@@ -248,18 +249,18 @@ $ajax_url = url('student-list-datatable');
 
 @php
 $columns = [
-  ['data' => 'admission_no', 'name' => 'admission_no'],
-  ['data' => 'full_name', 'name' => 'full_name'],
+['data' => 'admission_no', 'name' => 'admission_no'],
+['data' => 'full_name', 'name' => 'full_name'],
 ];
 if (!moduleStatusCheck('University') && generalSetting()->with_guardian) {
-  $columns[] = ['data' => 'parents.fathers_name', 'name' => 'parents.fathers_name'];
+$columns[] = ['data' => 'parents.fathers_name', 'name' => 'parents.fathers_name'];
 }
 $columns[] = ['data' => 'dob', 'name' => 'dob'];
 if (moduleStatusCheck('University')) {
-  $columns[] = ['data' => 'semester_label', 'name' => 'semester_label'];
-  $columns[] = ['data' => 'class_sec', 'name' => 'class_sec'];
+$columns[] = ['data' => 'semester_label', 'name' => 'semester_label'];
+$columns[] = ['data' => 'class_sec', 'name' => 'class_sec'];
 } else {
-  $columns[] = ['data' => 'class_sec', 'name' => 'class_sec'];
+$columns[] = ['data' => 'class_sec', 'name' => 'class_sec'];
 }
 $columns[] = ['data' => 'gender.base_setup_name', 'name' => 'gender.base_setup_name'];
 $columns[] = ['data' => 'category.category_name', 'name' => 'category.category_name'];
@@ -272,10 +273,21 @@ $columns[] = ['data' => 'last_name', 'name' => 'last_name', 'visible' => false];
 @push('script')
 <script>
 $(document).ready(function() {
-  $('.data-table').DataTable({
+  // Hybrid page length persistence (URL + localStorage)
+  const lengthKey = 'studentDetails_pageLength';
+  const validLengths = [10, 50, 100, 250, 500, -1];
+  const urlParams = new URLSearchParams(window.location.search);
+  let urlLen = parseInt(urlParams.get('show_entries'));
+  if (!validLengths.includes(urlLen)) urlLen = null;
+  let savedLength = parseInt(localStorage.getItem(lengthKey) || '10');
+  if (!validLengths.includes(savedLength)) savedLength = 10;
+  const initialLength = urlLen !== null ? urlLen : savedLength;
+
+
+  const dt = $('.data-table').DataTable({
     processing: true,
     serverSide: true,
-    "ajax": $.fn.dataTable.pipeline({
+    ajax: $.fn.dataTable.pipeline({
       url: "{{ url('student-list-datatable') }}",
       data: {
         academic_year: $('#academic_id').val(),
@@ -293,8 +305,12 @@ $(document).ready(function() {
       },
       pages: "{{ generalSetting()->ss_page_load }}" // number of pages to cache
     }),
-    columns: {!! json_encode($columns) !!},
-    bLengthChange: false,
+    bLengthChange: true,
+    lengthMenu: [
+      [10, 50, 100, 250, 500, -1],
+      [10, 50, 100, 250, 500, 'All']
+    ],
+    pageLength: initialLength,
     bDestroy: true,
     language: {
       search: "<i class='ti-search'></i>",
@@ -304,8 +320,9 @@ $(document).ready(function() {
         previous: "<i class='ti-arrow-left'></i>",
       },
     },
-    dom: "Bfrtip",
-    buttons: [{
+    dom: "lBfrtip",
+    buttons: [
+      {
         extend: "copyHtml5",
         text: '<i class="fa fa-files-o"></i>',
         title: $("#logo_title").val(),
@@ -374,9 +391,32 @@ $(document).ready(function() {
     ],
     columnDefs: [{
       visible: false,
-    }, ],
+    }],
     responsive: true,
+    drawCallback: function() {
+      const len = this.api().page.len();
+      localStorage.setItem(lengthKey, len);
+      const p = new URLSearchParams(window.location.search);
+      if (len === 10) {
+        p.delete('show_entries');
+      } else {
+        p.set('show_entries', len);
+      }
+      const params = p.toString();
+      const newUrl = window.location.pathname + (params ? '?' + params : '');
+      window.history.replaceState({}, '', newUrl);
+    },
   });
+
+  // If URL had show_entries but DataTable didn't match (e.g., invalid fallback), ensure sync
+  if (urlLen && urlLen !== dt.page.len()) {
+    dt.page.len(urlLen).draw(false);
+  }
+
+  // If URL had show_entries but DataTable didn't match (e.g., invalid fallback), ensure sync
+  if (urlLen && urlLen !== dt.page.len()) {
+    dt.page.len(urlLen).draw(false);
+  }
 });
 </script>
 @endpush
