@@ -83,6 +83,12 @@
             </div>
           </div>
         </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <!-- Container where the DataTable page-length selector will be moved to -->
+            <div id="studentLengthContainer" class="mb-20"></div>
+          </div>
+        </div>
 
 
         <div class="row">
@@ -259,6 +265,22 @@ $(document).ready(function() {
       const newUrl = window.location.pathname + (params ? '?' + params : '');
       window.history.replaceState({}, '', newUrl);
     },
+  });
+
+  // Move the DataTables length selector (entries dropdown) into our custom container
+  // so it appears below the "Student List" title like other pages.
+  // DataTables creates the length selector with class 'dataTables_length' inside the wrapper.
+  const moveLength = function() {
+    const $len = $('#table_id_wrapper').find('.dataTables_length');
+    if ($len.length) {
+      $('#studentLengthContainer').empty().append($len.show());
+    }
+  };
+
+  // Move immediately after init and also when table is drawn (in case of re-render)
+  moveLength();
+  dt.on('draw', function() {
+    moveLength();
   });
 
   // If URL had show_entries but DataTable didn't match (e.g., invalid fallback), ensure sync
