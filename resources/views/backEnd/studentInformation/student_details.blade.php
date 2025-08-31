@@ -160,7 +160,7 @@
                   cellspacing="0" width="100%">
                   <thead>
                     <tr>
-                      <th>@lang('student.admission_no')</th>
+                      <th>@lang('student.admission_noo')</th>
                       <th>@lang('student.name')</th>
                       @if (!moduleStatusCheck('University') && generalSetting()->with_guardian)
                       <th>@lang('student.father_name')</th>
