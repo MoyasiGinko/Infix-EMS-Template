@@ -135,8 +135,20 @@ html[dir="rtl"] .total_count {
                             <p><span>@lang('fees.due_date')</span><span>:
                                 {{ dateConvert($invoiceInfo->due_date) }}</span></p>
                             @if($paidAmount > 0)
-                            @if($paymentStatus <= 0) <p><span>@lang('fees.payment_status')</span><span>:
-                                @lang('fees.paid')</span></p>
+                            @if($paymentStatus <= 0) <p><span>Payment Date</span>
+                              <span>:
+                                @if ($paymentStatus == 0)
+                                @lang('fees.paid')
+                                @else
+                                @if ($paidAmount > 0)
+                                @lang('fees.partial')
+                                @else
+                                @lang('fees.unpaid')
+                                @endif
+                                @endif
+                              </span>
+
+                              </p>
                               @if($lastPaymentDate)
                               <p><span>@lang('fees.paid_date'){{-- may fallback if key missing --}}</span><span>:
                                   {{ dateConvert($lastPaymentDate) }}</span></p>
