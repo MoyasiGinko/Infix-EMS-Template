@@ -93,6 +93,13 @@
                                 {{dateConvert($invoiceInfo->create_date)}}</span> </p>
                             <p><span>@lang('fees.due_date') </span> <span>:
                                 {{dateConvert($invoiceInfo->due_date)}}</span> </p>
+                            @php
+                              $lastTrans = $transcationDetails->sortByDesc(function($t){ return $t->updated_at ?? $t->created_at; })->first();
+                              $lastPaidAt = $lastTrans ? ($lastTrans->updated_at ?? $lastTrans->created_at) : null;
+                            @endphp
+                            @if($paidAmount > 0 && $lastPaidAt)
+                              <p><span>@lang('fees.paid_date')</span> <span>: {{ dateConvert($lastPaidAt) }}</span></p>
+                            @endif
                           </div>
                         </td>
                       </tr>
@@ -144,7 +151,7 @@
             {{@$invoiceDetail->transcationFeesType->name}}
             @if($invoiceDetail->note)
             <i class="fa fa-info-circle" aria-hidden="true" data-tooltip="tooltip" title="{{$invoiceDetail->note}}"
-              style="courser:help;"></i>
+              style="cursor:help;"></i>
             @endif
           </td>
           <td>{{($invoiceDetail->fine)? $invoiceDetail->fine : 0}}</td>

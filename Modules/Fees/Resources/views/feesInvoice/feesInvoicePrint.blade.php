@@ -542,6 +542,19 @@
                                   @endif
                                 </span>
                               </p>
+                              @php
+                                $lastPaymentRecord = $invoiceDetails->filter(function($d){ return ($d->paid_amount ?? 0) > 0; })
+                                  ->sortByDesc(function($d){ return $d->updated_at ?? $d->created_at; })
+                                  ->first();
+                                $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->updated_at ?? $lastPaymentRecord->created_at) : null;
+                              @endphp
+                              @if($paidAmount > 0 && $lastPaymentDate)
+                                @if($paymentStatus <= 0)
+                                  <p><span>@lang('fees.paid_date')</span> <span>: {{ dateConvert($lastPaymentDate) }}</span></p>
+                                @else
+                                  <p><span>@lang('fees.last_payment')</span> <span>: {{ dateConvert($lastPaymentDate) }}</span></p>
+                                @endif
+                              @endif
                             </div>
                           </td>
                         </tr>

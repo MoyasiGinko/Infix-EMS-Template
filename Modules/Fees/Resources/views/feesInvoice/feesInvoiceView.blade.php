@@ -119,28 +119,38 @@ html[dir="rtl"] .total_count {
                           $paymentStatus = $subTotal - $paidAmount;
                           @endphp
                           <div class="addressright_text">
-                            <p><span><strong>@lang('fees.invoice_number')</span> <span>:
-                                {{$invoiceInfo->invoice_id}}</span> </strong></p>
-                            <p><span>@lang('fees.create_date') </span> <span>:
-                                {{dateConvert($invoiceInfo->create_date)}}</span> </p>
-                            <p><span>@lang('fees.due_date') </span> <span>:
-                                {{dateConvert($invoiceInfo->due_date)}}</span> </p>
-                            <p>
-                              <span>
-                                @lang('fees.payment_status')
-                              </span>
-                              <span>:
-                                @if ($paymentStatus == 0)
-                                @lang('fees.paid')
-                                @else
-                                @if ($paidAmount > 0)
-                                @lang('fees.partial')
-                                @else
-                                @lang('fees.unpaid')
-                                @endif
-                                @endif
-                              </span>
-                            </p>
+                            @php
+                            // Determine last payment timestamp (prefer updated_at if available) among paid details
+                            $lastPaymentRecord = $invoiceDetails->filter(function($d){ return ($d->paid_amount ?? 0) >
+                            0; })
+                            ->sortByDesc(function($d){ return $d->updated_at ?? $d->created_at; })
+                            ->first();
+                            $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->updated_at ??
+                            $lastPaymentRecord->created_at) : null;
+                            @endphp
+                            <p><span><strong>@lang('fees.invoice_number')</strong></span><span>:
+                                {{$invoiceInfo->invoice_id}}</span></p>
+                            <p><span>@lang('fees.create_date')</span><span>:
+                                {{ dateConvert($invoiceInfo->create_date) }}</span></p>
+                            <p><span>@lang('fees.due_date')</span><span>:
+                                {{ dateConvert($invoiceInfo->due_date) }}</span></p>
+                            @if($paidAmount > 0)
+                            @if($paymentStatus <= 0) <p><span>@lang('fees.payment_status')</span><span>:
+                                @lang('fees.paid')</span></p>
+                              @if($lastPaymentDate)
+                              <p><span>@lang('fees.paid_date'){{-- may fallback if key missing --}}</span><span>:
+                                  {{ dateConvert($lastPaymentDate) }}</span></p>
+                              @endif
+                              @else
+                              <p><span>@lang('fees.payment_status')</span><span>: @lang('fees.partial')</span></p>
+                              @if($lastPaymentDate)
+                              <p><span>@lang('fees.last_payment'){{-- fallback key --}}</span><span>:
+                                  {{ dateConvert($lastPaymentDate) }}</span></p>
+                              @endif
+                              @endif
+                              @else
+                              <p><span>@lang('fees.payment_status')</span><span>: @lang('fees.unpaid')</span></p>
+                              @endif
                           </div>
                         </td>
                       </tr>
@@ -199,7 +209,7 @@ html[dir="rtl"] .total_count {
             {{@$invoiceDetail->feesType->name}}
             @if($invoiceDetail->note)
             <i class="fa fa-info-circle" aria-hidden="true" data-tooltip="tooltip" title="{{$invoiceDetail->note}}"
-              style="courser:help;"></i>
+              style="cursor:help;"></i>
             @endif
           </td>
           <td>{{($invoiceDetail)? $invoiceDetail->amount : 0.00}}</td>
@@ -215,42 +225,48 @@ html[dir="rtl"] .total_count {
           <td colspan="5"></td>
           <td colspan="2">
             <p class="total_count"><span>@lang('fees::feesModule.total_amount')</span>
-              <span>{{currency_format($amount)}}</span></p>
+              <span>{{currency_format($amount)}}</span>
+            </p>
           </td>
         </tr>
         <tr>
           <td colspan="5"></td>
           <td colspan="2">
             <p class="total_count"><span>@lang('fees::feesModule.total_waiver')</span>
-              <span>{{currency_format($weaver)}}</span></p>
+              <span>{{currency_format($weaver)}}</span>
+            </p>
           </td>
         </tr>
         <tr>
           <td colspan="5"></td>
           <td colspan="2">
             <p class="total_count"><span>@lang('fees::feesModule.total_fine')</span>
-              <span>{{currency_format($fine)}}</span></p>
+              <span>{{currency_format($fine)}}</span>
+            </p>
           </td>
         </tr>
         <tr>
           <td colspan="5"></td>
           <td colspan="2">
             <p class="total_count"><span>@lang('fees::feesModule.total_service_charge')</span>
-              <span>{{currency_format($service_charge)}}</span></p>
+              <span>{{currency_format($service_charge)}}</span>
+            </p>
           </td>
         </tr>
         <tr>
           <td colspan="5"></td>
           <td colspan="2">
             <p class="total_count"><span>@lang('fees::feesModule.total_paid')</span>
-              <span>{{currency_format($paid_amount)}}</span></p>
+              <span>{{currency_format($paid_amount)}}</span>
+            </p>
           </td>
         </tr>
         <tr>
           <td colspan="5"></td>
           <td colspan="2">
             <p class="total_count"><span>@lang('accounts.grand_total')</span>
-              <span>{{currency_format($grand_total + $service_charge)}}</span></p>
+              <span>{{currency_format($grand_total + $service_charge)}}</span>
+            </p>
           </td>
         </tr>
         <tr>
