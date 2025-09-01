@@ -300,9 +300,17 @@ if (!empty(@$setting->currency_symbol)) {
             </div>
           </div>
 
-          {{-- Redesigned nested date-wise expense list with hybrid page selector --}}
+          {{-- Group view selector + grouped accordions with hybrid page selector --}}
           <div class="row">
             <div class="col-lg-12">
+              <div class="d-flex justify-content-start align-items-center mb-3 flex-wrap">
+                <label class="mb-0 mr-2 font-weight-bold">@lang('common.group_by'):</label>
+                <select id="expenseGroupBy" class="primary_select" style="min-width:160px;display:inline-block;">
+                  <option value="date" selected>@lang('common.date')</option>
+                  <option value="head">@lang('accounts.a_c_Head')</option>
+                  <option value="method">@lang('accounts.payment_method')</option>
+                </select>
+              </div>
               <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
                 <div class="mb-2">
                   <label class="mb-0 mr-2">@lang('common.show')</label>
@@ -315,11 +323,11 @@ if (!empty(@$setting->currency_symbol)) {
                     <option value="500">500</option>
                     <option value="10000">10000</option>
                   </select>
-                  <span>@lang('common.entries')</span>
+                  <span>entries</span>
                 </div>
                 <div id="expensePagination" class="mb-2"></div>
               </div>
-              <div id="expenseDateAccordion" class="mb-20">
+              <div id="expenseDateAccordion" class="mb-20 group-accordion" data-group="date">
                 @php
                 // Fallback if controller did not pass grouped_expenses
                 if(!isset($grouped_expenses) && isset($add_expenses)){
@@ -338,8 +346,9 @@ if (!empty(@$setting->currency_symbol)) {
                     aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="{{ $collapseId }}">
                     <div>
                       <span class="font-weight-bold">{{ $displayDate }}</span>
-                      <span class="text-muted small ml-2">@lang('accounts.total'):
-                        {{ number_format($totalForDate,2) }}</span>
+                      <span class="text-muted ml-2 font-weight-bold" style="font-size:14px;">
+                        @lang('accounts.total'): {{ number_format($totalForDate,2) }}
+                      </span>
                     </div>
                     <div>
                       <span class="badge badge-info">{{ $expensesForDate->count() }}</span>
@@ -401,6 +410,146 @@ if (!empty(@$setting->currency_symbol)) {
                 <p class="text-center text-muted mb-0 py-4">@lang('common.no_data_available')</p>
                 @endforelse
               </div>
+              {{-- Grouped by A/C Head --}}
+              <div id="expenseHeadAccordion" class="mb-20 group-accordion d-none" data-group="head">
+                @foreach(($grouped_by_head ?? collect()) as $headKey => $expensesForHead)
+                @php
+                $collapseId = 'expHead_' . md5($headKey);
+                $displayHead = $headKey;
+                $totalForHead = $expensesForHead->sum('amount');
+                @endphp
+                <div class="card mb-2 border-0 shadow-sm">
+                  <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
+                    data-toggle="collapse" data-target="#{{ $collapseId }}" aria-expanded="false"
+                    aria-controls="{{ $collapseId }}">
+                    <div>
+                      <span class="font-weight-bold">{{ $displayHead }}</span>
+                      <span class="text-muted small ml-2">@lang('accounts.total'):
+                        {{ number_format($totalForHead,2) }}</span>
+                    </div>
+                    <div>
+                      <span class="badge badge-info">{{ $expensesForHead->count() }}</span>
+                      <i class="ti-angle-down ml-2"></i>
+                    </div>
+                  </div>
+                  <div id="{{ $collapseId }}" class="collapse" data-parent="#expenseHeadAccordion">
+                    <div class="card-body p-0">
+                      <div class="table-responsive">
+                        <table class="table table-sm mb-0 table-striped">
+                          <thead class="thead-light">
+                            <tr>
+                              <th style="width:50px">#</th>
+                              <th>@lang('common.name')</th>
+                              <th>@lang('accounts.payment_method')</th>
+                              <th>@lang('accounts.a_c_Head')</th>
+                              <th class="text-right">@lang('accounts.amount')</th>
+                              <th class="text-center">@lang('common.action')</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @foreach($expensesForHead as $index => $expense)
+                            <tr>
+                              <td>{{ $index + 1 }}</td>
+                              <td>{{ $expense->name }}</td>
+                              <td>{{ optional($expense->paymentMethod)->method }}</td>
+                              <td>{{ optional($expense->ACHead)->head }}</td>
+                              <td class="text-right">{{ number_format($expense->amount,2) }}</td>
+                              <td class="text-center">
+                                <div class="dropdown CRM_dropdown">
+                                  <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">@lang('common.select')</button>
+                                  <div class="dropdown-menu dropdown-menu-right">
+                                    @if(userPermission('add-expense-edit'))
+                                    <a class="dropdown-item"
+                                      href="{{ route('add-expense-edit', $expense->id) }}">@lang('common.edit')</a>
+                                    @endif
+                                    @if(userPermission('add-expense-delete'))
+                                    <a class="dropdown-item expense-delete-trigger" href="#"
+                                      data-expense-id="{{ $expense->id }}">@lang('common.delete')</a>
+                                    @endif
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                            @endforeach
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                @endforeach
+              </div>
+              {{-- Grouped by Payment Method --}}
+              <div id="expenseMethodAccordion" class="mb-20 group-accordion d-none" data-group="method">
+                @foreach(($grouped_by_method ?? collect()) as $methodKey => $expensesForMethod)
+                @php
+                $collapseId = 'expMethod_' . md5($methodKey);
+                $displayMethod = $methodKey;
+                $totalForMethod = $expensesForMethod->sum('amount');
+                @endphp
+                <div class="card mb-2 border-0 shadow-sm">
+                  <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
+                    data-toggle="collapse" data-target="#{{ $collapseId }}" aria-expanded="false"
+                    aria-controls="{{ $collapseId }}">
+                    <div>
+                      <span class="font-weight-bold">{{ $displayMethod }}</span>
+                      <span class="text-muted small ml-2">@lang('accounts.total'):
+                        {{ number_format($totalForMethod,2) }}</span>
+                    </div>
+                    <div>
+                      <span class="badge badge-info">{{ $expensesForMethod->count() }}</span>
+                      <i class="ti-angle-down ml-2"></i>
+                    </div>
+                  </div>
+                  <div id="{{ $collapseId }}" class="collapse" data-parent="#expenseMethodAccordion">
+                    <div class="card-body p-0">
+                      <div class="table-responsive">
+                        <table class="table table-sm mb-0 table-striped">
+                          <thead class="thead-light">
+                            <tr>
+                              <th style="width:50px">#</th>
+                              <th>@lang('common.name')</th>
+                              <th>@lang('accounts.payment_method')</th>
+                              <th>@lang('accounts.a_c_Head')</th>
+                              <th class="text-right">@lang('accounts.amount')</th>
+                              <th class="text-center">@lang('common.action')</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @foreach($expensesForMethod as $index => $expense)
+                            <tr>
+                              <td>{{ $index + 1 }}</td>
+                              <td>{{ $expense->name }}</td>
+                              <td>{{ optional($expense->paymentMethod)->method }}</td>
+                              <td>{{ optional($expense->ACHead)->head }}</td>
+                              <td class="text-right">{{ number_format($expense->amount,2) }}</td>
+                              <td class="text-center">
+                                <div class="dropdown CRM_dropdown">
+                                  <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">@lang('common.select')</button>
+                                  <div class="dropdown-menu dropdown-menu-right">
+                                    @if(userPermission('add-expense-edit'))
+                                    <a class="dropdown-item"
+                                      href="{{ route('add-expense-edit', $expense->id) }}">@lang('common.edit')</a>
+                                    @endif
+                                    @if(userPermission('add-expense-delete'))
+                                    <a class="dropdown-item expense-delete-trigger" href="#"
+                                      data-expense-id="{{ $expense->id }}">@lang('common.delete')</a>
+                                    @endif
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                            @endforeach
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                @endforeach
+              </div>
             </div>
           </div>
         </div>
@@ -457,7 +606,7 @@ $(document).on('hide.bs.collapse', '#expenseDateAccordion .collapse', function()
   $(this).prev('.card-header').find('i.ti-angle-down').removeClass('rotated');
 });
 
-// Hybrid client-side pagination for date groups (collapsible cards)
+// Hybrid client-side pagination for grouped accordions
 (function() {
   const lengthKey = 'expenseDateGroups_pageLength';
   const validLengths = [10, 25, 50, 100, 250, 500, 10000];
@@ -467,18 +616,30 @@ $(document).on('hide.bs.collapse', '#expenseDateAccordion .collapse', function()
   let saved = parseInt(localStorage.getItem(lengthKey) || '10');
   if (!validLengths.includes(saved)) saved = 10;
   const pageLength = urlLen || saved;
-  const $cards = $('#expenseDateAccordion > .card');
-  const total = $cards.length;
+
+  function currentAccordion() {
+    const group = $('#expenseGroupBy').val();
+    return $('.group-accordion[data-group="' + group + '"]');
+  }
+
+  function allCards() {
+    return currentAccordion().children('.card');
+  }
+
+  function totalCards() {
+    return allCards().length;
+  }
   const $lengthSelect = $('#expensePageLength');
   $lengthSelect.val(pageLength);
 
   function render() {
     const len = parseInt($lengthSelect.val());
+    const $cards = allCards();
     $cards.hide();
     // determine current page from hash (?page=) or default 1
     let pageParam = parseInt(urlParams.get('exp_page') || '1');
     if (isNaN(pageParam) || pageParam < 1) pageParam = 1;
-    const totalPages = Math.max(1, Math.ceil(total / len));
+    const totalPages = Math.max(1, Math.ceil(totalCards() / len));
     if (pageParam > totalPages) pageParam = totalPages;
     const start = (pageParam - 1) * len;
     const end = start + len;
@@ -549,6 +710,18 @@ $(document).on('hide.bs.collapse', '#expenseDateAccordion .collapse', function()
       urlParams.set('show_entries', len);
     }
     urlParams.delete('exp_page'); // reset page
+    const params = urlParams.toString();
+    const newUrl = window.location.pathname + (params ? '?' + params : '');
+    window.history.replaceState({}, '', newUrl);
+    render();
+  });
+
+  // Group switcher
+  $('#expenseGroupBy').on('change', function() {
+    const group = $(this).val();
+    $('.group-accordion').addClass('d-none');
+    $('.group-accordion[data-group="' + group + '"]').removeClass('d-none');
+    urlParams.delete('exp_page');
     const params = urlParams.toString();
     const newUrl = window.location.pathname + (params ? '?' + params : '');
     window.history.replaceState({}, '', newUrl);
