@@ -290,25 +290,24 @@ if (!empty(@$setting->currency_symbol)) {
       </div>
 
 
-      <div class="col-lg-8 col-xl-9">
+      <div class="col-lg-12">
         <div class="white-box">
           <div class="row">
             <div class="col-lg-4 no-gutters">
               <div class="main-title">
                 <h3 class="mb-15">@lang('accounts.expense_list') </h3>
               </div>
-              <div class="d-flex justify-content-end mb-3 flex-wrap">
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="expExportExcel">@lang('common.export') XLSX</button>
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="expExportCSV">@lang('common.export') CSV</button>
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="expExportPDF">@lang('common.export') PDF</button>
-                <button type="button" class="primary-btn small fix-gr-bg mb-2"
-                  id="expExportPrint">@lang('common.print')</button>
-              </div>
             </div>
-
+            <div class="d-flex justify-content-end mb-3 flex-wrap">
+              <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                id="expExportExcel">@lang('common.export') XLSX</button>
+              <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                id="expExportCSV">@lang('common.export') CSV</button>
+              <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                id="expExportPDF">@lang('common.export') PDF</button>
+              <button type="button" class="primary-btn small fix-gr-bg mb-2"
+                id="expExportPrint">@lang('common.print')</button>
+            </div>
           </div>
 
           {{-- Group view selector + grouped accordions with hybrid page selector --}}
