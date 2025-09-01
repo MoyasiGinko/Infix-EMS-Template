@@ -134,33 +134,23 @@ html[dir="rtl"] .total_count {
                                 {{ dateConvert($invoiceInfo->create_date) }}</span></p>
                             <p><span>@lang('fees.due_date')</span><span>:
                                 {{ dateConvert($invoiceInfo->due_date) }}</span></p>
-                            @php
-                            // Normalize status: consider invoice fully paid if paid >= subtotal (with float tolerance)
-                            $isFullyPaid = $subTotal > 0 && ($paidAmount + 0.00001) >= $subTotal; // tolerance for
-                            rounding
-                            $hasAnyPayment = $paidAmount > 0;
-                            @endphp
-                            @if($hasAnyPayment)
-                            @if($isFullyPaid)
-                            <p><span>@lang('fees.payment_status')</span><span>: @lang('fees.paid')</span></p>
-                            @if($lastPaymentDate)
-                            <p>
-                              <span>{{ __('fees.paid_date') !== 'fees.paid_date' ? __('fees.paid_date') : 'Payment Date' }}</span><span>:
-                                {{ dateConvert($lastPaymentDate) }}</span>
-                            </p>
-                            @endif
-                            @else
-                            <p><span>@lang('fees.payment_status')</span><span>: @lang('fees.partial')</span></p>
-                            @if($lastPaymentDate)
-                            <p>
-                              <span>{{ __('fees.paid_date') !== 'fees.paid_date' ? __('fees.paid_date') : 'Payment Date' }}</span><span>:
-                                {{ dateConvert($lastPaymentDate) }}</span>
-                            </p>
-                            @endif
-                            @endif
-                            @else
-                            <p><span>@lang('fees.payment_status')</span><span>: @lang('fees.unpaid')</span></p>
-                            @endif
+                            @if($paidAmount > 0)
+                            @if($paymentStatus <= 0) <p><span>@lang('fees.payment_status')</span><span>:
+                                @lang('fees.paid')</span></p>
+                              @if($lastPaymentDate)
+                              <p><span>@lang('fees.paid_date'){{-- may fallback if key missing --}}</span><span>:
+                                  {{ dateConvert($lastPaymentDate) }}</span></p>
+                              @endif
+                              @else
+                              <p><span>@lang('fees.payment_status')</span><span>: @lang('fees.partial')</span></p>
+                              @if($lastPaymentDate)
+                              <p><span>@lang('fees.last_payment'){{-- fallback key --}}</span><span>:
+                                  {{ dateConvert($lastPaymentDate) }}</span></p>
+                              @endif
+                              @endif
+                              @else
+                              <p><span>@lang('fees.payment_status')</span><span>: @lang('fees.unpaid')</span></p>
+                              @endif
                           </div>
                         </td>
                       </tr>
