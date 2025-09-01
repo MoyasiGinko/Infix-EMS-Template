@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Brian2694\Toastr\Facades\Toastr;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -33,11 +33,21 @@ class WalletController extends Controller
     public function addWalletAmount(Request $request)
     {
         $request->validate([
-            'amount' => 'nullable',
-            'payment_method' => 'nullable',
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'nullable', // kept nullable to preserve original optional behavior, but amount now required
             'bank' => 'required_if:payment_method,Bank',
             'file' => 'mimes:jpg,jpeg,png,pdf',
         ]);
+
+        // Sanitize & normalize amount
+        $amount = (float) $request->amount;
+        if ($amount <= 0) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Invalid amount. Must be greater than zero.'], 422);
+            }
+            Toastr::error('Amount must be greater than zero', 'Failed');
+            return redirect()->back()->withInput();
+        }
         $url = '';
         if ($request->payment_method == 'Cheque' || $request->payment_method == 'Bank') {
             $uploadFile = '';
@@ -59,7 +69,7 @@ class WalletController extends Controller
             }
 
             $addPayment = new WalletTransaction();
-            $addPayment->amount = $request->amount;
+            $addPayment->amount = $amount;
             $addPayment->payment_method = $request->payment_method;
             $addPayment->bank_id = $request->bank;
             $addPayment->note = $request->note;
@@ -72,8 +82,8 @@ class WalletController extends Controller
         } else {
             $data = [];
             $data['payment_method'] = $request->payment_method;
-            $data['amount'] = $request->amount;
-            $data['service_charge'] = chargeAmount($request->payment_method, $request->amount);
+            $data['amount'] = $amount;
+            $data['service_charge'] = chargeAmount($request->payment_method, $amount);
             $data['user_id'] = Auth::user()->id;
             $data['type'] = 'Wallet';
             $data['wallet_type'] = 'diposit';
@@ -86,7 +96,7 @@ class WalletController extends Controller
                 $addPayment->payment_method = $data['payment_method'];
                 $addPayment->user_id = $data['user_id'];
                 $addPayment->type = $data['wallet_type'];
-                $addPayment->school_id = auth()->user()->school_id;
+                $addPayment->school_id = Auth::user()->school_id;
                 $addPayment->academic_id = getAcademicId();
                 $addPayment->save();
 
@@ -101,7 +111,7 @@ class WalletController extends Controller
                     $addPayment->payment_method = $data['payment_method'];
                     $addPayment->user_id = $data['user_id'];
                     $addPayment->type = $data['wallet_type'];
-                    $addPayment->school_id = auth()->user()->school_id;
+                    $addPayment->school_id = Auth::user()->school_id;
                     $addPayment->academic_id = getAcademicId();
                     $addPayment->save();
 
@@ -111,7 +121,7 @@ class WalletController extends Controller
                         'type' => $data['wallet_type'],
                         'student_id' => $data['student_id'],
                         'user_id' => $data['user_id'],
-                        'service_charge' => chargeAmount($request->payment_method, $request->total_paid_amount),
+                        'service_charge' => chargeAmount($request->payment_method, $data['amount']),
                         'invoice_id' => $addPayment->id,
                         'payment_method' => $request->payment_method,
                     ];
@@ -124,79 +134,46 @@ class WalletController extends Controller
                     Log::error($e);
                     return response()->json(['error' => 'An error occurred while processing your request. Please try again later.'], 500);
                 }
-            }
-            else if($data['payment_method'] == 'ToyyibPay') { 
-                    DB::beginTransaction();
-                
-                    try {
-                        $addPayment = new WalletTransaction();
-                        $addPayment->amount = $data['amount'];
-                        $addPayment->payment_method = $data['payment_method'];
-                        $addPayment->user_id = $data['user_id'];
-                        $addPayment->type = $data['wallet_type'];
-                        $addPayment->school_id = auth()->user()->school_id;
-                        $addPayment->academic_id = getAcademicId();
-                        $addPayment->save();
-                
-                        $toyyibPayController = new ToyyibPayController();
-                        $data = [
-                            'amount' => $data['amount'],
-                            'type' => $data['wallet_type'],
-                            'student_id' => $data['student_id'],
-                            'user_id' => $data['user_id'],
-                            'service_charge' => chargeAmount($request->payment_method, $request->total_paid_amount),
-                            'invoice_id' => $addPayment->id,
-                            'payment_method' => $request->payment_method,
-                        ];
-                        $data_store = $toyyibPayController->studentFeesPay($data);
-                        DB::commit();
-                
-                        return response()->json(['payment_link' => $data_store]);
-                    } catch (\Exception $e) {
-                        DB::rollback();
-                        Log::error($e);
-                        return response()->json(['error' => 'An error occurred while processing your request. Please try again later.'], 500);
-                    }
             }elseif($data['payment_method'] == 'SslCommerz'){
                 DB::beginTransaction();
-            
+
                 try {
                     $addPayment = new WalletTransaction();
                     $addPayment->amount = $data['amount'];
                     $addPayment->payment_method = $data['payment_method'];
                     $addPayment->user_id = $data['user_id'];
                     $addPayment->type = $data['wallet_type'];
-                    $addPayment->school_id = auth()->user()->school_id;
+                    $addPayment->school_id = Auth::user()->school_id;
                     $addPayment->academic_id = getAcademicId();
                     $addPayment->save();
-            
+
                     $sslCommerz = new SslCommerz();
                     $data = [
                         'amount' => $data['amount'],
                         'type' => $data['wallet_type'],
                         'student_id' => $data['student_id'],
                         'user_id' => $data['user_id'],
-                        'service_charge' => chargeAmount($request->payment_method, $request->total_paid_amount),
+                        'service_charge' => chargeAmount($request->payment_method, $data['amount']),
                         'invoice_id' => $addPayment->id,
                         'payment_method' => $request->payment_method,
-                        
+
                     ];
                     $ssl_response = $sslCommerz->handle($data);
                     if($ssl_response == true)
                     {
-                        DB::commit();                
+                        DB::commit();
                         return response()->json(['payment_link' => $ssl_response['url']]);
                     }else{
                         WalletTransaction::where('id',$addPayment->id)->delete();
                         return response()->json(['payment_link' => false]);
                     }
-                    
+
                 }catch(\Exception $e){
                     DB::rollback();
                     Log::error($e);
                     return response()->json(['error' => 'An error occurred while processing your request. Please try again later.'], 500);
-                }   
-            }             
+                }
+            }
             else{
                 $classMap = config('paymentGateway.' . $data['payment_method']);
                 $make_payment = new $classMap();
@@ -213,13 +190,13 @@ class WalletController extends Controller
              return redirect($url);
 
         }
-        
-    
+
+
 
         // Notification Start
         $data['title'] = 'Wallet Amount Add';
-        $data['amount'] = $request->amount;
-        $this->sent_notifications('Wallet_Add', (array) auth()->user()->id, $data, ['Student', 'Parent']);
+    $data['amount'] = $amount;
+    $this->sent_notifications('Wallet_Add', (array) Auth::user()->id, $data, ['Student', 'Parent']);
 
         $accounts_ids = User::where('role_id', 6)->get();
         foreach ($accounts_ids as $account_id) {
@@ -336,7 +313,7 @@ class WalletController extends Controller
 
     public function walletTransactionAjax(Request $request)
     {
-        
+
         if ($request->ajax()) {
             $walletAmounts = WalletTransaction::with('userName')->where('school_id', Auth::user()->school_id)->latest();
 
@@ -543,7 +520,7 @@ class WalletController extends Controller
     {
         try {
             $status = WalletTransaction::find($request->id);
-            
+
             $user = User::find($status->user_id);
             if($user->wallet_balance < $status->amount){
                 Toastr::error('insufficient balance', 'Success');
@@ -697,7 +674,7 @@ class WalletController extends Controller
                 if ($request->status) {
                     $walletAmounts = $walletAmounts->where('wallet_transactions.status', $request->status);
                 }
-               
+
                 return DataTables::of($walletAmounts)
                     ->addIndexColumn()
                     ->addColumn('amount', function ($row) {

@@ -206,8 +206,8 @@
                             <div class="primary_input">
                                 <label class="primary_input_label" for="">@lang('wallet::wallet.amount') <span
                                         class="text-danger"> *</span> </label>
-                                <input class="primary_input_field form-control" type="text" name="amount"
-                                    id="walletAmount">
+                                <input class="primary_input_field form-control" type="number" name="amount" min="0" step="0.01"
+                                    id="walletAmount" oninput="this.value = this.value.replace(/[^0-9.]/g,'');">
 
                                 <span class="walletError" id="walletAmountError"></span>
                             </div>
@@ -386,6 +386,35 @@
             </div>
         </div>
     </div>
+    <script>
+        (function(){
+            const amt = document.getElementById('walletAmount');
+            if(amt){
+                amt.addEventListener('input', function(){
+                    let v = this.value;
+                    if(v === '') return;
+                    v = v.replace(/[^0-9.]/g,'');
+                    const parts = v.split('.');
+                    if(parts.length > 2){
+                        v = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                    let num = parseFloat(v);
+                    if(isNaN(num) || num < 0){
+                        num = 0;
+                    }
+                    this.value = num.toFixed(2);
+                });
+                amt.addEventListener('blur', function(){
+                    if(this.value === '') return;
+                    let num = parseFloat(this.value);
+                    if(isNaN(num) || num < 0){
+                        num = 0;
+                    }
+                    this.value = num.toFixed(2);
+                });
+            }
+        })();
+    </script>
     {{-- Refund Request Start --}}
     <div class="modal fade admin-query" id="refundRequest">
         <div class="modal-dialog modal-dialog-centered">
