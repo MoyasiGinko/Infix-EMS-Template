@@ -812,57 +812,120 @@ $(function() {
 
   function ensureDT(tableId) {
     if (dtInstance) {
-      dtInstance.destroy();
+      try {
+        dtInstance.destroy();
+      } catch (e) {
+        console.warn('Failed destroy old dt', e);
+      }
       dtInstance = null;
     }
-    dtInstance = $('#' + tableId).DataTable({
-      paging: false,
-      searching: false,
-      info: false,
-      ordering: false,
-      dom: 'Bfrtip',
-      buttons: [{
-          extend: 'excelHtml5',
-          title: $('#logo_title').val() || 'Expenses',
-          footer: true
-        },
-        {
-          extend: 'csvHtml5',
-          title: $('#logo_title').val() || 'Expenses',
-          footer: true
-        },
-        {
-          extend: 'pdfHtml5',
-          title: $('#logo_title').val() || 'Expenses',
-          orientation: 'landscape',
-          pageSize: 'A4',
-          footer: true,
-          customize: function(doc) {
-            doc.defaultStyle.font = 'DejaVuSans';
+    if (!$.fn || !$.fn.DataTable) {
+      console.error('DataTables not loaded');
+      return;
+    }
+    try {
+      dtInstance = $('#' + tableId).DataTable({
+        paging: false,
+        searching: false,
+        info: false,
+        ordering: false,
+        dom: 'Bfrtip',
+        buttons: [{
+            extend: 'excelHtml5',
+            title: $('#logo_title').val() || 'Expenses',
+            footer: true
+          },
+          {
+            extend: 'csvHtml5',
+            title: $('#logo_title').val() || 'Expenses',
+            footer: true
+          },
+          {
+            extend: 'pdfHtml5',
+            title: $('#logo_title').val() || 'Expenses',
+            orientation: 'landscape',
+            pageSize: 'A4',
+            footer: true,
+            customize: function(doc) {
+              doc.defaultStyle.font = 'DejaVuSans';
+            }
+          },
+          {
+            extend: 'print',
+            title: $('#logo_title').val() || 'Expenses',
+            footer: true
           }
-        },
-        {
-          extend: 'print',
-          title: $('#logo_title').val() || 'Expenses',
-          footer: true
-        }
-      ]
+        ]
+      });
+    } catch (e) {
+      console.error('DataTable init failed', e);
+      dtInstance = null;
+    }
+  }
+
+  function manualCSVDownload(rows) {
+    let csv = '"Name","Payment Method","Head","Amount"\n';
+    rows.forEach(r => {
+      csv += '"' + r[0].replace(/"/g, '""') + '","' + r[1].replace(/"/g, '""') + '","' + r[2].replace(/"/g,
+        '""') + '","' + r[3].replace(/"/g, '""') + '"\n';
     });
+    const blob = new Blob(['\uFEFF' + csv], {
+      type: 'text/csv;charset=utf-8;'
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = ($('#logo_title').val() || 'Expenses') + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function manualPrint(tableId) {
+    const w = window.open('', '_blank');
+    if (!w) {
+      alert('Popup blocked');
+      return;
+    }
+    w.document.write('<html><head><title>' + ($('#logo_title').val() || 'Expenses') + '</title>');
+    w.document.write(
+      '<style>table{width:100%;border-collapse:collapse;}th,td{border:1px solid #444;padding:4px;font-size:12px;}tfoot td{font-weight:bold;}</style>'
+    );
+    w.document.write('</head><body>' + document.getElementById(tableId).outerHTML + '</body></html>');
+    w.document.close();
+    w.focus();
+    w.print();
+    setTimeout(() => {
+      try {
+        w.close();
+      } catch (_) {}
+    }, 500);
   }
 
   function triggerExport(type) {
     const tableId = buildTable();
     ensureDT(tableId);
-    const btn = dtInstance.button(type + ':name') || dtInstance.buttons().container().find('.buttons-' + type);
-    // fallback by index
-    if (type === 'excel') {
-      dtInstance.button(0).trigger();
-    } else if (type === 'csv') {
-      dtInstance.button(1).trigger();
-    } else if (type === 'pdf') {
-      dtInstance.button(2).trigger();
-    } else if (type === 'print') {
-      dtInstance.button(3).trigger();
+    if (!dtInstance) {
+      const rows = collectRows();
+      if (type === 'csv') return manualCSVDownload(rows);
+      if (type === 'print') return manualPrint(tableId);
+      if (type === 'excel') {
+        console.warn('Excel export unavailable; providing CSV instead');
+        return manualCSVDownload(rows);
+      }
+      if (type === 'pdf') {
+        return alert('PDF export assets missing.');
+      }
+      return;
+    }
+    try {
+      if (type === 'excel') dtInstance.button(0).trigger();
+      else if (type === 'csv') dtInstance.button(1).trigger();
+      else if (type === 'pdf') dtInstance.button(2).trigger();
+      else if (type === 'print') dtInstance.button(3).trigger();
+    } catch (e) {
+      console.error('Button trigger failed', e);
+      if (type === 'csv') manualCSVDownload(collectRows());
+      else if (type === 'print') manualPrint(tableId);
     }
   }
   $('#expExportExcel').on('click', function() {
