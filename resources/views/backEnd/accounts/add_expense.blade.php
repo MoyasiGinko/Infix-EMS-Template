@@ -292,27 +292,21 @@ if (!empty(@$setting->currency_symbol)) {
 
       <div class="col-lg-8 col-xl-9">
         <div class="white-box">
-          <div class="row align-items-center mb-3">
-            <div class="col-6">
+          <div class="row">
+            <div class="col-lg-4 no-gutters">
               <div class="main-title">
-                <h3 class="mb-0">@lang('accounts.expense_list')</h3>
+                <h3 class="mb-15">@lang('accounts.expense_list') </h3>
               </div>
             </div>
-            <div class="col-6 text-right">
-              <div class="d-inline-flex flex-wrap justify-content-end">
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="expExportExcel">
-                  @lang('common.export') XLSX
-                </button>
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="expExportCSV">
-                  @lang('common.export') CSV
-                </button>
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="expExportPDF">
-                  @lang('common.export') PDF
-                </button>
-                <button type="button" class="primary-btn small fix-gr-bg mb-2" id="expExportPrint">
-                  @lang('common.print')
-                </button>
-              </div>
+            <div class="d-flex justify-content-end mb-3 flex-wrap">
+              <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                id="expExportExcel">@lang('common.export') XLSX</button>
+              <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                id="expExportCSV">@lang('common.export') CSV</button>
+              <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                id="expExportPDF">@lang('common.export') PDF</button>
+              <button type="button" class="primary-btn small fix-gr-bg mb-2"
+                id="expExportPrint">@lang('common.print')</button>
             </div>
           </div>
 
@@ -908,14 +902,7 @@ $(function() {
             pageSize: 'A4',
             footer: true,
             customize: function(doc) {
-              if (window._banglaFontReady) {
-                const f = window._chosenBanglaFont || 'BanglaFont';
-                doc.defaultStyle.font = f;
-                doc.styles.tableHeader = doc.styles.tableHeader || {};
-                doc.styles.tableHeader.font = f;
-                if (doc.styles.tableBodyOdd) doc.styles.tableBodyOdd.font = f;
-                if (doc.styles.tableBodyEven) doc.styles.tableBodyEven.font = f;
-              }
+              doc.defaultStyle.font = (window._banglaFontReady ? 'BanglaFont' : 'DejaVuSans');
             }
           },
           {
@@ -938,85 +925,56 @@ $(function() {
       console.warn('pdfMake not ready to add fonts');
       return false;
     }
-    // List of common Bangla capable font families with (regular,bold) file names you might place in /public/fonts
-    const fontCandidates = [{
-        name: 'NotoSansBengali',
-        files: ['NotoSansBengali-Regular.ttf', 'NotoSansBengali-Bold.ttf']
-      },
-      {
-        name: 'HindSiliguri',
-        files: ['HindSiliguri-Regular.ttf', 'HindSiliguri-Bold.ttf']
-      },
-      {
-        name: 'AdorshoLipi',
-        files: ['AdorshoLipi.ttf', 'AdorshoLipiBold.ttf']
-      },
-      {
-        name: 'Kalpurush',
-        files: ['kalpurush.ttf', 'kalpurush-bold.ttf']
-      }
-    ];
-    const basePaths = [];
+    const fontFiles = ['NotoSansBengali-Regular.ttf', 'NotoSansBengali-Bold.ttf'];
+    const roots = [];
     const app = (window.APP_URL ? window.APP_URL.replace(/\/$/, '') : '');
-    ['/', '/public/'].forEach(prefix => {
-      basePaths.push(app + prefix + 'fonts/');
-      if (!app) basePaths.push(prefix + 'fonts/');
+    ['/fonts/', '/public/fonts/'].forEach(p => {
+      roots.push(app + p);
+      if (!app) roots.push(p);
     });
-    async function fetchAsBase64(url) {
-      const res = await fetch(url, {
-        cache: 'reload'
-      });
-      if (!res.ok) return null;
-      const buf = await res.arrayBuffer();
-      let bin = '';
-      const bytes = new Uint8Array(buf);
-      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-      return btoa(bin);
-    }
-    for (const cand of fontCandidates) {
-      let allOk = true;
-      const loadedFiles = [];
-      for (const file of cand.files) {
-        let found = false;
-        for (const bp of basePaths) {
+    try {
+      for (const file of fontFiles) {
+        let loaded = false;
+        for (const r of roots) {
           try {
-            const b64 = await fetchAsBase64(bp + file);
-            if (b64) {
-              pdfMake.addFileToVFS(file, b64);
-              console.log('Loaded font', file, 'from', bp + file);
-              loadedFiles.push(file);
-              found = true;
+            const res = await fetch(r + file, {
+              cache: 'reload'
+            });
+            if (res.ok) {
+              const buf = await res.arrayBuffer();
+              let bin = '';
+              const bytes = new Uint8Array(buf);
+              for (let i = 0; i < bytes.length; i++) {
+                bin += String.fromCharCode(bytes[i]);
+              }
+              pdfMake.addFileToVFS(file, btoa(bin));
+              console.log('Loaded Bangla font', file, 'from', r + file);
+              loaded = true;
               break;
             }
           } catch (e) {
-            /* try next path */
+            /* try next */
           }
         }
-        if (!found) {
-          allOk = false;
-          break;
+        if (!loaded) {
+          console.warn('Could not load Bangla font file', file, 'tried:', roots.map(rt => rt + file));
+          return false;
         }
       }
-      if (allOk) {
-        const reg = cand.files[0];
-        const bold = cand.files[Math.min(1, cand.files.length - 1)];
-        pdfMake.fonts = pdfMake.fonts || {};
-        pdfMake.fonts[cand.name] = {
-          normal: reg,
-          bold: bold,
-          italics: reg,
-          bolditalics: bold
-        };
-        window._banglaFontReady = true;
-        window._chosenBanglaFont = cand.name;
-        console.log('Registered Bangla PDF font family:', cand.name);
-        return true;
-      } else {
-        console.warn('Failed complete load for font family', cand.name);
-      }
+      pdfMake.fonts = pdfMake.fonts || {};
+      pdfMake.fonts.BanglaFont = {
+        normal: 'NotoSansBengali-Regular.ttf',
+        bold: 'NotoSansBengali-Bold.ttf',
+        italics: 'NotoSansBengali-Regular.ttf',
+        bolditalics: 'NotoSansBengali-Bold.ttf'
+      };
+      window._banglaFontReady = true;
+      console.log('BanglaFont registered');
+      return true;
+    } catch (err) {
+      console.error('Bangla font load exception', err);
+      return false;
     }
-    console.warn('No Bangla font family loaded; PDF will fallback. Place font .ttf files in public/fonts/.');
-    return false;
   }
 
   function manualCSVDownload(rows) {
@@ -1128,14 +1086,6 @@ $(function() {
   if (typeof updatePageTotal === 'function') {
     updatePageTotal();
   }
-  // Preload Bangla font (non-blocking)
-  setTimeout(() => {
-    if (!window._banglaFontReady) {
-      try {
-        loadBanglaFont();
-      } catch (e) {}
-    }
-  }, 500);
 });
 // Wait/poll for pdfMake presence
 async function ensurePdfMakeReady() {
