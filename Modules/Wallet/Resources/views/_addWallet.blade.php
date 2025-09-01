@@ -370,42 +370,56 @@
       </div>
     </div>
     <script>
-(function() {
-  const amt = document.getElementById('walletAmount');
-  if (amt) {
-    amt.addEventListener('input', function() {
-      let v = this.value;
-      if (v === '') return;
-      v = v.replace(/[^0-9.]/g, '');
-      const parts = v.split('.');
-      if (parts.length > 2) {
-        v = parts[0] + '.' + parts.slice(1).join('');
+    (function() {
+      const enforceNumeric = (raw) => {
+        if (raw === '') return '';
+        // allow only digits and one dot
+        let cleaned = raw.replace(/[^0-9.]/g, '');
+        const firstDot = cleaned.indexOf('.');
+        if (firstDot !== -1) {
+          // remove additional dots
+          cleaned = cleaned.substring(0, firstDot + 1) + cleaned.substring(firstDot + 1).replace(/\./g, '');
+        }
+        // limit to two decimal places IF a decimal part exists and >2
+        const parts = cleaned.split('.');
+        if (parts.length === 2 && parts[1].length > 2) {
+          cleaned = parts[0] + '.' + parts[1].slice(0, 2);
+        }
+        // prevent leading zeros like 0005 while user typing integer (keep a single 0 unless more digits typed)
+        if (parts.length === 1 && /^0[0-9]+$/.test(cleaned)) {
+          cleaned = String(parseInt(cleaned, 10));
+        }
+        return cleaned;
+      };
+
+      const finalize = (el) => {
+        let v = el.value;
+        if (v === '') return; // allow empty (user can still submit; server validation will enforce)
+        let num = parseFloat(v);
+        if (isNaN(num) || num < 0) num = 0;
+        el.value = num.toFixed(2);
+      };
+
+      const amt = document.getElementById('walletAmount');
+      if (amt) {
+        amt.addEventListener('input', function() {
+          const pos = this.selectionStart; // try preserve caret
+          const before = this.value;
+          this.value = enforceNumeric(before);
+          // basic caret preservation if trimming occurred
+          const delta = before.length - this.value.length;
+          this.setSelectionRange(pos - (delta > 0 ? delta : 0), pos - (delta > 0 ? delta : 0));
+        });
+        amt.addEventListener('blur', function() { finalize(this); });
       }
-      let num = parseFloat(v);
-      if (isNaN(num) || num < 0) {
-        num = 0;
+
+      // Refund amount is readonly; keep defensive final formatting in case becomes editable later.
+      const refundAmt = document.querySelector('input[name="refund_amount"]');
+      if (refundAmt && !refundAmt.readOnly) {
+        refundAmt.addEventListener('input', function() { this.value = enforceNumeric(this.value); });
+        refundAmt.addEventListener('blur', function() { finalize(this); });
       }
-      this.value = num.toFixed(2);
-    });
-    amt.addEventListener('blur', function() {
-      if (this.value === '') return;
-      let num = parseFloat(this.value);
-      if (isNaN(num) || num < 0) {
-        num = 0;
-      }
-      this.value = num.toFixed(2);
-    });
-  }
-  const refundAmt = document.querySelector('input[name="refund_amount"]');
-  if (refundAmt) {
-    // Defensive: if field becomes editable in future, keep it >=0 and 2 decimals
-    ['input', 'blur'].forEach(ev => refundAmt.addEventListener(ev, function() {
-      let num = parseFloat(this.value);
-      if (isNaN(num) || num < 0) num = 0;
-      this.value = num.toFixed(2);
-    }));
-  }
-})();
+    })();
     </script>
     {{-- Refund Request Start --}}
     <div class="modal fade admin-query" id="refundRequest">
