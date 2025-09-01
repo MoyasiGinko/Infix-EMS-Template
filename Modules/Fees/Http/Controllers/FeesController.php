@@ -1182,8 +1182,9 @@ class FeesController extends Controller
                     $totalSub = $children->sum(function($c){ return ($c->amount + $c->fine) - $c->weaver; });
                     $totalPaid = $children->sum('paid_amount');
                     $due = $totalSub - $totalPaid;
+                    // Map fully satisfied invoices to legacy canonical status 'full'
                     if ($totalPaid > 0 && $due <= 0) {
-                        $invoice->payment_status = 'paid';
+                        $invoice->payment_status = 'full';
                     } elseif ($totalPaid > 0 && $due > 0) {
                         $invoice->payment_status = 'partial';
                     } else {
