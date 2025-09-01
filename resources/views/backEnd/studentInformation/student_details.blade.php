@@ -281,11 +281,14 @@ $columns[] = ['data' => 'last_name', 'name' => 'last_name', 'visible' => false, 
 $(document).ready(function() {
   // Hybrid: URL param ?show_entries= overrides localStorage, cleans URL when default
   const lengthKey = 'studentList_pageLength';
-  const validLengths = [10, 50, 100, 250, 500, -1];
+  const validLengths = [10, 50, 100, 250, 500, 10000];
+  const maxLen = 10000; // fixed maximum instead of -1 (All)
   const urlParams = new URLSearchParams(window.location.search);
   let urlLen = parseInt(urlParams.get('show_entries'));
+  if (urlLen === -1) urlLen = maxLen; // migrate any old ?show_entries=-1 links
   if (!validLengths.includes(urlLen)) urlLen = null;
   let savedLength = parseInt(localStorage.getItem(lengthKey) || '10');
+  if (savedLength === -1) savedLength = maxLen; // migrate legacy stored -1
   if (!validLengths.includes(savedLength)) savedLength = 10;
   const initialLength = urlLen !== null ? urlLen : savedLength;
 
@@ -313,8 +316,8 @@ $(document).ready(function() {
     columns: @json($columns),
     bLengthChange: true,
     lengthMenu: [
-      [10, 50, 100, 250, 500, -1],
-      [10, 50, 100, 250, 500, 'All']
+      [10, 50, 100, 250, 500, 10000],
+      [10, 50, 100, 250, 500, '10000']
     ],
     pageLength: initialLength,
     bDestroy: true,
@@ -420,14 +423,11 @@ $(document).ready(function() {
   if (urlLen && urlLen !== dt.page.len()) {
     dt.page.len(urlLen).draw(false);
   }
-  // Robust handling for "All" selection: convert -1 to a very large length before AJAX so
-  // server-side processing returns the full dataset instead of paginated subset.
-  // This avoids changing server code and covers servers that don't honor -1.
+  // Clamp any oversized request length to maxLen for safety
   dt.on('preXhr.dt', function(e, settings, data) {
-    if (data.length === -1) {
-      // set to a large number (1e9) and start at 0 to request all records
-      data.start = 0;
-      data.length = 1000000000;
+    if (data.length > maxLen) {
+      data.length = maxLen;
+      data.start = 0; // ensure full slice from beginning when user overshoots
     }
   });
 });

@@ -233,11 +233,14 @@ function viewPaymentDetailModal(id) {
 $(document).ready(function() {
   // Hybrid: URL param ?show_entries= overrides localStorage, cleans URL when default
   const lengthKey = 'feesInvoice_pageLength';
-  const validLengths = [10, 50, 100, 250, 500, -1];
+  const validLengths = [10, 50, 100, 250, 500, 10000];
+  const maxLen = 10000;
   const urlParams = new URLSearchParams(window.location.search);
   let urlLen = parseInt(urlParams.get('show_entries'));
+  if (urlLen === -1) urlLen = maxLen; // migrate legacy param
   if (!validLengths.includes(urlLen)) urlLen = null;
   let savedLength = parseInt(localStorage.getItem(lengthKey) || '10');
+  if (savedLength === -1) savedLength = maxLen; // migrate old stored value
   if (!validLengths.includes(savedLength)) savedLength = 10;
   const initialLength = urlLen !== null ? urlLen : savedLength;
 
@@ -321,8 +324,8 @@ $(document).ready(function() {
     ],
     bLengthChange: true,
     lengthMenu: [
-      [10, 50, 100, 250, 500, -1],
-      [10, 50, 100, 250, 500, 'All']
+      [10, 50, 100, 250, 500, 10000],
+      [10, 50, 100, 250, 500, '10000']
     ],
     pageLength: initialLength,
     bDestroy: true,
@@ -424,11 +427,11 @@ $(document).ready(function() {
     },
   });
 
-  // Robust handling for "All" selection: convert -1 to a very large length before AJAX
+  // Clamp any request larger than maxLen
   dt.on('preXhr.dt', function(e, settings, data) {
-    if (data.length === -1) {
+    if (data.length > maxLen) {
       data.start = 0;
-      data.length = 1000000000;
+      data.length = maxLen;
     }
   });
 
