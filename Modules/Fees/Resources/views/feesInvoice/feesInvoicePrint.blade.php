@@ -526,19 +526,21 @@
                                   {{dateConvert($invoiceInfo->create_date)}}</span> </p>
                               <p><span>@lang('fees.due_date') </span> <span>:
                                   {{dateConvert($invoiceInfo->due_date)}}</span> </p>
+                              @php
+                                $isFullyPaid = $subTotal > 0 && ($paidAmount + 0.00001) >= $subTotal;
+                                $hasAnyPayment = $paidAmount > 0;
+                              @endphp
                               <p>
-                                <span>
-                                  @lang('fees.payment_status')
-                                </span>
+                                <span>@lang('fees.payment_status')</span>
                                 <span>:
-                                  @if ($paymentStatus == 0)
-                                  @lang('fees.paid')
+                                  @if($hasAnyPayment)
+                                    @if($isFullyPaid)
+                                      @lang('fees.paid')
+                                    @else
+                                      @lang('fees.partial')
+                                    @endif
                                   @else
-                                  @if ($paidAmount > 0)
-                                  @lang('fees.partial')
-                                  @else
-                                  @lang('fees.unpaid')
-                                  @endif
+                                    @lang('fees.unpaid')
                                   @endif
                                 </span>
                               </p>
@@ -549,11 +551,7 @@
                                 $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->updated_at ?? $lastPaymentRecord->created_at) : null;
                               @endphp
                               @if($paidAmount > 0 && $lastPaymentDate)
-                                @if($paymentStatus <= 0)
-                                  <p><span>@lang('fees.paid_date')</span> <span>: {{ dateConvert($lastPaymentDate) }}</span></p>
-                                @else
-                                  <p><span>@lang('fees.last_payment')</span> <span>: {{ dateConvert($lastPaymentDate) }}</span></p>
-                                @endif
+                                <p><span>{{ __('fees.paid_date') !== 'fees.paid_date' ? __('fees.paid_date') : 'Payment Date' }}</span> <span>: {{ dateConvert($lastPaymentDate) }}</span></p>
                               @endif
                             </div>
                           </td>
