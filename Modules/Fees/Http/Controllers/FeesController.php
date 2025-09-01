@@ -1174,6 +1174,27 @@ class FeesController extends Controller
                 }
             }
 
+            // Recompute and persist overall invoice payment_status after updates
+            try {
+                $invoice = FmFeesInvoice::find($request->invoice_id);
+                if ($invoice) {
+                    $children = FmFeesInvoiceChield::where('fees_invoice_id', $invoice->id)->get();
+                    $totalSub = $children->sum(function($c){ return ($c->amount + $c->fine) - $c->weaver; });
+                    $totalPaid = $children->sum('paid_amount');
+                    $due = $totalSub - $totalPaid;
+                    if ($totalPaid > 0 && $due <= 0) {
+                        $invoice->payment_status = 'paid';
+                    } elseif ($totalPaid > 0 && $due > 0) {
+                        $invoice->payment_status = 'partial';
+                    } else {
+                        $invoice->payment_status = 'not';
+                    }
+                    $invoice->save();
+                }
+            } catch (\Throwable $e) {
+                // Silently ignore to not block payment storing; logging could be added
+            }
+
             $student_user_id = $student->user_id;
             $data['fees'] = $request->total_paid_amount;
             try {
