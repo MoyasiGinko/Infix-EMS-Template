@@ -126,46 +126,39 @@ html[dir="rtl"] .total_count {
                             ->sortByDesc(function($d){ return $d->updated_at ?? $d->created_at; })
                             ->first();
                             $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->updated_at ??
-                            $lastPaymentRecord->created_at) : null;
+                            @php
+                              // Aggregate amounts
+                              $subTotal = $invoiceDetails->sum('sub_total');
+                              $paidAmount = $invoiceDetails->sum('paid_amount');
+                              $weaverTotal = $invoiceDetails->sum('weaver');
+                              // Compute due (sub_total already net of waiver)
+                              $computedDue = $subTotal - $paidAmount;
+                              // Prefer stored status, but reconcile with computed figures
+                              $stored = $invoiceInfo->payment_status ?? null; // values: full, partial, not
+                              if($stored === 'full' || ($paidAmount > 0 && $computedDue <= 0)) {
+                                $resolvedStatus = 'paid';
+                              } elseif($stored === 'partial' || ($paidAmount > 0 && $computedDue > 0)) {
+                                $resolvedStatus = 'partial';
+                              } else {
+                                $resolvedStatus = 'unpaid';
+                              }
+                              // Last payment timestamp
+                              $lastPaymentRecord = $invoiceDetails->filter(function($d){ return ($d->paid_amount ?? 0) > 0; })
+                                ->sortByDesc(function($d){ return $d->updated_at ?? $d->created_at; })
+                                ->first();
+                              $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->updated_at ?? $lastPaymentRecord->created_at) : null;
                             @endphp
-                            <p><span><strong>@lang('fees.invoice_number')</strong></span><span>:
-                                {{$invoiceInfo->invoice_id}}</span></p>
-                            <p><span>@lang('fees.create_date')</span><span>:
-                                {{ dateConvert($invoiceInfo->create_date) }}</span></p>
-                            <p><span>@lang('fees.due_date')</span><span>:
-                                {{ dateConvert($invoiceInfo->due_date) }}</span></p>
-                            @if($paidAmount > 0)
-                            @if($paymentStatus <= 0) <p><span>Payment Date</span>
-                              <span>:
-                                @if ($paymentStatus == 0)
-                                @lang('fees.paid')
-                                @else
-                                @if ($paidAmount > 0)
-                                @lang('fees.partial')
-                                @else
-                                @lang('fees.unpaid')
-                                @endif
-                                @endif
-                              </span>
-
-                              </p>
-                              @if($lastPaymentDate)
-                              <p><span>@lang('fees.paid_date'){{-- may fallback if key missing --}}</span><span>:
-                                  {{ dateConvert($lastPaymentDate) }}</span></p>
-                              @endif
-                              @else
-                              <p><span>@lang('fees.payment_status')</span>
-                                <span>:
-                                  @if ($paymentStatus == 0)
-                                  @lang('fees.paid')
-                                  @else
-                                  @if ($paidAmount > 0)
-                                  @lang('fees.partial')
-                                  @else
-                                  @lang('fees.unpaid')
-                                  @endif
-                                  @endif
-                                </span>
+                            <p><span><strong>@lang('fees.invoice_number')</strong></span><span>: {{$invoiceInfo->invoice_id}}</span></p>
+                            <p><span>@lang('fees.create_date')</span><span>: {{ dateConvert($invoiceInfo->create_date) }}</span></p>
+                            <p><span>@lang('fees.due_date')</span><span>: {{ dateConvert($invoiceInfo->due_date) }}</span></p>
+                            <p><span>@lang('fees.payment_status')</span><span>:
+                                @if($resolvedStatus==='paid') @lang('fees.paid')
+                                @elseif($resolvedStatus==='partial') @lang('fees.partial')
+                                @else @lang('fees.unpaid') @endif
+                              </span></p>
+                            @if(($resolvedStatus==='paid' || $resolvedStatus==='partial') && $lastPaymentDate)
+                              <p><span>Payment Date</span><span>: {{ dateConvert($lastPaymentDate) }}</span></p>
+                            @endif
                               </p>
                               @if($lastPaymentDate)
                               <p><span>Payment Date</span><span>:

@@ -450,7 +450,8 @@ html[dir="rtl"] #main-content {
                         <div class="primary_input">
                           <input
                             class="primary_input_field form-control amount{{ $errors->has('amount') ? ' is-invalid' : '' }}"
-                            type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="amount[]" autocomplete="off"
+                            type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="amount[]"
+                            autocomplete="off"
                             value="{{ isset($invoiceDetail) ? number_format((float)$invoiceDetail->amount, 2, '.', '') : old('amount') }}">
 
                           @if ($errors->has('amount'))
@@ -464,7 +465,8 @@ html[dir="rtl"] #main-content {
                         <div class="primary_input">
                           <input
                             class="primary_input_field form-control weaver{{ $errors->has('weaver') ? ' is-invalid' : '' }}"
-                            type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="weaver[]" autocomplete="off"
+                            type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="weaver[]"
+                            autocomplete="off"
                             value="{{ isset($invoiceDetail) ? number_format((float)$invoiceDetail->weaver, 2, '.', '') : old('weaver') }}">
 
                           @if ($errors->has('weaver'))
@@ -483,7 +485,8 @@ html[dir="rtl"] #main-content {
                       <td>
                         <input
                           class="primary_input_field form-control paidAmount{{ $errors->has('paid_amount') ? ' is-invalid' : '' }}"
-                          type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="paid_amount[]" autocomplete="off" disabled
+                          type="text" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" name="paid_amount[]"
+                          autocomplete="off" disabled
                           value="{{ isset($invoiceDetail) ? number_format((float)$invoiceDetail->paid_amount, 2, '.', '') : old('paid_amount') }}">
                       </td>
                       @endif
@@ -596,17 +599,17 @@ html[dir="rtl"] #main-content {
     return classes.some(c => el.classList && el.classList.contains(c));
   }
 
-  function sanitize(raw){
-    if(raw==='') return '';
+  function sanitize(raw) {
+    if (raw === '') return '';
     // allow one decimal point, don't trim fractional part while typing
-    let cleaned = raw.replace(/[^0-9.]/g,'');
+    let cleaned = raw.replace(/[^0-9.]/g, '');
     const firstDot = cleaned.indexOf('.');
-    if(firstDot !== -1){
-      cleaned = cleaned.substring(0, firstDot+1) + cleaned.substring(firstDot+1).replace(/\./g,'');
+    if (firstDot !== -1) {
+      cleaned = cleaned.substring(0, firstDot + 1) + cleaned.substring(firstDot + 1).replace(/\./g, '');
     }
     // normalize leading zeros for integer part only (keep user intent for '0.' prefix)
-    if(firstDot === -1 && /^0[0-9]+$/.test(cleaned)){
-      cleaned = String(parseInt(cleaned,10));
+    if (firstDot === -1 && /^0[0-9]+$/.test(cleaned)) {
+      cleaned = String(parseInt(cleaned, 10));
     }
     return cleaned;
   }

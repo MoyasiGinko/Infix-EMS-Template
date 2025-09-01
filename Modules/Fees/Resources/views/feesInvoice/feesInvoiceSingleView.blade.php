@@ -98,7 +98,7 @@
                               $lastPaidAt = $lastTrans ? ($lastTrans->updated_at ?? $lastTrans->created_at) : null;
                             @endphp
                             @if($paidAmount > 0 && $lastPaidAt)
-                              <p><span>@lang('fees.paid_date')</span> <span>: {{ dateConvert($lastPaidAt) }}</span></p>
+                              <p><span>Payment Date</span> <span>: {{ dateConvert($lastPaidAt) }}</span></p>
                             @endif
                           </div>
                         </td>
