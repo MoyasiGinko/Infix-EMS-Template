@@ -599,7 +599,7 @@
             <td>{{($invoiceDetail->weaver)? $invoiceDetail->weaver : 0}}</td>
             <td>{{($invoiceDetail->fine)? $invoiceDetail->fine : 0}}</td>
             <td>{{($invoiceDetail->paid_amount)? $invoiceDetail->paid_amount : 0}}</td>
-            <td class="text-right-print pr-0">{{currency_format($total)}}</td>
+            <td class="text-right-print pr-0">{{currency_format($totalAmount)}}</td>
           </tr>
           @endforeach
         </tbody>
