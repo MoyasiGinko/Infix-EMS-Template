@@ -1487,7 +1487,9 @@ class FeesController extends Controller
             return DataTables::of($studentInvoices)
                 ->addIndexColumn()
                 ->addColumn('student_name', function ($row): string {
-                    return '<a href="'.route('fees.fees-invoice-view', ['id' => $row->id, 'state' => 'view']).'target="_blank">'.@$row->studentInfo->full_name.'</a>';
+                    // Correct anchor: ensure target attribute is outside href value
+                    $url = route('fees.fees-invoice-view', ['id' => $row->id, 'state' => 'view']);
+                    return '<a href="'.$url.'" target="_blank">'.e(@$row->studentInfo->full_name).'</a>';
                 })
                 ->addColumn('admission_no', function ($row) {
                     // Display roll number instead of admission no as per updated requirement

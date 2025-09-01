@@ -120,31 +120,20 @@ html[dir="rtl"] .total_count {
                           @endphp
                           <div class="addressright_text">
                             @php
-                            // Determine last payment timestamp (prefer updated_at if available) among paid details
-                            $lastPaymentRecord = $invoiceDetails->filter(function($d){ return ($d->paid_amount ?? 0) >
-                            0; })
-                            ->sortByDesc(function($d){ return $d->updated_at ?? $d->created_at; })
-                            ->first();
-                            $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->updated_at ??
-                            @php
-                              // Aggregate amounts
+                              // Aggregate / derive status once (clean rebuild of corrupted block)
                               $subTotal = $invoiceDetails->sum('sub_total');
                               $paidAmount = $invoiceDetails->sum('paid_amount');
-                              $weaverTotal = $invoiceDetails->sum('weaver');
-                              // Compute due (sub_total already net of waiver)
                               $computedDue = $subTotal - $paidAmount;
-                              // Prefer stored status, but reconcile with computed figures
-                              $stored = $invoiceInfo->payment_status ?? null; // values: full, partial, not
-                              if($stored === 'full' || ($paidAmount > 0 && $computedDue <= 0)) {
+                              $storedStatus = $invoiceInfo->payment_status; // expected: full, partial, not
+                              if($storedStatus === 'full' || ($paidAmount > 0 && $computedDue <= 0)) {
                                 $resolvedStatus = 'paid';
-                              } elseif($stored === 'partial' || ($paidAmount > 0 && $computedDue > 0)) {
+                              } elseif($storedStatus === 'partial' || ($paidAmount > 0 && $computedDue > 0)) {
                                 $resolvedStatus = 'partial';
                               } else {
                                 $resolvedStatus = 'unpaid';
                               }
-                              // Last payment timestamp
-                              $lastPaymentRecord = $invoiceDetails->filter(function($d){ return ($d->paid_amount ?? 0) > 0; })
-                                ->sortByDesc(function($d){ return $d->updated_at ?? $d->created_at; })
+                              $lastPaymentRecord = $invoiceDetails->filter(fn($d) => ($d->paid_amount ?? 0) > 0)
+                                ->sortByDesc(fn($d) => $d->updated_at ?? $d->created_at)
                                 ->first();
                               $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->updated_at ?? $lastPaymentRecord->created_at) : null;
                             @endphp
@@ -159,15 +148,6 @@ html[dir="rtl"] .total_count {
                             @if(($resolvedStatus==='paid' || $resolvedStatus==='partial') && $lastPaymentDate)
                               <p><span>Payment Date</span><span>: {{ dateConvert($lastPaymentDate) }}</span></p>
                             @endif
-                              </p>
-                              @if($lastPaymentDate)
-                              <p><span>Payment Date</span><span>:
-                                  {{ dateConvert($lastPaymentDate) }}</span></p>
-                              @endif
-                              @endif
-                              @else
-                              <p><span>@lang('fees.payment_status')</span><span>: @lang('fees.unpaid')</span></p>
-                              @endif
                           </div>
                         </td>
                       </tr>
