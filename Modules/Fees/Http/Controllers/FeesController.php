@@ -1174,7 +1174,7 @@ class FeesController extends Controller
                 }
             }
 
-            // Recompute and persist overall invoice payment_status after updates
+            // Recompute and persist overall invoice payment_status + latest payment_method after updates
             try {
                 $invoice = FmFeesInvoice::find($request->invoice_id);
                 if ($invoice) {
@@ -1189,6 +1189,13 @@ class FeesController extends Controller
                         $invoice->payment_status = 'partial';
                     } else {
                         $invoice->payment_status = 'not';
+                    }
+                    // Update stored payment method/bank if this transaction supplies one (keeps latest non-empty)
+                    if (!empty($request->payment_method)) {
+                        $invoice->payment_method = $request->payment_method;
+                        if ($request->payment_method === 'Bank' && !empty($request->bank)) {
+                            $invoice->bank_id = $request->bank; // ensure bank association stays in sync
+                        }
                     }
                     $invoice->save();
                 }
