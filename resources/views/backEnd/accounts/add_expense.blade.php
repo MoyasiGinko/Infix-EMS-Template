@@ -1016,16 +1016,25 @@ $(function() {
   }
 
   async function triggerExport(type) {
-    if (type === 'pdf' && !window._banglaFontReady) {
-      const ok = await loadBanglaFont();
-      if (!ok) console.warn('Bangla font not loaded; PDF will fallback.');
-    }
-    if (type === 'pdf' && typeof pdfMake === 'undefined') {
-      console.error(
-        'pdfMake library not loaded: cannot create PDF. Ensure pdfmake.min.js & vfs_fonts.js are included before this script.'
-        );
-      alert('PDF library missing. Please ensure pdfMake scripts are loaded.');
-      return;
+    if (type === 'pdf') {
+      const ready = await ensurePdfMakeReady();
+      if (!ready) {
+        console.error('pdfMake still not ready after waiting.');
+        alert('PDF engine not loaded (pdfMake).');
+        return;
+      }
+      if (!window._banglaFontReady) {
+        const ok = await loadBanglaFont();
+        if (!ok) {
+          const hasRoboto = pdfMake.fonts && pdfMake.fonts.Roboto;
+          if (!hasRoboto) {
+            alert(
+              'No Bangla font and no default Roboto font found. Add TTFs to public/fonts or include vfs_fonts.js.'
+              );
+            return;
+          }
+        }
+      }
     }
     const tableId = buildTable();
     ensureDT(tableId);
@@ -1078,6 +1087,23 @@ $(function() {
     updatePageTotal();
   }
 });
+// Wait/poll for pdfMake presence
+async function ensurePdfMakeReady() {
+  if (window.pdfMake && pdfMake.addFileToVFS) return true;
+  return new Promise(resolve => {
+    let tries = 0;
+    const max = 20; // ~3s
+    const h = setInterval(() => {
+      if (window.pdfMake && pdfMake.addFileToVFS) {
+        clearInterval(h);
+        resolve(true);
+      } else if (++tries >= max) {
+        clearInterval(h);
+        resolve(false);
+      }
+    }, 150);
+  });
+}
 </script>
 <style>
 #expenseDateAccordion .card-header {
