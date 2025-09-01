@@ -327,6 +327,16 @@ if (!empty(@$setting->currency_symbol)) {
                 </div>
                 <div id="expensePagination" class="mb-2"></div>
               </div>
+              <div class="d-flex justify-content-end mb-3 flex-wrap">
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                  id="expExportExcel">@lang('common.export') XLSX</button>
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                  id="expExportPDF">@lang('common.export') PDF</button>
+                <button type="button" class="primary-btn small fix-gr-bg mb-2"
+                  id="expExportPrint">@lang('common.print')</button>
+              </div>
+              <div id="expenseExportContainer"
+                style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;"></div>
               <div id="expenseDateAccordion" class="mb-20 group-accordion" data-group="date">
                 @php
                 // Fallback if controller did not pass grouped_expenses
@@ -740,6 +750,106 @@ document.addEventListener('click', function(e) {
       deleteExpense(id);
     }
   }
+});
+// Export logic using hidden DataTable instance
+$(function() {
+  function collectRows() {
+    const group = $('#expenseGroupBy').val();
+    let rows = [];
+    const $acc = $('.group-accordion[data-group="' + group + '"]');
+    $acc.children('.card').each(function() {
+      const $card = $(this);
+      // Include even hidden due to pagination to export everything in current group
+      const $table = $card.find('table');
+      $table.find('tbody tr').each(function() {
+        const $tds = $(this).find('td');
+        if ($tds.length) {
+          rows.push([
+            $tds.eq(1).text().trim(), // Name
+            $tds.eq(2).text().trim(), // Method
+            $tds.eq(3).text().trim(), // Head
+            $tds.eq(4).text().trim(), // Amount
+          ]);
+        }
+      });
+    });
+    return rows;
+  }
+
+  function buildTable() {
+    const rows = collectRows();
+    const $container = $('#expenseExportContainer');
+    $container.empty();
+    const tableId = 'expenseExportTable';
+    let html = '<table id="' + tableId + '" class="table table-sm"><thead><tr>' +
+      '<th>' + window.jsLang ? window.jsLang('common.name') : 'Name' + '</th>' +
+      '<th>' + (window.jsLang ? window.jsLang('accounts.payment_method') : 'Payment Method') + '</th>' +
+      '<th>' + (window.jsLang ? window.jsLang('accounts.a_c_Head') : 'Head') + '</th>' +
+      '<th>' + (window.jsLang ? window.jsLang('accounts.amount') : 'Amount') + '</th>' +
+      '</tr></thead><tbody>';
+    rows.forEach(r => {
+      html += '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td><td>' + r[3] + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    $container.append(html);
+    return tableId;
+  }
+  let dtInstance = null;
+
+  function ensureDT(tableId) {
+    if (dtInstance) {
+      dtInstance.destroy();
+      dtInstance = null;
+    }
+    dtInstance = $('#' + tableId).DataTable({
+      paging: false,
+      searching: false,
+      info: false,
+      ordering: false,
+      dom: 'Bfrtip',
+      buttons: [{
+          extend: 'excelHtml5',
+          title: $('#logo_title').val() || 'Expenses'
+        },
+        {
+          extend: 'pdfHtml5',
+          title: $('#logo_title').val() || 'Expenses',
+          orientation: 'landscape',
+          pageSize: 'A4',
+          customize: function(doc) {
+            doc.defaultStyle.font = 'DejaVuSans';
+          }
+        },
+        {
+          extend: 'print',
+          title: $('#logo_title').val() || 'Expenses'
+        }
+      ]
+    });
+  }
+
+  function triggerExport(type) {
+    const tableId = buildTable();
+    ensureDT(tableId);
+    const btn = dtInstance.button(type + ':name') || dtInstance.buttons().container().find('.buttons-' + type);
+    // fallback by index
+    if (type === 'excel') {
+      dtInstance.button(0).trigger();
+    } else if (type === 'pdf') {
+      dtInstance.button(1).trigger();
+    } else if (type === 'print') {
+      dtInstance.button(2).trigger();
+    }
+  }
+  $('#expExportExcel').on('click', function() {
+    triggerExport('excel');
+  });
+  $('#expExportPDF').on('click', function() {
+    triggerExport('pdf');
+  });
+  $('#expExportPrint').on('click', function() {
+    triggerExport('print');
+  });
 });
 </script>
 <style>
