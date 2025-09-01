@@ -35,7 +35,7 @@
         @endphp
         @if (isset($role) && $role == 'admin')
             {{ html()->form('POST', route('fees.fees-payment-store'))->attributes(['class' => 'form-horizontal', 'enctype' => 'multipart/form-data'])->open() }}
-            
+
             <input type="hidden" name="record_id" value="{{ $record_id }}">
         @else
             {{ html()->form('POST', route('fees.student-fees-payment-store'))->attributes(['class' => 'form-horizontal', 'id' => 'addFeesPayment', 'enctype' => 'multipart/form-data'])->open() }}
@@ -401,14 +401,14 @@
                                                     <td>
                                                         <input
                                                             class="primary_input_field form-control addFeesPaidAmount"
-                                                            type="text" name="paid_amount[]" autocomplete="off">
+                                                            type="number" step="0.01" min="0" name="paid_amount[]" autocomplete="off">
                                                     </td>
                                                     <td>
                                                         @if (isset($role) && $role == 'admin')
                                                             <div class="primary_input">
                                                                 <input
                                                                     class="primary_input_field form-control addFeesWeaver"
-                                                                    type="text" name="weaver[]" autocomplete="off"
+                                                                    type="number" step="0.01" min="0" name="weaver[]" autocomplete="off"
                                                                     value="{{ isset($invoiceDetail) ? $invoiceDetail->weaver : old('weaver') }}">
                                                                 <input class="previousWeaver" type="hidden"
                                                                     value="{{ isset($invoiceDetail) ? $invoiceDetail->weaver : '' }}">
@@ -423,7 +423,7 @@
                                                     <td>
                                                         @if (isset($role) && $role == 'admin')
                                                             <input class="primary_input_field form-control addFeesFine"
-                                                                type="text" name="fine[]" autocomplete="off"
+                                                                type="number" step="0.01" min="0" name="fine[]" autocomplete="off"
                                                                 value="0">
                                                         @else
                                                             <input class="primary_input_field border-0 form-control"
@@ -640,4 +640,18 @@
 <script type="text/javascript" src="{{ url('Modules\Fees\Resources\assets\js\app.js') }}"></script>
 <script>
     selectPosition({!! feesInvoiceSettings()->invoice_positions !!});
+    // Prevent negative numeric inputs client-side (defense-in-depth)
+    (function(){
+        const selector = '.addFeesPaidAmount,.addFeesWeaver,.addFeesFine,#addWallet';
+        $(document).on('input change', selector, function(){
+            let v = $(this).val();
+            if(v === '') return;
+            let num = parseFloat(v);
+            if(isNaN(num) || num < 0){
+                num = 0;
+            }
+            // limit to 2 decimals
+            $(this).val(num.toFixed(2));
+        });
+    })();
 </script>

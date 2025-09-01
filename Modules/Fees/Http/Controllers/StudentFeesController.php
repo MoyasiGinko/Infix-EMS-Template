@@ -132,20 +132,51 @@ class StudentFeesController extends Controller
 
     public function studentFeesPaymentStore(Request $request)
     {
-        
-        if ($request->total_paid_amount == null) {
-            Toastr::warning('Paid Amount Can Not Be Blank', 'Failed');
-
-            return redirect()->back();
+        // Normalize numeric arrays & prevent negative injections
+        $request->merge([
+            'total_paid_amount' => $request->total_paid_amount !== null ? (float) $request->total_paid_amount : null,
+        ]);
+        if (is_array($request->paid_amount)) {
+            $paid_amount = array_map(function ($v) { return $v === null || $v === '' ? null : (float) $v; }, $request->paid_amount);
+            $request->merge(['paid_amount' => $paid_amount]);
+        }
+        if (is_array($request->weaver)) {
+            $weaver = array_map(function ($v) { return $v === null || $v === '' ? null : (float) $v; }, $request->weaver);
+            $request->merge(['weaver' => $weaver]);
+        }
+        if (is_array($request->fine)) {
+            $fine = array_map(function ($v) { return $v === null || $v === '' ? null : (float) $v; }, $request->fine);
+            $request->merge(['fine' => $fine]);
         }
 
         $validator = Validator::make($request->all(), [
             'payment_method' => 'required',
             'bank' => 'required_if:payment_method,Bank',
+            'total_paid_amount' => 'required|numeric|min:0.01',
+            'paid_amount' => 'required|array',
+            'paid_amount.*' => 'nullable|numeric|min:0',
+            'weaver' => 'nullable|array',
+            'weaver.*' => 'nullable|numeric|min:0',
+            'fine' => 'nullable|array',
+            'fine.*' => 'nullable|numeric|min:0',
+            'add_wallet' => 'nullable|numeric|min:0',
+        ], [
+            'total_paid_amount.min' => 'Total paid amount must be greater than 0',
+            'paid_amount.*.min' => 'Paid amount items cannot be negative',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // Guard: explicit negative check (defense-in-depth)
+        if ($request->total_paid_amount <= 0) {
+            Toastr::warning('Paid Amount must be greater than zero', 'Failed');
+            return redirect()->back()->withInput();
+        }
+        if (collect($request->paid_amount)->filter(fn($v) => $v !== null && $v < 0)->isNotEmpty()) {
+            Toastr::warning('Individual paid amounts cannot be negative', 'Failed');
+            return redirect()->back()->withInput();
         }
 
         try {
@@ -288,10 +319,10 @@ class StudentFeesController extends Controller
                 $storeTransaction->bank_id = $request->bank;
                 $storeTransaction->student_id = $record->student_id;
                 $storeTransaction->record_id = $record->id;
-                $storeTransaction->user_id = auth()->user()->id;
+                $storeTransaction->user_id = Auth::user()->id;
                 $storeTransaction->file = $file;
                 $storeTransaction->paid_status = 'pending';
-                $storeTransaction->school_id = auth()->user()->school_id;
+                $storeTransaction->school_id = Auth::user()->school_id;
                 if (moduleStatusCheck('University')) {
                     $storeTransaction->un_academic_id = getAcademicId();
                 } else {
@@ -308,7 +339,7 @@ class StudentFeesController extends Controller
                         $storeTransactionChield->paid_amount = $request->paid_amount[$key] - $request->extraAmount[$key];
                         $storeTransactionChield->service_charge = chargeAmount($request->payment_method, $request->paid_amount[$key]);
                         $storeTransactionChield->note = $request->note[$key];
-                        $storeTransactionChield->school_id = auth()->user()->school_id;
+                        $storeTransactionChield->school_id = Auth::user()->school_id;
                         if (moduleStatusCheck('University')) {
                             $storeTransactionChield->un_academic_id = getAcademicId();
                         } else {
@@ -326,7 +357,7 @@ class StudentFeesController extends Controller
                     return redirect()->route('mercadopago.mercadopago-fees-payment', ['traxId' => $storeTransaction->id]);
                 }
             } else {
-                
+
                 $storeTransaction = new FmFeesTransaction();
                 $storeTransaction->fees_invoice_id = $request->invoice_id;
                 $storeTransaction->payment_note = $request->payment_note ?? $request->payment_note;
@@ -334,15 +365,15 @@ class StudentFeesController extends Controller
                 $storeTransaction->student_id = $record->student_id;
                 $storeTransaction->record_id = $record->id;
                 $storeTransaction->add_wallet_money = $request->add_wallet;
-                $storeTransaction->user_id = auth()->user()->id;
+                $storeTransaction->user_id = Auth::user()->id;
                 $storeTransaction->paid_status = 'pending';
-                $storeTransaction->school_id = auth()->user()->school_id;
+                $storeTransaction->school_id = Auth::user()->school_id;
                 if (moduleStatusCheck('University')) {
                     $storeTransaction->un_academic_id = getAcademicId();
                 } else {
                     $storeTransaction->academic_id = getAcademicId();
                 }
-                
+
                 $storeTransaction->save();
 
                 foreach ($request->fees_type as $key => $type) {
@@ -375,7 +406,7 @@ class StudentFeesController extends Controller
                 $data['stripeToken'] = $request->stripeToken;
                 $data['transcationId'] = $storeTransaction->id;
                 $data['service_charge'] = chargeAmount($request->payment_method, $request->total_paid_amount);
-                
+
                 if ($data['payment_method'] == 'RazorPay') {
                     $feesExtendedController = new FeesExtendedController();
                     $feesExtendedController->addFeesAmount($storeTransaction->id, null);
@@ -415,20 +446,20 @@ class StudentFeesController extends Controller
                         }else{
                             Toastr::error('SSLCommerz Module Not Active', 'Failed');
                             return redirect()->back();
-                        }                          
+                        }
                     }else{
                         Toastr::error('SSLCommerz Module Not Active', 'Failed');
                         return redirect()->back();
-                    }                    
-                }                
+                    }
+                }
                 else{
                     $classMap = config('paymentGateway.'.$data['payment_method']);
-                    
+
                     $make_payment = new $classMap();
                     $url = $make_payment->handle($data);
                     if (! $url) {
                         $url = url('fees/student-fees-list');
-                        if (auth()->check() && auth()->user()->role_id == 3) {
+                        if (Auth::check() && Auth::user()->role_id == 3) {
                             $url = url('fees/student-fees-list', $record->student_id);
                         }
                     }
@@ -446,7 +477,7 @@ class StudentFeesController extends Controller
             // sendNotification("Add Fees Payment", null, $student->user_id, 2);
             // sendNotification("Add Fees Payment", null, $student->parents->user_id, 3);
             // sendNotification("Add Fees Payment", null, 1, 1);
-            
+
             $student_user_id = $student->user_id;
             $data['fees'] = $request->total_paid_amount;
             try {
@@ -460,7 +491,7 @@ class StudentFeesController extends Controller
             Toastr::success('Save Successful', 'Success');
 
             $redirect_url = url('fees/student-fees-list');
-            if (auth()->check() && auth()->user()->role_id == 3) {
+            if (Auth::check() && Auth::user()->role_id == 3) {
                 $redirect_url = url('fees/student-fees-list', $record->student_id);
             }
 
