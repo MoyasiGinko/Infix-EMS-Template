@@ -606,18 +606,44 @@ function serviceCharge(gateway, amount, status) {
   }
 })();
 // Prevent negative numeric inputs client-side (defense-in-depth)
+// Allow free-form typing (no forced 0.00 each keystroke); sanitize characters while typing; format on blur
 (function() {
   const selector = '.addFeesPaidAmount,.addFeesWeaver,.addFeesFine,#addWallet';
-  $(document).on('input change', selector, function() {
-    let v = $(this).val();
-    if (v === '') return;
-    v = v.replace(/[^0-9.\-]/g, '');
-    let num = parseFloat(v);
-    if (isNaN(num) || num < 0) {
-      num = 0;
+
+  function enforceNumeric(raw) {
+    if (raw === '') return '';
+    let cleaned = raw.replace(/[^0-9.]/g, '');
+    const firstDot = cleaned.indexOf('.');
+    if (firstDot !== -1) {
+      cleaned = cleaned.substring(0, firstDot + 1) + cleaned.substring(firstDot + 1).replace(/\./g, '');
     }
-    $(this).val(num.toFixed(2));
+    const parts = cleaned.split('.');
+    if (parts.length === 2 && parts[1].length > 2) {
+      cleaned = parts[0] + '.' + parts[1].slice(0, 2);
+    }
+    if (parts.length === 1 && /^0[0-9]+$/.test(cleaned)) {
+      cleaned = String(parseInt(cleaned, 10));
+    }
+    return cleaned;
+  }
+
+  function finalize(el) {
+    if (el.value === '') return;
+    let num = parseFloat(el.value);
+    if (isNaN(num) || num < 0) num = 0;
+    el.value = num.toFixed(2);
     recomputeTotals();
+  }
+
+  $(document).on('input', selector, function() {
+    const before = this.value;
+    const pos = this.selectionStart;
+    this.value = enforceNumeric(before);
+    const delta = before.length - this.value.length;
+    this.setSelectionRange(pos - (delta > 0 ? delta : 0), pos - (delta > 0 ? delta : 0));
+  });
+  $(document).on('blur change', selector, function() {
+    finalize(this);
   });
 
   function sum(selector, attrVal) {

@@ -588,21 +588,54 @@ html[dir="rtl"] #main-content {
 }
 </script>
 <script>
-// Client-side clamp to prevent negative values & normalize to 2 decimals
+// Relaxed numeric input handling: allow free typing; sanitize characters while typing; format on blur.
 (function() {
-  function clampAndFormat(el) {
-    let v = parseFloat(el.value);
-    if (isNaN(v) || v < 0) v = 0;
-    el.value = v.toFixed(2);
+  const classes = ['amount', 'weaver', 'paidAmount'];
+
+  function hasTargetClass(el) {
+    return classes.some(c => el.classList && el.classList.contains(c));
   }
-  ['input', 'blur'].forEach(evt => {
-    document.addEventListener(evt, function(e) {
-      if (e.target && (e.target.classList.contains('amount') || e.target.classList.contains('weaver') || e
-          .target.classList.contains('paidAmount'))) {
-        clampAndFormat(e.target);
-      }
-    });
+
+  function sanitize(raw) {
+    if (raw === '') return '';
+    let cleaned = raw.replace(/[^0-9.]/g, '');
+    const firstDot = cleaned.indexOf('.');
+    if (firstDot !== -1) {
+      cleaned = cleaned.substring(0, firstDot + 1) + cleaned.substring(firstDot + 1).replace(/\./g, '');
+    }
+    const parts = cleaned.split('.');
+    if (parts.length === 2 && parts[1].length > 2) {
+      cleaned = parts[0] + '.' + parts[1].slice(0, 2);
+    }
+    if (parts.length === 1 && /^0[0-9]+$/.test(cleaned)) {
+      cleaned = String(parseInt(cleaned, 10));
+    }
+    return cleaned;
+  }
+
+  function finalize(el) {
+    if (el.value === '') return; // allow empty; server validation will enforce required fields
+    let num = parseFloat(el.value);
+    if (isNaN(num) || num < 0) num = 0;
+    el.value = num.toFixed(2);
+  }
+  document.addEventListener('input', function(e) {
+    const el = e.target;
+    if (!hasTargetClass(el)) return;
+    const before = el.value;
+    const pos = el.selectionStart;
+    el.value = sanitize(before);
+    const delta = before.length - el.value.length;
+    if (typeof pos === 'number') {
+      const newPos = pos - (delta > 0 ? delta : 0);
+      el.setSelectionRange(newPos, newPos);
+    }
   });
+  document.addEventListener('blur', function(e) {
+    const el = e.target;
+    if (!hasTargetClass(el)) return;
+    finalize(el);
+  }, true);
 })();
 </script>
 <script>
