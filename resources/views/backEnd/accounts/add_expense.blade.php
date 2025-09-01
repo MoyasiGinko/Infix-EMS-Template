@@ -303,6 +303,16 @@ if (!empty(@$setting->currency_symbol)) {
           {{-- Group view selector + grouped accordions with hybrid page selector --}}
           <div class="row">
             <div class="col-lg-12">
+              <div class="d-flex justify-content-end mb-3 flex-wrap">
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                  id="expExportExcel">@lang('common.export') XLSX</button>
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                  id="expExportCSV">@lang('common.export') CSV</button>
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                  id="expExportPDF">@lang('common.export') PDF</button>
+                <button type="button" class="primary-btn small fix-gr-bg mb-2"
+                  id="expExportPrint">@lang('common.print')</button>
+              </div>
               <div class="d-flex justify-content-start align-items-center mb-3 flex-wrap">
                 <label class="mb-0 mr-2 font-weight-bold">Group by:</label>
                 <select id="expenseGroupBy" class="primary_select" style="min-width:160px;display:inline-block;">
@@ -327,14 +337,7 @@ if (!empty(@$setting->currency_symbol)) {
                 </div>
                 <div id="expensePagination" class="mb-2"></div>
               </div>
-              <div class="d-flex justify-content-end mb-3 flex-wrap">
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="expExportExcel">@lang('common.export') XLSX</button>
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="expExportPDF">@lang('common.export') PDF</button>
-                <button type="button" class="primary-btn small fix-gr-bg mb-2"
-                  id="expExportPrint">@lang('common.print')</button>
-              </div>
+
               <div id="expenseExportContainer"
                 style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;"></div>
               <div id="expenseDateAccordion" class="mb-20 group-accordion" data-group="date">
@@ -778,19 +781,30 @@ $(function() {
 
   function buildTable() {
     const rows = collectRows();
+    let grandTotal = 0;
+    rows.forEach(r => {
+      const v = parseFloat((r[3] || '').toString().replace(/,/g, '').trim());
+      if (!isNaN(v)) grandTotal += v;
+    });
     const $container = $('#expenseExportContainer');
     $container.empty();
     const tableId = 'expenseExportTable';
     let html = '<table id="' + tableId + '" class="table table-sm"><thead><tr>' +
-      '<th>' + window.jsLang ? window.jsLang('common.name') : 'Name' + '</th>' +
+      '<th>' + (window.jsLang ? window.jsLang('common.name') : 'Name') + '</th>' +
       '<th>' + (window.jsLang ? window.jsLang('accounts.payment_method') : 'Payment Method') + '</th>' +
       '<th>' + (window.jsLang ? window.jsLang('accounts.a_c_Head') : 'Head') + '</th>' +
       '<th>' + (window.jsLang ? window.jsLang('accounts.amount') : 'Amount') + '</th>' +
       '</tr></thead><tbody>';
     rows.forEach(r => {
-      html += '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td><td>' + r[3] + '</td></tr>';
+      html += '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td><td class="text-right">' + r[
+        3] + '</td></tr>';
     });
-    html += '</tbody></table>';
+    html += '</tbody><tfoot><tr style="font-weight:bold;background:#f5f5f5;"><td colspan="3" class="text-right">' +
+      (window.jsLang ? window.jsLang('accounts.total') : 'Total') + '</td><td class="text-right">' + grandTotal
+      .toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + '</td></tr></tfoot></table>';
     $container.append(html);
     return tableId;
   }
@@ -809,20 +823,28 @@ $(function() {
       dom: 'Bfrtip',
       buttons: [{
           extend: 'excelHtml5',
-          title: $('#logo_title').val() || 'Expenses'
+          title: $('#logo_title').val() || 'Expenses',
+          footer: true
+        },
+        {
+          extend: 'csvHtml5',
+          title: $('#logo_title').val() || 'Expenses',
+          footer: true
         },
         {
           extend: 'pdfHtml5',
           title: $('#logo_title').val() || 'Expenses',
           orientation: 'landscape',
           pageSize: 'A4',
+          footer: true,
           customize: function(doc) {
             doc.defaultStyle.font = 'DejaVuSans';
           }
         },
         {
           extend: 'print',
-          title: $('#logo_title').val() || 'Expenses'
+          title: $('#logo_title').val() || 'Expenses',
+          footer: true
         }
       ]
     });
@@ -835,14 +857,19 @@ $(function() {
     // fallback by index
     if (type === 'excel') {
       dtInstance.button(0).trigger();
-    } else if (type === 'pdf') {
+    } else if (type === 'csv') {
       dtInstance.button(1).trigger();
-    } else if (type === 'print') {
+    } else if (type === 'pdf') {
       dtInstance.button(2).trigger();
+    } else if (type === 'print') {
+      dtInstance.button(3).trigger();
     }
   }
   $('#expExportExcel').on('click', function() {
     triggerExport('excel');
+  });
+  $('#expExportCSV').on('click', function() {
+    triggerExport('csv');
   });
   $('#expExportPDF').on('click', function() {
     triggerExport('pdf');
