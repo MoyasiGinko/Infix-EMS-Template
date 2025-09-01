@@ -290,7 +290,7 @@ if (!empty(@$setting->currency_symbol)) {
       </div>
 
 
-      <div class="col-lg-12">
+      <div class="col-lg-8 col-xl-9">
         <div class="white-box">
           <div class="row">
             <div class="col-lg-4 no-gutters">
