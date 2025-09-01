@@ -872,6 +872,10 @@ $(function() {
       console.error('DataTables not loaded');
       return;
     }
+    if (!$.fn.dataTable.Buttons) {
+      console.error('DataTables Buttons extension not loaded; cannot export PDF/Excel/CSV/Print');
+      return;
+    }
     try {
       dtInstance = $('#' + tableId).DataTable({
         paging: false,
@@ -1016,6 +1020,13 @@ $(function() {
       const ok = await loadBanglaFont();
       if (!ok) console.warn('Bangla font not loaded; PDF will fallback.');
     }
+    if (type === 'pdf' && typeof pdfMake === 'undefined') {
+      console.error(
+        'pdfMake library not loaded: cannot create PDF. Ensure pdfmake.min.js & vfs_fonts.js are included before this script.'
+        );
+      alert('PDF library missing. Please ensure pdfMake scripts are loaded.');
+      return;
+    }
     const tableId = buildTable();
     ensureDT(tableId);
     if (!dtInstance) {
@@ -1036,10 +1047,18 @@ $(function() {
       else if (type === 'csv') dtInstance.button(1).trigger();
       else if (type === 'pdf') dtInstance.button(2).trigger();
       else if (type === 'print') dtInstance.button(3).trigger();
+      if (type === 'pdf') {
+        // If after a short delay no pdfMake createPdf call happened, notify.
+        setTimeout(() => {
+          // Heuristic: pdf make opens a blob by creating an iframe or download link; we can't easily detect success, so just log.
+          console.log('PDF export triggered (check if download/viewer appeared).');
+        }, 800);
+      }
     } catch (e) {
       console.error('Button trigger failed', e);
       if (type === 'csv') manualCSVDownload(collectRows());
       else if (type === 'print') manualPrint(tableId);
+      else if (type === 'pdf') alert('PDF export failed. See console for details.');
     }
   }
   $('#expExportExcel').on('click', function() {
