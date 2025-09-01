@@ -424,7 +424,7 @@ if (!empty(@$setting->currency_symbol)) {
                     aria-controls="{{ $collapseId }}">
                     <div>
                       <span class="font-weight-bold">{{ $displayHead }}</span>
-                      <span class="text-muted small ml-2">@lang('accounts.total'):
+                      <span class="text-muted ml-2 font-weight-bold" style="font-size:14px;">@lang('accounts.total'):
                         {{ number_format($totalForHead,2) }}</span>
                     </div>
                     <div>
@@ -494,7 +494,7 @@ if (!empty(@$setting->currency_symbol)) {
                     aria-controls="{{ $collapseId }}">
                     <div>
                       <span class="font-weight-bold">{{ $displayMethod }}</span>
-                      <span class="text-muted small ml-2">@lang('accounts.total'):
+                      <span class="text-muted ml-2 font-weight-bold" style="font-size:14px;">@lang('accounts.total'):
                         {{ number_format($totalForMethod,2) }}</span>
                     </div>
                     <div>
