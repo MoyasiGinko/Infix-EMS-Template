@@ -1030,7 +1030,7 @@ $(function() {
           if (!hasRoboto) {
             alert(
               'No Bangla font and no default Roboto font found. Add TTFs to public/fonts or include vfs_fonts.js.'
-              );
+            );
             return;
           }
         }
@@ -1090,9 +1090,24 @@ $(function() {
 // Wait/poll for pdfMake presence
 async function ensurePdfMakeReady() {
   if (window.pdfMake && pdfMake.addFileToVFS) return true;
+  // Try to dynamically load from CDN once if not already attempted
+  if (!window._pdfMakeLoading) {
+    window._pdfMakeLoading = true;
+    const cdnScripts = [
+      'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js'
+    ];
+    cdnScripts.forEach(src => {
+      if (document.querySelector('script[src="' + src + '"]')) return;
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = false; // keep order
+      document.head.appendChild(s);
+    });
+  }
   return new Promise(resolve => {
     let tries = 0;
-    const max = 20; // ~3s
+    const max = 40; // extend wait (~6s)
     const h = setInterval(() => {
       if (window.pdfMake && pdfMake.addFileToVFS) {
         clearInterval(h);
