@@ -453,6 +453,16 @@
                     @endif
                   </tbody>
                   <tfoot>
+                    <tr class="bg-light">
+                      <td>@lang('common.total')</td>
+                      <td></td>
+                      <td id="totalColAmount">0.00</td>
+                      <td id="totalColDue">0.00</td>
+                      <td id="totalColPaid">0.00</td>
+                      <td id="totalColWaiver">0.00</td>
+                      <td id="totalColFine">0.00</td>
+                      <td></td>
+                    </tr>
                     <tr>
                       <td colspan="8">
                         <input class="totalStudentPaidAmount" id="ttlpaidAmount" type="hidden" name="total_paid_amount">
@@ -475,14 +485,6 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 @endif
 <script type="text/javascript">
-@if(moduleStatusCheck('RazorPay'))
-var payment = false;
-
-function demoSuccessHandler(transaction) {
-  payment = true;
-  $('form#addFeesPayment').submit();
-}
-@endif
 window.paymentValue = $('#paymentMethodAddFees').val();
 $(function() {
   var $form = $("form#addFeesPayment");
@@ -501,33 +503,7 @@ $(function() {
         }, stripeResponseHandler);
       }
     }
-    @if(moduleStatusCheck('RazorPay'))
-    else if (paymentValue == 'RazorPay') {
-      if (!payment) {
-        e.preventDefault();
-        let value = parseFloat($('input[name="total_paid_amount"]').val());
-        if (isNaN(value)) {
-          value = 0;
-        }
-        value = value * 100;
-        if (value > 0) {
-          var options = {
-            key: "{{ @$razorpay_info->gateway_secret_key }}",
-            amount: value,
-            name: 'Online fee payment',
-            image: 'https://i.imgur.com/n5tjHFD.png',
-            handler: demoSuccessHandler
-          }
-
-          window.r = new Razorpay(options);
-          r.open();
-        } else {
-          toastr.error('Please make some payment');
-        }
-
-      }
-    }
-    @endif
+    window._razorPayHandler && window._razorPayHandler(e);
 
   });
 
@@ -641,6 +617,72 @@ function serviceCharge(gateway, amount, status) {
       num = 0;
     }
     $(this).val(num.toFixed(2));
+    recomputeTotals();
   });
+
+  function sum(selector, attrVal) {
+    let total = 0;
+    $(selector).each(function() {
+      let v = parseFloat($(this).val());
+      if (!isNaN(v)) total += v;
+    });
+    return total;
+  }
+
+  function recomputeTotals() {
+    const fmt = v => v.toFixed(2);
+    // amount column (readonly original amounts)
+    let amountTotal = 0;
+    $('input[name="amount[]"]').each(function() {
+      let v = parseFloat($(this).val());
+      if (!isNaN(v)) amountTotal += v;
+    });
+    let dueTotal = 0;
+    $('.dueAmount').each(function() {
+      let v = parseFloat($(this).val());
+      if (!isNaN(v)) dueTotal += v;
+    });
+    let paidTotal = sum('.addFeesPaidAmount');
+    let waiverTotal = sum('.addFeesWeaver');
+    let fineTotal = sum('.addFeesFine');
+    $('#totalColAmount').text(fmt(amountTotal));
+    $('#totalColDue').text(fmt(dueTotal));
+    $('#totalColPaid').text(fmt(paidTotal));
+    $('#totalColWaiver').text(fmt(waiverTotal));
+    $('#totalColFine').text(fmt(fineTotal));
+  }
+  // initial compute
+  recomputeTotals();
 })();
 </script>
+@if(moduleStatusCheck('RazorPay'))
+<script type="text/javascript">
+var payment = false;
+
+function demoSuccessHandler(transaction) {
+  payment = true;
+  $('form#addFeesPayment').submit();
+}
+window._razorPayHandler = function(e) {
+  if (paymentValue === 'RazorPay' && !payment) {
+    e.preventDefault();
+    let value = parseFloat($('input[name="total_paid_amount"]').val());
+    if (isNaN(value)) value = 0;
+    value = value * 100;
+    if (value > 0) {
+      var options = {
+        key: "{{ @$razorpay_info->gateway_secret_key }}",
+        amount: value,
+        name: 'Online fee payment',
+        image: 'https://i.imgur.com/n5tjHFD.png',
+        handler: demoSuccessHandler
+      };
+      window.r = new Razorpay(options);
+      r.open();
+    } else {
+      toastr.error('Please make some payment');
+    }
+  }
+};
+</script>
+@endif
