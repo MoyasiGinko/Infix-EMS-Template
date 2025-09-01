@@ -247,30 +247,33 @@ $ajax_url = url('student-list-datatable');
 
 @php
 $columns = [
-['data' => 'admission_no', 'name' => 'admission_no'],
+['data' => 'admission_no', 'name' => 'admission_no', 'searchable' => false],
+// Keep roll_no searchable
 ['data' => 'roll_no', 'name' => 'roll_no'],
+// Keep full_name (student name) searchable
 ['data' => 'full_name', 'name' => 'full_name'],
 ];
 
 if (!moduleStatusCheck('University') && generalSetting()->with_guardian) {
-$columns[] = ['data' => 'parents.fathers_name', 'name' => 'parents.fathers_name'];
+// Father name not searchable in quick search
+$columns[] = ['data' => 'parents.fathers_name', 'name' => 'parents.fathers_name', 'searchable' => false];
 }
 
-$columns[] = ['data' => 'dob', 'name' => 'dob'];
+$columns[] = ['data' => 'dob', 'name' => 'dob', 'searchable' => false];
 
 if (moduleStatusCheck('University')) {
-$columns[] = ['data' => 'semester_label', 'name' => 'semester_label'];
-$columns[] = ['data' => 'class_sec', 'name' => 'class_sec'];
+$columns[] = ['data' => 'semester_label', 'name' => 'semester_label', 'searchable' => false];
+$columns[] = ['data' => 'class_sec', 'name' => 'class_sec', 'searchable' => false];
 } else {
-$columns[] = ['data' => 'class_sec', 'name' => 'class_sec'];
+$columns[] = ['data' => 'class_sec', 'name' => 'class_sec', 'searchable' => false];
 }
 
-$columns[] = ['data' => 'gender.base_setup_name', 'name' => 'gender.base_setup_name'];
-$columns[] = ['data' => 'category.category_name', 'name' => 'category.category_name'];
-$columns[] = ['data' => 'mobile', 'name' => 'sm_students.mobile'];
+$columns[] = ['data' => 'gender.base_setup_name', 'name' => 'gender.base_setup_name', 'searchable' => false];
+$columns[] = ['data' => 'category.category_name', 'name' => 'category.category_name', 'searchable' => false];
+$columns[] = ['data' => 'mobile', 'name' => 'sm_students.mobile', 'searchable' => false];
 $columns[] = ['data' => 'action', 'name' => 'action', 'orderable' => false, 'searchable' => false];
-$columns[] = ['data' => 'first_name', 'name' => 'first_name', 'visible' => false];
-$columns[] = ['data' => 'last_name', 'name' => 'last_name', 'visible' => false];
+$columns[] = ['data' => 'first_name', 'name' => 'first_name', 'visible' => false, 'searchable' => false];
+$columns[] = ['data' => 'last_name', 'name' => 'last_name', 'visible' => false, 'searchable' => false];
 @endphp
 
 @push('script')
