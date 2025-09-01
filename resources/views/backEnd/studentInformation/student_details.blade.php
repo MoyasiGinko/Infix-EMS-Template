@@ -160,6 +160,7 @@
                   <thead>
                     <tr>
                       <th>@lang('student.admission_no')</th>
+                      <th>@lang('student.roll_no')</th>
                       <th>@lang('student.name')</th>
                       @if (!moduleStatusCheck('University') && generalSetting()->with_guardian)
                       <th>@lang('student.father_name')</th>
@@ -247,6 +248,7 @@ $ajax_url = url('student-list-datatable');
 @php
 $columns = [
 ['data' => 'admission_no', 'name' => 'admission_no'],
+['data' => 'roll_no', 'name' => 'roll_no'],
 ['data' => 'full_name', 'name' => 'full_name'],
 ];
 
