@@ -298,21 +298,22 @@ if (!empty(@$setting->currency_symbol)) {
                 <h3 class="mb-15">@lang('accounts.expense_list') </h3>
               </div>
             </div>
+            <div class="d-flex justify-content-end mb-3 flex-wrap">
+              <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                id="expExportExcel">@lang('common.export') XLSX</button>
+              <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                id="expExportCSV">@lang('common.export') CSV</button>
+              <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
+                id="expExportPDF">@lang('common.export') PDF</button>
+              <button type="button" class="primary-btn small fix-gr-bg mb-2"
+                id="expExportPrint">@lang('common.print')</button>
+            </div>
           </div>
 
           {{-- Group view selector + grouped accordions with hybrid page selector --}}
           <div class="row">
             <div class="col-lg-12">
-              <div class="d-flex justify-content-end mb-3 flex-wrap">
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="expExportExcel">@lang('common.export') XLSX</button>
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="expExportCSV">@lang('common.export') CSV</button>
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="expExportPDF">@lang('common.export') PDF</button>
-                <button type="button" class="primary-btn small fix-gr-bg mb-2"
-                  id="expExportPrint">@lang('common.print')</button>
-              </div>
+
               <div class="d-flex justify-content-start align-items-center mb-3 flex-wrap">
                 <label class="mb-0 mr-2 font-weight-bold">Group by:</label>
                 <select id="expenseGroupBy" class="primary_select" style="min-width:160px;display:inline-block;">
@@ -356,7 +357,8 @@ if (!empty(@$setting->currency_symbol)) {
                 <div class="card mb-2 border-0 shadow-sm">
                   <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $collapseId }}"
-                    aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="{{ $collapseId }}">
+                    aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="{{ $collapseId }}"
+                    data-total="{{ $totalForDate }}">
                     <div>
                       <span class="font-weight-bold">{{ $displayDate }}</span>
                       <span class="text-muted ml-2 font-weight-bold" style="font-size:14px;">
@@ -434,7 +436,7 @@ if (!empty(@$setting->currency_symbol)) {
                 <div class="card mb-2 border-0 shadow-sm">
                   <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $collapseId }}" aria-expanded="false"
-                    aria-controls="{{ $collapseId }}">
+                    aria-controls="{{ $collapseId }}" data-total="{{ $totalForHead }}">
                     <div>
                       <span class="font-weight-bold">{{ $displayHead }}</span>
                       <span class="text-muted ml-2 font-weight-bold" style="font-size:14px;">@lang('accounts.total'):
@@ -504,7 +506,7 @@ if (!empty(@$setting->currency_symbol)) {
                 <div class="card mb-2 border-0 shadow-sm">
                   <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $collapseId }}" aria-expanded="false"
-                    aria-controls="{{ $collapseId }}">
+                    aria-controls="{{ $collapseId }}" data-total="{{ $totalForMethod }}">
                     <div>
                       <span class="font-weight-bold">{{ $displayMethod }}</span>
                       <span class="text-muted ml-2 font-weight-bold" style="font-size:14px;">@lang('accounts.total'):
@@ -562,6 +564,14 @@ if (!empty(@$setting->currency_symbol)) {
                   </div>
                 </div>
                 @endforeach
+              </div>
+              <!-- Totals summary footer -->
+              <div id="expenseTotalsSummary" class="mt-3 mb-4">
+                <div class="d-flex flex-wrap align-items-center">
+                  <div class="mr-4 mb-2"><strong>Page Total:</strong> <span id="expensePageTotalAmount">0.00</span>
+                  </div>
+                  <div class="mb-2"><strong>Grand Total:</strong> <span id="expenseGrandTotalAmount">0.00</span></div>
+                </div>
               </div>
             </div>
           </div>
@@ -658,6 +668,7 @@ $(document).on('hide.bs.collapse', '#expenseDateAccordion .collapse', function()
     const end = start + len;
     $cards.slice(start, end).show();
     buildPager(pageParam, totalPages);
+    updatePageTotal();
   }
 
   function buildPager(current, totalPages) {
@@ -742,7 +753,43 @@ $(document).on('hide.bs.collapse', '#expenseDateAccordion .collapse', function()
   });
 
   render();
+  computeGrandTotal();
 })();
+// Compute and update grand/page totals
+function computeGrandTotal() {
+  let grand = 0;
+  $('.group-accordion[data-group]:not(.d-none) .card-header[data-total]').each(function() {
+    const v = parseFloat($(this).data('total'));
+    if (!isNaN(v)) grand += v;
+  });
+  if (!grand && $('#expenseGrandTotalAmount').length) {
+    // fallback: sum all headers across all groups
+    $('.group-accordion .card-header[data-total]').each(function() {
+      const v = parseFloat($(this).data('total'));
+      if (!isNaN(v)) grand += v;
+    });
+  }
+  $('#expenseGrandTotalAmount').text(grand.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }));
+  return grand;
+}
+
+function updatePageTotal() {
+  // sum only visible cards (pagination slice) in the currently active accordion
+  const $activeAcc = $('.group-accordion:not(.d-none)');
+  let page = 0;
+  $activeAcc.children('.card:visible').each(function() {
+    const v = parseFloat($(this).find('> .card-header').data('total'));
+    if (!isNaN(v)) page += v;
+  });
+  $('#expensePageTotalAmount').text(page.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }));
+  computeGrandTotal();
+}
 // Delegated delete (after pagination init so elements may be hidden/shown)
 document.addEventListener('click', function(e) {
   var trigger = e.target.closest('.expense-delete-trigger');
@@ -1007,6 +1054,10 @@ $(function() {
   $('#expExportPrint').on('click', function() {
     triggerExport('print');
   });
+  // Initial totals update if elements present (render() should have done but safeguard)
+  if (typeof updatePageTotal === 'function') {
+    updatePageTotal();
+  }
 });
 </script>
 <style>
