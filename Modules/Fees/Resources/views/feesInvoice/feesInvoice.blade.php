@@ -219,7 +219,7 @@ html[dir="rtl"] #main-content {
                           </div>
                           <button class="btn-date" data-id="#create_date" type="button">
                             <label for="create_date">
-                              <i class="ti-calendar" id="create_date"></i>
+                              <i class="ti-calendar"></i>
                             </label>
                           </button>
                         </div>
@@ -252,7 +252,7 @@ html[dir="rtl"] #main-content {
                           </div>
                           <button class="btn-date" data-id="#due_date" type="button">
                             <label for="due_date">
-                              <i class="ti-calendar" id="due_date"></i>
+                              <i class="ti-calendar"></i>
                             </label>
                           </button>
                         </div>
@@ -450,7 +450,7 @@ html[dir="rtl"] #main-content {
                         <div class="primary_input">
                           <input
                             class="primary_input_field form-control amount{{ $errors->has('amount') ? ' is-invalid' : '' }}"
-                            type="number" name="amount[]" autocomplete="off"
+                            type="number" name="amount[]" autocomplete="off" min="0" step="0.01"
                             value="{{ isset($invoiceDetail) ? $invoiceDetail->amount : old('amount') }}">
 
                           @if ($errors->has('amount'))
@@ -464,7 +464,7 @@ html[dir="rtl"] #main-content {
                         <div class="primary_input">
                           <input
                             class="primary_input_field form-control weaver{{ $errors->has('weaver') ? ' is-invalid' : '' }}"
-                            type="number" name="weaver[]" autocomplete="off"
+                            type="number" name="weaver[]" autocomplete="off" min="0" step="0.01"
                             value="{{ isset($invoiceDetail) ? $invoiceDetail->weaver : old('weaver') }}">
 
                           @if ($errors->has('weaver'))
@@ -483,7 +483,7 @@ html[dir="rtl"] #main-content {
                       <td>
                         <input
                           class="primary_input_field form-control paidAmount{{ $errors->has('paid_amount') ? ' is-invalid' : '' }}"
-                          type="number" name="paid_amount[]" autocomplete="off" disabled
+                          type="number" name="paid_amount[]" autocomplete="off" disabled min="0" step="0.01"
                           value="{{ isset($invoiceDetail) ? $invoiceDetail->paid_amount : old('paid_amount') }}">
                       </td>
                       @endif
@@ -513,7 +513,7 @@ html[dir="rtl"] #main-content {
                                   <label class="primary_input_label" for="">@lang('common.note')</label>
 
                                 </div>
-                                </br>
+                                <br />
                                 <div class="mt-40 d-flex justify-content-between">
                                   <button type="button" class="primary-btn tr-bg"
                                     data-dismiss="modal">@lang('common.cancel')</button>
@@ -561,9 +561,49 @@ html[dir="rtl"] #main-content {
 @push('script')
 <script type="text/javascript" src="{{ url('Modules\Fees\Resources\assets\js\app.js') }}"></script>
 <script>
-selectPosition({
-  !!feesInvoiceSettings() - > invoice_positions!!
-});
+// Initialize draggable invoice position elements (uses JSON from settings)
+(function() {
+  var el = document.getElementById('invoicePositionsData');
+  if (!el) {
+    try {
+      selectPosition([]);
+    } catch (e) {
+      console.warn('selectPosition init failed', e);
+    }
+    return;
+  }
+  try {
+    var data = JSON.parse(el.textContent || '[]');
+    selectPosition(data || []);
+  } catch (e) {
+    console.warn('selectPosition parse/init failed', e);
+  }
+})();
+</script>
+<script type="application/json" id="invoicePositionsData">
+{
+  {
+    json_encode(optional(feesInvoiceSettings()) - > invoice_positions)
+  }
+}
+</script>
+<script>
+// Client-side clamp to prevent negative values & normalize to 2 decimals
+(function() {
+  function clampAndFormat(el) {
+    let v = parseFloat(el.value);
+    if (isNaN(v) || v < 0) v = 0;
+    el.value = v.toFixed(2);
+  }
+  ['input', 'blur'].forEach(evt => {
+    document.addEventListener(evt, function(e) {
+      if (e.target && (e.target.classList.contains('amount') || e.target.classList.contains('weaver') || e
+          .target.classList.contains('paidAmount'))) {
+        clampAndFormat(e.target);
+      }
+    });
+  });
+})();
 </script>
 <script>
 $(document).ready(function() {

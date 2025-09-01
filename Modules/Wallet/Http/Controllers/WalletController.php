@@ -4,7 +4,7 @@ namespace Modules\Wallet\Http\Controllers;
 
 use App\User;
 use Exception;
-use DataTables;
+use Yajra\DataTables\Facades\DataTables;
 use App\SmStudent;
 use App\SmBankAccount;
 use App\SmNotification;
@@ -100,8 +100,12 @@ class WalletController extends Controller
                 $addPayment->academic_id = getAcademicId();
                 $addPayment->save();
 
-                $ccAveuneController = new CcAveuneController();
-                $ccAveuneController->studentFeesPay($data['amount'], $addPayment->id, $data['type']);
+                if (class_exists('Modules\\CcAveune\\Http\\Controllers\\CcAveuneController')) {
+                    $ccAveuneController = app('Modules\\CcAveune\\Http\\Controllers\\CcAveuneController');
+                    $ccAveuneController->studentFeesPay($data['amount'], $addPayment->id, $data['type']);
+                } else {
+                    Log::warning('CcAveune module controller not found while processing wallet payment');
+                }
             } elseif ($data['payment_method'] == 'ToyyibPay') {
                 DB::beginTransaction();
 
@@ -115,7 +119,12 @@ class WalletController extends Controller
                     $addPayment->academic_id = getAcademicId();
                     $addPayment->save();
 
-                    $toyyibPayController = new ToyyibPayController();
+                    if (!class_exists('Modules\\ToyyibPay\\Http\\Controllers\\ToyyibPayController')) {
+                        Log::warning('ToyyibPay module controller not found while processing wallet payment');
+                        DB::commit();
+                        return response()->json(['error' => 'Payment method unavailable'], 422);
+                    }
+                    $toyyibPayController = app('Modules\\ToyyibPay\\Http\\Controllers\\ToyyibPayController');
                     $data = [
                         'amount' => $data['amount'],
                         'type' => $data['wallet_type'],
@@ -469,6 +478,16 @@ class WalletController extends Controller
             'refund_file' => 'mimes:jpg,jpeg,png,pdf',
         ]);
 
+        // Ensure refund amount (current wallet balance) can't be negative or zero
+        $refundAmount = (float) $request->refund_amount;
+        if ($refundAmount <= 0) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Invalid refund amount.'], 422);
+            }
+            Toastr::error('Invalid refund amount', 'Failed');
+            return redirect()->back();
+        }
+
         $existRefund = WalletTransaction::where('type', 'refund')
             ->where('user_id', $request->user_id)
             ->where('status', 'pending')
@@ -500,7 +519,7 @@ class WalletController extends Controller
 
             $walletTransaction = new WalletTransaction();
             $walletTransaction->user_id = $request->user_id;
-            $walletTransaction->amount = $request->refund_amount;
+            $walletTransaction->amount = $refundAmount;
             $walletTransaction->type = 'refund';
             $walletTransaction->payment_method = 'Wallet';
             $walletTransaction->note = $request->refund_note;
@@ -520,6 +539,16 @@ class WalletController extends Controller
     {
         try {
             $status = WalletTransaction::find($request->id);
+
+            if(!$status || $status->type !== 'refund'){
+                Toastr::error('Invalid refund request', 'Failed');
+                return redirect()->route('wallet.wallet-refund-request');
+            }
+
+            if($status->amount <= 0){
+                Toastr::error('Invalid refund amount', 'Failed');
+                return redirect()->route('wallet.wallet-refund-request');
+            }
 
             $user = User::find($status->user_id);
             if($user->wallet_balance < $status->amount){
@@ -560,6 +589,14 @@ class WalletController extends Controller
     {
         try {
             $status = WalletTransaction::find($request->id);
+            if(!$status || $status->type !== 'refund'){
+                Toastr::error('Invalid refund request', 'Failed');
+                return redirect()->route('wallet.wallet-refund-request');
+            }
+            if($status->amount <= 0){
+                Toastr::error('Invalid refund amount', 'Failed');
+                return redirect()->route('wallet.wallet-refund-request');
+            }
             $user = User::find($status->user_id);
 
             $status->status = 'reject';
