@@ -617,11 +617,8 @@ function serviceCharge(gateway, amount, status) {
     if (firstDot !== -1) {
       cleaned = cleaned.substring(0, firstDot + 1) + cleaned.substring(firstDot + 1).replace(/\./g, '');
     }
-    const parts = cleaned.split('.');
-    if (parts.length === 2 && parts[1].length > 2) {
-      cleaned = parts[0] + '.' + parts[1].slice(0, 2);
-    }
-    if (parts.length === 1 && /^0[0-9]+$/.test(cleaned)) {
+    // do not trim fractional part while typing; only on blur
+    if (firstDot === -1 && /^0[0-9]+$/.test(cleaned)) {
       cleaned = String(parseInt(cleaned, 10));
     }
     return cleaned;
@@ -631,6 +628,7 @@ function serviceCharge(gateway, amount, status) {
     if (el.value === '') return;
     let num = parseFloat(el.value);
     if (isNaN(num) || num < 0) num = 0;
+    // round to 2 decimals on blur
     el.value = num.toFixed(2);
     recomputeTotals();
   }
