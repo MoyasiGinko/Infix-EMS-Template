@@ -310,29 +310,82 @@
                             </div>
                         </div>
 
+                        {{-- Redesigned nested date-wise expense list --}}
                         <div class="row">
                             <div class="col-lg-12">
-                                <x-table>
-                                    <table id="table_id" class="table data-table" cellspacing="0" width="100%">
-
-                                        <thead>
-
-                                            <tr>
-                                                <th>Si </th>
-                                                <th>@lang('common.name') </th>
-                                                <th>@lang('accounts.payment_method') </th>
-                                                <th>@lang('common.date') </th>
-                                                <th>@lang('accounts.a_c_Head') </th>
-                                                <th>@lang('accounts.amount') </th>
-                                                <th>@lang('common.action') </th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-
-                                        </tbody>
-                                    </table>
-                                </x-table>
+                                <div id="expenseDateAccordion" class="mb-20">
+                                    @php
+                                        // Fallback if controller did not pass grouped_expenses
+                                        if(!isset($grouped_expenses) && isset($add_expenses)){
+                                            $grouped_expenses = $add_expenses->groupBy(function($e){ return $e->date; })->sortKeysDesc();
+                                        }
+                                    @endphp
+                                    @forelse($grouped_expenses as $dateKey => $expensesForDate)
+                                        @php
+                                            $collapseId = 'expDate_' . md5($dateKey);
+                                            $displayDate = date('M d, Y', strtotime($dateKey));
+                                            $totalForDate = $expensesForDate->sum('amount');
+                                        @endphp
+                                        <div class="card mb-2 border-0 shadow-sm">
+                                            <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center" data-toggle="collapse" data-target="#{{ $collapseId }}" aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="{{ $collapseId }}">
+                                                <div>
+                                                    <span class="font-weight-bold">{{ $displayDate }}</span>
+                                                    <span class="text-muted small ml-2">@lang('accounts.total'): {{ number_format($totalForDate,2) }}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="badge badge-info">{{ $expensesForDate->count() }}</span>
+                                                    <i class="ti-angle-down ml-2"></i>
+                                                </div>
+                                            </div>
+                                            <div id="{{ $collapseId }}" class="collapse @if($loop->first) show @endif" data-parent="#expenseDateAccordion">
+                                                <div class="card-body p-0">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm mb-0 table-striped">
+                                                            <thead class="thead-light">
+                                                                <tr>
+                                                                    <th style="width:50px">#</th>
+                                                                    <th>@lang('common.name')</th>
+                                                                    <th>@lang('accounts.payment_method')</th>
+                                                                    <th>@lang('accounts.a_c_Head')</th>
+                                                                    <th class="text-right">@lang('accounts.amount')</th>
+                                                                    <th class="text-center">@lang('common.action')</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach($expensesForDate as $index => $expense)
+                                                                    <tr>
+                                                                        <td>{{ $index + 1 }}</td>
+                                                                        <td>{{ $expense->name }}</td>
+                                                                        <td>{{ optional($expense->paymentMethod)->method }}</td>
+                                                                        <td>{{ optional($expense->ACHead)->head }}</td>
+                                                                        <td class="text-right">{{ number_format($expense->amount,2) }}</td>
+                                                                        <td class="text-center">
+                                                                            <div class="dropdown CRM_dropdown">
+                                                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton{{ $expense->id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                                                    @lang('common.select')
+                                                                                </button>
+                                                                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton{{ $expense->id }}">
+                                                                                    @if(userPermission('add-expense-edit'))
+                                                                                        <a class="dropdown-item" href="{{ route('add-expense-edit', $expense->id) }}">@lang('common.edit')</a>
+                                                                                    @endif
+                                                                                    @if(userPermission('add-expense-delete'))
+                                                                                        <a class="dropdown-item" href="#" onclick="deleteExpense({{ $expense->id }});return false;">@lang('common.delete')</a>
+                                                                                    @endif
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <p class="text-center text-muted mb-0 py-4">@lang('common.no_data_available')</p>
+                                    @endforelse
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -376,146 +429,22 @@
 @include('backEnd.partials.date_picker_css_js')
 @push('script')
     <script type="text/javascript">
-        $(document).ready(function() {
-
-            $('.data-table').DataTable({
-                processing: true,
-                serverSide: true,
-                "ajax": $.fn.dataTable.pipeline({
-                    url: "{{ route('ajaxExpenseList') }}",
-                    data: {
-                        un_semester_label_id: $('#un_semester_label_id').val(),
-                        class: $('#class').val(),
-                        section: $('#section').val(),
-                        payment_date: $('#p_date').val(),
-                        approve_status: $('#status').val()
-                    },
-                    pages: "{{ generalSetting()->ss_page_load }}" // number of pages to cache
-
-                }),
-                columns: [{
-                        data: 'DT_RowIndex',
-                        name: 'id'
-                    },
-                    {
-                        data: 'name',
-                        name: 'name'
-                    },
-                    {
-                        data: 'payment_method.method',
-                        name: 'paymentMethod.method'
-                    },
-                    {
-                        data: 'date',
-                        name: 'date'
-                    },
-                    {
-                        data: 'a_c_head.head',
-                        name: 'ACHead.head'
-                    },
-                    {
-                        data: 'amount',
-                        name: 'amount'
-                    },
-                    {
-                        data: 'action',
-                        name: 'action',
-                        orderable: false,
-                        searchable: true
-                    },
-
-                ],
-                bLengthChange: false,
-                bDestroy: true,
-                language: {
-                    search: "<i class='ti-search'></i>",
-                    searchPlaceholder: window.jsLang('quick_search'),
-                    paginate: {
-                        next: "<i class='ti-arrow-right'></i>",
-                        previous: "<i class='ti-arrow-left'></i>",
-                    },
-                },
-                dom: "Bfrtip",
-                buttons: [{
-                        extend: "copyHtml5",
-                        text: '<i class="fa fa-files-o"></i>',
-                        title: $("#logo_title").val(),
-                        titleAttr: window.jsLang('copy_table'),
-                        exportOptions: {
-                            columns: ':visible:not(.not-export-col)'
-                        },
-                    },
-                    {
-                        extend: "excelHtml5",
-                        text: '<i class="fa fa-file-excel-o"></i>',
-                        titleAttr: window.jsLang('export_to_excel'),
-                        title: $("#logo_title").val(),
-                        margin: [10, 10, 10, 0],
-                        exportOptions: {
-                            columns: ':visible:not(.not-export-col)'
-                        },
-                    },
-                    {
-                        extend: "csvHtml5",
-                        text: '<i class="fa fa-file-text-o"></i>',
-                        titleAttr: window.jsLang('export_to_csv'),
-                        exportOptions: {
-                            columns: ':visible:not(.not-export-col)'
-                        },
-                    },
-                    {
-                        extend: "pdfHtml5",
-                        text: '<i class="fa fa-file-pdf-o"></i>',
-                        title: $("#logo_title").val(),
-                        titleAttr: window.jsLang('export_to_pdf'),
-                        exportOptions: {
-                            columns: ':visible:not(.not-export-col)'
-                        },
-                        orientation: "landscape",
-                        pageSize: "A4",
-                        margin: [0, 0, 0, 12],
-                        alignment: "center",
-                        header: true,
-                        customize: function(doc) {
-                            doc.content[1].margin = [100, 0, 100, 0]; //left, top, right, bottom
-                            doc.content.splice(1, 0, {
-                                margin: [0, 0, 0, 12],
-                                alignment: "center",
-                                image: "data:image/png;base64," + $("#logo_img").val(),
-                            });
-                            doc.defaultStyle = {
-                                font: 'DejaVuSans'
-                            }
-                        },
-                    },
-                    {
-                        extend: "print",
-                        text: '<i class="fa fa-print"></i>',
-                        titleAttr: window.jsLang('print'),
-                        title: $("#logo_title").val(),
-                        exportOptions: {
-                            columns: ':visible:not(.not-export-col)'
-                        },
-                    },
-                    {
-                        extend: "colvis",
-                        text: '<i class="fa fa-columns"></i>',
-                        postfixButtons: ["colvisRestore"],
-                    },
-                ],
-                columnDefs: [{
-                    visible: false,
-                }, ],
-                responsive: true,
-            });
-        });
-
-
-
         function deleteExpense(id) {
             var modal = $('#deleteExpenseModal');
             modal.find('input[name=id]').val(id);
             modal.modal('show');
         }
+        // Optional: toggle icon rotation on collapse
+        $(document).on('show.bs.collapse', '#expenseDateAccordion .collapse', function(){
+            $(this).prev('.card-header').find('i.ti-angle-down').addClass('rotated');
+        });
+        $(document).on('hide.bs.collapse', '#expenseDateAccordion .collapse', function(){
+            $(this).prev('.card-header').find('i.ti-angle-down').removeClass('rotated');
+        });
     </script>
+    <style>
+        #expenseDateAccordion .card-header{cursor:pointer;}
+        #expenseDateAccordion i.ti-angle-down{transition:transform .2s ease;}
+        #expenseDateAccordion i.ti-angle-down.rotated{transform:rotate(180deg);}
+    </style>
 @endpush

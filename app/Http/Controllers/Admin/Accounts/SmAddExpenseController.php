@@ -27,8 +27,18 @@ class SmAddExpenseController extends Controller
             $expense_heads = SmChartOfAccount::where('type', 'E')->get(['head', 'id']);
             $bank_accounts = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
             $payment_methods = SmPaymentMethhod::get(['method', 'id']);
+            // Group expenses by date (Y-m-d) for redesigned nested date list UI
+            $grouped_expenses = $add_expenses->groupBy(function ($item) {
+                return $item->date; // already Y-m-d in DB
+            })->sortKeysDesc();
 
-            return view('backEnd.accounts.add_expense', ['add_expenses' => $add_expenses, 'expense_heads' => $expense_heads, 'bank_accounts' => $bank_accounts, 'payment_methods' => $payment_methods]);
+            return view('backEnd.accounts.add_expense', [
+                'add_expenses' => $add_expenses,
+                'grouped_expenses' => $grouped_expenses,
+                'expense_heads' => $expense_heads,
+                'bank_accounts' => $bank_accounts,
+                'payment_methods' => $payment_methods,
+            ]);
         /*
         } catch (Exception $exception) {
             Toastr::error('Operation Failed', 'Failed');
@@ -112,8 +122,18 @@ class SmAddExpenseController extends Controller
             $expense_heads = SmChartOfAccount::where('type', 'E')->get(['head', 'id']);
             $bank_accounts = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
             $payment_methods = SmPaymentMethhod::get(['method', 'id']);
+            $grouped_expenses = $add_expenses->groupBy(function ($item) {
+                return $item->date;
+            })->sortKeysDesc();
 
-            return view('backEnd.accounts.add_expense', ['add_expenses' => $add_expenses, 'add_expense' => $add_expense, 'expense_heads' => $expense_heads, 'bank_accounts' => $bank_accounts, 'payment_methods' => $payment_methods]);
+            return view('backEnd.accounts.add_expense', [
+                'add_expenses' => $add_expenses,
+                'add_expense' => $add_expense,
+                'grouped_expenses' => $grouped_expenses,
+                'expense_heads' => $expense_heads,
+                'bank_accounts' => $bank_accounts,
+                'payment_methods' => $payment_methods,
+            ]);
         /*
         } catch (Exception $exception) {
             Toastr::error('Operation Failed', 'Failed');
