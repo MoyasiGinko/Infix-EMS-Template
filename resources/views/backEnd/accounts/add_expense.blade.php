@@ -306,9 +306,9 @@ if (!empty(@$setting->currency_symbol)) {
                 <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="expExportCSV">
                   @lang('common.export') CSV
                 </button>
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="expExportPDF">
+                <!-- <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="expExportPDF">
                   @lang('common.export') PDF
-                </button>
+                </button> -->
                 <button type="button" class="primary-btn small fix-gr-bg mb-2" id="expExportPrint">
                   @lang('common.print')
                 </button>
