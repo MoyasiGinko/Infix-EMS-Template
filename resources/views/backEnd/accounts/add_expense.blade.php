@@ -789,18 +789,20 @@ $(function() {
     const $container = $('#expenseExportContainer');
     $container.empty();
     const tableId = 'expenseExportTable';
+    // Hardcoded headers for export (no translation helpers as per requirement)
     let html = '<table id="' + tableId + '" class="table table-sm"><thead><tr>' +
-      '<th>' + (window.jsLang ? window.jsLang('common.name') : 'Name') + '</th>' +
-      '<th>' + (window.jsLang ? window.jsLang('accounts.payment_method') : 'Payment Method') + '</th>' +
-      '<th>' + (window.jsLang ? window.jsLang('accounts.a_c_Head') : 'Head') + '</th>' +
-      '<th>' + (window.jsLang ? window.jsLang('accounts.amount') : 'Amount') + '</th>' +
+      '<th>Name</th>' +
+      '<th>Payment Method</th>' +
+      '<th>Head</th>' +
+      '<th>Amount</th>' +
       '</tr></thead><tbody>';
     rows.forEach(r => {
       html += '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td><td class="text-right">' + r[
         3] + '</td></tr>';
     });
-    html += '</tbody><tfoot><tr style="font-weight:bold;background:#f5f5f5;"><td colspan="3" class="text-right">' +
-      (window.jsLang ? window.jsLang('accounts.total') : 'Total') + '</td><td class="text-right">' + grandTotal
+    html +=
+      '</tbody><tfoot><tr style="font-weight:bold;background:#f5f5f5;"><td colspan="3" class="text-right">Total</td><td class="text-right">' +
+      grandTotal
       .toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
@@ -838,7 +840,9 @@ $(function() {
           {
             extend: 'csvHtml5',
             title: $('#logo_title').val() || 'Expenses',
-            footer: true
+            footer: true,
+            bom: true,
+            charset: 'utf-8'
           },
           {
             extend: 'pdfHtml5',
@@ -847,7 +851,7 @@ $(function() {
             pageSize: 'A4',
             footer: true,
             customize: function(doc) {
-              doc.defaultStyle.font = 'DejaVuSans';
+              doc.defaultStyle.font = (window._banglaFontReady ? 'BanglaFont' : 'DejaVuSans');
             }
           },
           {
@@ -860,6 +864,53 @@ $(function() {
     } catch (e) {
       console.error('DataTable init failed', e);
       dtInstance = null;
+    }
+  }
+
+  // Bangla font loader for pdfMake (place font files in public/fonts/)
+  async function loadBanglaFont() {
+    if (window._banglaFontReady) return true;
+    if (typeof pdfMake === 'undefined' || !pdfMake.addFileToVFS) {
+      console.warn('pdfMake not ready to add fonts');
+      return false;
+    }
+    const base = (window.APP_URL ? window.APP_URL : '') + '/public/fonts/';
+    const fontDefs = [{
+        file: 'NotoSansBengali-Regular.ttf'
+      },
+      {
+        file: 'NotoSansBengali-Bold.ttf'
+      }
+    ];
+    try {
+      for (const fd of fontDefs) {
+        const resp = await fetch(base + fd.file);
+        if (!resp.ok) {
+          console.warn('Bangla font missing', fd.file);
+          return false;
+        }
+        const ab = await resp.arrayBuffer();
+        let s = '';
+        const bytes = new Uint8Array(ab);
+        for (let i = 0; i < bytes.length; i++) {
+          s += String.fromCharCode(bytes[i]);
+        }
+        const b64 = btoa(s);
+        pdfMake.addFileToVFS(fd.file, b64);
+      }
+      pdfMake.fonts = pdfMake.fonts || {};
+      pdfMake.fonts.BanglaFont = {
+        normal: 'NotoSansBengali-Regular.ttf',
+        bold: 'NotoSansBengali-Bold.ttf',
+        italics: 'NotoSansBengali-Regular.ttf',
+        bolditalics: 'NotoSansBengali-Bold.ttf'
+      };
+      window._banglaFontReady = true;
+      console.log('BanglaFont registered for pdfMake');
+      return true;
+    } catch (err) {
+      console.error('Failed loading Bangla fonts', err);
+      return false;
     }
   }
 
@@ -901,7 +952,10 @@ $(function() {
     }, 500);
   }
 
-  function triggerExport(type) {
+  async function triggerExport(type) {
+    if (type === 'pdf' && !window._banglaFontReady) {
+      await loadBanglaFont();
+    }
     const tableId = buildTable();
     ensureDT(tableId);
     if (!dtInstance) {
