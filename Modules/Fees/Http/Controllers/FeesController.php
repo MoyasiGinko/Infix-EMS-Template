@@ -22,6 +22,15 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
+// Local safe getter helper (namespaced) to satisfy static analysis if global helper not loaded
+if (!function_exists(__NAMESPACE__ . '\\gv')) {
+    function gv($array, $key, $default = null) {
+        if (is_array($array) && array_key_exists($key, $array)) {
+            return $array[$key];
+        }
+        return $default;
+    }
+}
 use Illuminate\Support\Facades\Cache;
 use Modules\Fees\Entities\FmFeesType;
 use Modules\Fees\Entities\FmFeesGroup;
@@ -52,7 +61,7 @@ class FeesController extends Controller
     public function feesGroupStore(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:100', Rule::unique('fm_fees_groups', 'name')->where('school_id', auth()->user()->school_id)->where('school_id', getAcademicId())],
+            'name' => ['required', 'max:100', Rule::unique('fm_fees_groups', 'name')->where('school_id', Auth::user()->school_id)->where('school_id', getAcademicId())],
         ]);
 
         if ($validator->fails()) {
@@ -156,7 +165,7 @@ class FeesController extends Controller
                     FmFeesGroup::destroy($request->id);
                 } else {
                     FmFeesGroup::where('id', $request->id)
-                        ->where('school_id', auth()->user()->school_id)
+                        ->where('school_id', Auth::user()->school_id)
                         ->delete();
                 }
 
@@ -195,7 +204,7 @@ class FeesController extends Controller
 
         $validator = Validator::make($request->all(), [
             'fees_group' => ['required'],
-            'name' => ['required', 'max:50', Rule::unique('fm_fees_types', 'name')->where('fees_group_id', $request->fees_group)->where('school_id', auth()->user()->school_id)],
+            'name' => ['required', 'max:50', Rule::unique('fm_fees_types', 'name')->where('fees_group_id', $request->fees_group)->where('school_id', Auth::user()->school_id)],
         ]);
 
         if ($validator->fails()) {
@@ -255,7 +264,7 @@ class FeesController extends Controller
     public function feesTypeUpdate(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:50', Rule::unique('fm_fees_types', 'name')->where('fees_group_id', $request->fees_group)->where('school_id', auth()->user()->school_id)->ignore($request->id)],
+            'name' => ['required', 'max:50', Rule::unique('fm_fees_types', 'name')->where('fees_group_id', $request->fees_group)->where('school_id', Auth::user()->school_id)->ignore($request->id)],
         ]);
 
         $ifExistes = FmFeesType::where('id', '!=', $request->id)
@@ -369,7 +378,7 @@ class FeesController extends Controller
                 $invoiceSettings->section_limit = 1;
                 $invoiceSettings->admission_limit = 3;
                 $invoiceSettings->weaver = 'amount';
-                $invoiceSettings->school_id = auth()->user()->school_id;
+                $invoiceSettings->school_id = Auth::user()->school_id;
                 $invoiceSettings->save();
             }
 
@@ -442,6 +451,16 @@ class FeesController extends Controller
                         $sub_total[] = gv($group, 'sub_total');
                         $note[] = gv($group, 'note');
                         $paid_amount[] = gv($group, 'paid_amount');
+
+                        // Negative protection
+                        $gAmount = isset($group['amount']) ? (float)$group['amount'] : 0;
+                        $gWeaver = isset($group['weaver']) ? (float)$group['weaver'] : 0;
+                        $gPaid = isset($group['paid_amount']) ? (float)$group['paid_amount'] : 0;
+                        $gSub = isset($group['sub_total']) ? (float)$group['sub_total'] : 0;
+                        if ($gAmount < 0 || $gWeaver < 0 || $gPaid < 0 || $gSub < 0) {
+                            Toastr::warning('Negative values are not allowed in invoice line items', 'Failed');
+                            return redirect()->back()->withInput();
+                        }
 
                         if ($request->singleInvoice == 1) {
                             $feesCarry = feesCarryForward($student->id, $feesType, $amount, $sub_total);
@@ -1124,7 +1143,7 @@ class FeesController extends Controller
                     $add_income->account_id = $request->bank;
                 }
 
-                $add_income->created_by = Auth()->user()->id;
+                $add_income->created_by = Auth::user()->id;
                 $add_income->school_id = Auth::user()->school_id;
                 $add_income->academic_id = getAcademicId();
                 $add_income->save();
@@ -1196,7 +1215,7 @@ class FeesController extends Controller
         $feesPayments = FmFeesTransaction::with('feeStudentInfo', 'transcationDetails', 'transcationDetails.transcationFeesType')
             ->where('paid_status', 'pending')
             ->whereIn('payment_method', ['Bank', 'Cheque'])
-            ->where('school_id', auth()->user()->school_id)
+            ->where('school_id', Auth::user()->school_id)
             ->where('academic_id', getAcademicId())
             ->get();
 
@@ -1229,7 +1248,7 @@ class FeesController extends Controller
                 ->when($bankFeesPayment->shift, function ($query) use ($bankFeesPayment) {
                     $query->where('shift_id', $bankFeesPayment->shift);
                 })
-                ->where('school_id', auth()->user()->school_id)
+                ->where('school_id', Auth::user()->school_id)
                 ->pluck('student_id')
                 ->unique();
 
