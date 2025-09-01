@@ -154,9 +154,21 @@ html[dir="rtl"] .total_count {
                                   {{ dateConvert($lastPaymentDate) }}</span></p>
                               @endif
                               @else
-                              <p><span>@lang('fees.payment_status')</span><span>: @lang('fees.partial')</span></p>
+                              <p><span>@lang('fees.payment_status')</span>
+                                <span>:
+                                  @if ($paymentStatus == 0)
+                                  @lang('fees.paid')
+                                  @else
+                                  @if ($paidAmount > 0)
+                                  @lang('fees.partial')
+                                  @else
+                                  @lang('fees.unpaid')
+                                  @endif
+                                  @endif
+                                </span>
+                              </p>
                               @if($lastPaymentDate)
-                              <p><span>@lang('fees.last_payment'){{-- fallback key --}}</span><span>:
+                              <p><span>Payment Date</span><span>:
                                   {{ dateConvert($lastPaymentDate) }}</span></p>
                               @endif
                               @endif
