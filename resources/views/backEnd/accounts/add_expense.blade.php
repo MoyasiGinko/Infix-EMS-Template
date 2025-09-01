@@ -304,7 +304,7 @@ if (!empty(@$setting->currency_symbol)) {
           <div class="row">
             <div class="col-lg-12">
               <div class="d-flex justify-content-start align-items-center mb-3 flex-wrap">
-                <label class="mb-0 mr-2 font-weight-bold">@lang('common.group_by'):</label>
+                <label class="mb-0 mr-2 font-weight-bold">Group by:</label>
                 <select id="expenseGroupBy" class="primary_select" style="min-width:160px;display:inline-block;">
                   <option value="date" selected>@lang('common.date')</option>
                   <option value="head">@lang('accounts.a_c_Head')</option>
