@@ -867,36 +867,48 @@ $(function() {
     }
   }
 
-  // Bangla font loader for pdfMake (place font files in public/fonts/)
+  // Bangla font loader for pdfMake (tries multiple path patterns)
   async function loadBanglaFont() {
     if (window._banglaFontReady) return true;
     if (typeof pdfMake === 'undefined' || !pdfMake.addFileToVFS) {
       console.warn('pdfMake not ready to add fonts');
       return false;
     }
-    const base = (window.APP_URL ? window.APP_URL : '') + '/public/fonts/';
-    const fontDefs = [{
-        file: 'NotoSansBengali-Regular.ttf'
-      },
-      {
-        file: 'NotoSansBengali-Bold.ttf'
-      }
-    ];
+    const fontFiles = ['NotoSansBengali-Regular.ttf', 'NotoSansBengali-Bold.ttf'];
+    const roots = [];
+    const app = (window.APP_URL ? window.APP_URL.replace(/\/$/, '') : '');
+    ['/fonts/', '/public/fonts/'].forEach(p => {
+      roots.push(app + p);
+      if (!app) roots.push(p);
+    });
     try {
-      for (const fd of fontDefs) {
-        const resp = await fetch(base + fd.file);
-        if (!resp.ok) {
-          console.warn('Bangla font missing', fd.file);
+      for (const file of fontFiles) {
+        let loaded = false;
+        for (const r of roots) {
+          try {
+            const res = await fetch(r + file, {
+              cache: 'reload'
+            });
+            if (res.ok) {
+              const buf = await res.arrayBuffer();
+              let bin = '';
+              const bytes = new Uint8Array(buf);
+              for (let i = 0; i < bytes.length; i++) {
+                bin += String.fromCharCode(bytes[i]);
+              }
+              pdfMake.addFileToVFS(file, btoa(bin));
+              console.log('Loaded Bangla font', file, 'from', r + file);
+              loaded = true;
+              break;
+            }
+          } catch (e) {
+            /* try next */
+          }
+        }
+        if (!loaded) {
+          console.warn('Could not load Bangla font file', file, 'tried:', roots.map(rt => rt + file));
           return false;
         }
-        const ab = await resp.arrayBuffer();
-        let s = '';
-        const bytes = new Uint8Array(ab);
-        for (let i = 0; i < bytes.length; i++) {
-          s += String.fromCharCode(bytes[i]);
-        }
-        const b64 = btoa(s);
-        pdfMake.addFileToVFS(fd.file, b64);
       }
       pdfMake.fonts = pdfMake.fonts || {};
       pdfMake.fonts.BanglaFont = {
@@ -906,10 +918,10 @@ $(function() {
         bolditalics: 'NotoSansBengali-Bold.ttf'
       };
       window._banglaFontReady = true;
-      console.log('BanglaFont registered for pdfMake');
+      console.log('BanglaFont registered');
       return true;
     } catch (err) {
-      console.error('Failed loading Bangla fonts', err);
+      console.error('Bangla font load exception', err);
       return false;
     }
   }
@@ -954,7 +966,8 @@ $(function() {
 
   async function triggerExport(type) {
     if (type === 'pdf' && !window._banglaFontReady) {
-      await loadBanglaFont();
+      const ok = await loadBanglaFont();
+      if (!ok) console.warn('Bangla font not loaded; PDF will fallback.');
     }
     const tableId = buildTable();
     ensureDT(tableId);
