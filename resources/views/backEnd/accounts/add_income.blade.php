@@ -280,15 +280,7 @@
 
       <div class="col-lg-8 col-xl-9">
         <div class="white-box">
-          <div class="row">
-            <div class="col-lg-4 no-gutters">
-              <div class="main-title">
-                <h3 class="mb-15">@lang('accounts.income_list')</h3>
-              </div>
-            </div>
-          </div>
-
-          {{-- New grouped income list (mirrors expense list logic) --}}
+          {{-- Income list (grouped view) --}}
           <div class="row align-items-center mb-3">
             <div class="col-6">
               <div class="main-title">
@@ -297,30 +289,29 @@
             </div>
             <div class="col-6 text-right">
               <div class="d-inline-flex flex-wrap justify-content-end">
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="incExportExcel">@lang('common.export') XLSX</button>
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="incExportCSV">@lang('common.export') CSV</button>
-                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2"
-                  id="incExportPDF">@lang('common.export') PDF</button>
-                <button type="button" class="primary-btn small fix-gr-bg mb-2"
-                  id="incExportPrint">@lang('common.print')</button>
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="incExportExcel">Export
+                  XLSX</button>
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="incExportCSV">Export
+                  CSV</button>
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="incExportPDF">Export
+                  PDF</button>
+                <button type="button" class="primary-btn small fix-gr-bg mb-2" id="incExportPrint">Print</button>
               </div>
             </div>
           </div>
           <div class="row">
             <div class="col-lg-12">
               <div class="d-flex justify-content-start align-items-center mb-3 flex-wrap">
-                <label class="mb-0 mr-2 font-weight-bold">@lang('common.group_by'):</label>
+                <label class="mb-0 mr-2 font-weight-bold">Group by:</label>
                 <select id="incomeGroupBy" class="primary_select" style="min-width:160px;display:inline-block;">
                   <option value="date" selected>@lang('common.date')</option>
-                  <option value="head">@lang('accounts.a_c_Head')</option>
+                  <option value="name">@lang('common.name')</option>
                   <option value="method">@lang('accounts.payment_method')</option>
                 </select>
               </div>
               <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
                 <div class="mb-2">
-                  <label class="mb-0 mr-2">@lang('common.show')</label>
+                  <label class="mb-0 mr-2">Show</label>
                   <select id="incomePageLength" class="primary_select"
                     style="min-width:90px;display:inline-block;"></select>
                   <span>entries</span>
@@ -370,12 +361,12 @@
                         <thead>
                           <tr>
                             <th style="width:40px;">#</th>
-                            <th>@lang('common.name')</th>
-                            <th>@lang('accounts.payment_method')</th>
-                            <th>@lang('accounts.a_c_Head')</th>
-                            <th class="text-right">@lang('accounts.amount') ({{ generalSetting()->currency_symbol }})
+                            <th>Name</th>
+                            <th>Payment Method</th>
+                            <th>Head</th>
+                            <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})
                             </th>
-                            <th>@lang('common.action')</th>
+                            <th>Action</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -389,11 +380,11 @@
                             <td>
                               @if (userPermission('add_income_edit'))
                               <a href="{{ route('add_income_edit', $row->id) }}"
-                                class="primary-btn small tr-bg mr-1">@lang('common.edit')</a>
+                                class="primary-btn small tr-bg mr-1">Edit</a>
                               @endif
                               @if (userPermission('add_income_delete'))
                               <a href="#" class="primary-btn small tr-bg income-delete-trigger"
-                                data-income-id="{{ $row->id }}">@lang('common.delete')</a>
+                                data-income-id="{{ $row->id }}">Delete</a>
                               @endif
                             </td>
                           </tr>
@@ -408,52 +399,51 @@
                 @endforelse
               </div>
 
-              {{-- Grouped by Head --}}
-              <div id="incomeHeadAccordion" class="mb-20 group-accordion d-none" data-group="head">
+              {{-- Grouped by Name --}}
+              <div id="incomeNameAccordion" class="mb-20 group-accordion d-none" data-group="name">
                 @php
-                if(!isset($grouped_by_income_head)){
+                if(!isset($grouped_by_income_name)){
                 if(isset($__incomeCollection) && $__incomeCollection instanceof \Illuminate\Support\Collection){
-                $grouped_by_income_head = $__incomeCollection->groupBy(function($i){ return
-                optional($i->a_c_head)->head; })->sortKeys();
-                } else { $grouped_by_income_head = collect(); }
+                $grouped_by_income_name = $__incomeCollection->groupBy(function($i){ return $i->name; })->sortKeys();
+                } else { $grouped_by_income_name = collect(); }
                 }
                 @endphp
-                @foreach(($grouped_by_income_head ?? collect()) as $headKey => $incomesForHead)
+                @foreach(($grouped_by_income_name ?? collect()) as $nameKey => $incomesForName)
                 @php
-                $incHeadCollapseId = 'incHead_' . md5($headKey);
-                $displayHead = $headKey ?: __('common.unknown');
-                $totalForHead = $incomesForHead->sum('amount');
+                $incNameCollapseId = 'incName_' . md5($nameKey);
+                $displayName = $nameKey ?: __('common.unknown');
+                $totalForName = $incomesForName->sum('amount');
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
                   <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
-                    data-toggle="collapse" data-target="#{{ $incHeadCollapseId }}" aria-expanded="false"
-                    data-total="{{ $totalForHead }}">
+                    data-toggle="collapse" data-target="#{{ $incNameCollapseId }}" aria-expanded="false"
+                    data-total="{{ $totalForName }}">
                     <div class="d-flex align-items-center">
                       <i class="ti-angle-down mr-2"></i>
-                      <span class="font-weight-600">{{ $displayHead }}</span>
+                      <span class="font-weight-600">{{ $displayName }}</span>
                     </div>
                     <div class="d-flex align-items-center">
                       <span class="mr-3 font-weight-500">{{ generalSetting()->currency_symbol }}
-                        {{ number_format($totalForHead,2) }}</span>
-                      <span class="badge badge-info">{{ $incomesForHead->count() }}</span>
+                        {{ number_format($totalForName,2) }}</span>
+                      <span class="badge badge-info">{{ $incomesForName->count() }}</span>
                     </div>
                   </div>
-                  <div id="{{ $incHeadCollapseId }}" class="collapse" data-parent="#incomeHeadAccordion">
+                  <div id="{{ $incNameCollapseId }}" class="collapse" data-parent="#incomeNameAccordion">
                     <div class="card-body p-0">
                       <table class="table table-sm m-0">
                         <thead>
                           <tr>
                             <th style="width:40px;">#</th>
-                            <th>@lang('common.name')</th>
-                            <th>@lang('accounts.payment_method')</th>
-                            <th>@lang('common.date')</th>
-                            <th class="text-right">@lang('accounts.amount') ({{ generalSetting()->currency_symbol }})
+                            <th>Name</th>
+                            <th>Payment Method</th>
+                            <th>Date</th>
+                            <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})
                             </th>
-                            <th>@lang('common.action')</th>
+                            <th>Action</th>
                           </tr>
                         </thead>
                         <tbody>
-                          @foreach($incomesForHead as $row)
+                          @foreach($incomesForName as $row)
                           <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $row->name }}</td>
@@ -463,11 +453,11 @@
                             <td>
                               @if (userPermission('add_income_edit'))
                               <a href="{{ route('add_income_edit', $row->id) }}"
-                                class="primary-btn small tr-bg mr-1">@lang('common.edit')</a>
+                                class="primary-btn small tr-bg mr-1">Edit</a>
                               @endif
                               @if (userPermission('add_income_delete'))
                               <a href="#" class="primary-btn small tr-bg income-delete-trigger"
-                                data-income-id="{{ $row->id }}">@lang('common.delete')</a>
+                                data-income-id="{{ $row->id }}">Delete</a>
                               @endif
                             </td>
                           </tr>
@@ -516,11 +506,11 @@
 
               {{-- Totals summary --}}
               <div id="incomeTotalsSummary" class="mt-3 mb-4">
-                <div class="d-flex flex-wrap align-items-center">
-                  <span class="mr-4"><strong>@lang('common.page_total'):</strong>
-                    {{ generalSetting()->currency_symbol }} <span id="incomePageTotalAmount">0.00</span></span>
-                  <span class="mr-4"><strong>@lang('common.grand_total'):</strong>
-                    {{ generalSetting()->currency_symbol }} <span id="incomeGrandTotalAmount">0.00</span></span>
+                <div class="income-totals-bar d-flex flex-wrap align-items-center p-2 rounded shadow-sm">
+                  <span class="mr-4"><strong>Page Total:</strong> {{ generalSetting()->currency_symbol }} <span
+                      id="incomePageTotalAmount">0.00</span></span>
+                  <span class="mr-4"><strong>Grand Total:</strong> {{ generalSetting()->currency_symbol }} <span
+                      id="incomeGrandTotalAmount">0.00</span></span>
                 </div>
               </div>
             </div>
@@ -576,12 +566,12 @@ function deleteIncome(id) {
 }
 // Toggle icon rotation like expense view
 $(document).on('show.bs.collapse',
-  '#incomeDateAccordion .collapse, #incomeHeadAccordion .collapse, #incomeMethodAccordion .collapse',
+  '#incomeDateAccordion .collapse, #incomeNameAccordion .collapse, #incomeMethodAccordion .collapse',
   function() {
     $(this).prev('.card-header').find('i.ti-angle-down').addClass('rotated');
   });
 $(document).on('hide.bs.collapse',
-  '#incomeDateAccordion .collapse, #incomeHeadAccordion .collapse, #incomeMethodAccordion .collapse',
+  '#incomeDateAccordion .collapse, #incomeNameAccordion .collapse, #incomeMethodAccordion .collapse',
   function() {
     $(this).prev('.card-header').find('i.ti-angle-down').removeClass('rotated');
   });
@@ -960,8 +950,7 @@ $(function() {
     }
   }
   $('#incExportExcel').on('click', () => trigger('excel'));
-  $('#incExportCSV').on('click', () => trigger(
-    'csv'));
+  $('#incExportCSV').on('click', () => trigger('csv'));
   $('#incExportPDF').on('click', () => trigger('pdf'));
   $('#incExportPrint').on('click', () =>
     trigger('print'));
@@ -972,13 +961,13 @@ $(function() {
 </script>
 <style>
 #incomeDateAccordion .card-header,
-#incomeHeadAccordion .card-header,
+#incomeNameAccordion .card-header,
 #incomeMethodAccordion .card-header {
   cursor: pointer;
 }
 
 #incomeDateAccordion i.ti-angle-down,
-#incomeHeadAccordion i.ti-angle-down,
+#incomeNameAccordion i.ti-angle-down,
 #incomeMethodAccordion i.ti-angle-down {
   transition: transform .2s ease;
 }
@@ -988,7 +977,45 @@ $(function() {
 }
 
 #incomeDateAccordion i.ti-angle-down.rotated,
-#incomeHeadAccordion i.ti-angle-down.rotated,
+#incomeNameAccordion i.ti-angle-down.rotated,
+/* Table visual improvements */
+.group-accordion table thead th {
+  background: #f5f7fb;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e6ec;
+}
+
+.group-accordion table tbody td {
+  vertical-align: middle;
+}
+
+.group-accordion table tbody tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+.group-accordion .card {
+  border: 1px solid #e6edf2;
+}
+
+.group-accordion .card-header {
+  border: 0;
+  border-left: 4px solid #4e8ff7;
+}
+
+.group-accordion .card-header .badge {
+  background: #4e8ff7;
+}
+
+.income-totals-bar {
+  background: #eef4fb;
+  border: 1px solid #d6e3f3;
+}
+
+.primary-btn.small {
+  padding: 4px 10px;
+  line-height: 1.2;
+}
+
 #incomeMethodAccordion i.ti-angle-down.rotated {
   transform: rotate(180deg);
 }
