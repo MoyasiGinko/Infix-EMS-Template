@@ -52,224 +52,295 @@
                                         ])->open() }}
             @endif
             @endif
-            <div class="white-box">
-              <div class="main-title">
-                <h3 class="mb-15">
-                  @if (isset($add_income))
-                  @lang('accounts.edit_income')
-                  @else
-                  @lang('accounts.add_income')
-                  @endif
-                </h3>
+            <div class="modern-form-card">
+              <div class="form-header">
+                <div class="form-header-content">
+                  <div class="form-icon">
+                    <i class="ti-money"></i>
+                  </div>
+                  <div>
+                    <h3 class="form-title">
+                      @if (isset($add_income))
+                      @lang('accounts.edit_income')
+                      @else
+                      @lang('accounts.add_income')
+                      @endif
+                    </h3>
+                    <p class="form-subtitle">{{ isset($add_income) ? 'Update income details' : 'Enter income information' }}</p>
+                  </div>
+                </div>
               </div>
-              <div class="add-visitor">
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="primary_input">
-                      <label class="primary_input_label" for="">@lang('common.name') <span class="text-danger">
-                          *</span></label>
-                      <input class="primary_input_field form-control{{ @$errors->has('name') ? ' is-invalid' : '' }}"
-                        type="text" name="name" autocomplete="off"
+
+              <div class="form-body">
+                <div class="form-section">
+                  <div class="form-group enhanced">
+                    <label class="form-label" for="income_name">
+                      <i class="ti-tag"></i>
+                      @lang('common.name')
+                      <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                      <input
+                        class="form-control modern-input{{ @$errors->has('name') ? ' is-invalid' : '' }}"
+                        type="text"
+                        name="name"
+                        id="income_name"
+                        placeholder="Enter income name"
+                        autocomplete="off"
                         value="{{ isset($add_income) ? $add_income->name : old('name') }}">
                       <input type="hidden" name="id" value="{{ isset($add_income) ? $add_income->id : '' }}">
+                      <div class="input-border"></div>
+                    </div>
+                    @if ($errors->has('name'))
+                    <div class="error-message">
+                      <i class="ti-alert-circle"></i>
+                      <span>{{ $errors->first('name') }}</span>
+                    </div>
+                    @endif
+                  </div>
+                </div>
 
+                <div class="form-section">
+                  <div class="form-group enhanced">
+                    <label class="form-label" for="income_head">
+                      <i class="ti-folder"></i>
+                      @lang('accounts.a_c_Head')
+                      <span class="required">*</span>
+                    </label>
+                    <div class="select-wrapper">
+                      <select class="form-control modern-select{{ @$errors->has('income_head') ? ' is-invalid' : '' }}"
+                        name="income_head" id="income_head">
+                        <option value="">Choose income head...</option>
+                        @foreach ($income_heads as $income_head)
+                        @if (isset($add_income))
+                        <option value="{{ @$income_head->id }}"
+                          {{ @$add_income->income_head_id == @$income_head->id ? 'selected' : '' }}>
+                          {{ @$income_head->head }}</option>
+                        @else
+                        <option value="{{ @$income_head->id }}"
+                          {{ old('income_head') == @$income_head->id ? 'selected' : '' }}>
+                          {{ @$income_head->head }}</option>
+                        @endif
+                        @endforeach
+                      </select>
+                      <div class="select-arrow">
+                        <i class="ti-angle-down"></i>
+                      </div>
+                    </div>
+                    @if (@$errors->has('income_head'))
+                    <div class="error-message">
+                      <i class="ti-alert-circle"></i>
+                      <span>{{ @$errors->first('income_head') }}</span>
+                    </div>
+                    @endif
+                  </div>
+                </div>
 
-                      @if ($errors->has('name'))
-                      <span class="text-danger">
-                        {{ $errors->first('name') }}
-                      </span>
+                <div class="form-section">
+                  <div class="form-group enhanced">
+                    <label class="form-label" for="payment_method_income">
+                      <i class="ti-wallet"></i>
+                      @lang('accounts.payment_method')
+                      <span class="required">*</span>
+                    </label>
+                    <div class="select-wrapper">
+                      <select class="form-control modern-select{{ @$errors->has('payment_method') ? ' is-invalid' : '' }}"
+                        name="payment_method" id="payment_method_income">
+                        <option value="">Select payment method...</option>
+                        @foreach ($payment_methods as $payment_method)
+                        @if (isset($add_income))
+                        <option data-string="{{ $payment_method->method }}" value="{{ @$payment_method->id }}"
+                          {{ @$add_income->payment_method_id == @$payment_method->id ? 'selected' : '' }}>
+                          {{ @$payment_method->method }}
+                        </option>
+                        @else
+                        <option data-string="{{ $payment_method->method }}" value="{{ @$payment_method->id }}">
+                          {{ @$payment_method->method }}</option>
+                        @endif
+                        @endforeach
+                      </select>
+                      <div class="select-arrow">
+                        <i class="ti-angle-down"></i>
+                      </div>
+                    </div>
+                    @if (@$errors->has('payment_method'))
+                    <div class="error-message">
+                      <i class="ti-alert-circle"></i>
+                      <span>{{ @$errors->first('payment_method') }}</span>
+                    </div>
+                    @endif
+                  </div>
+                </div>
+
+                <div class="form-section collapse-section" id="bankAccountSectionIncome">
+                  <div class="form-group enhanced">
+                    <label class="form-label" for="bank_accounts_income">
+                      <i class="ti-credit-card"></i>
+                      @lang('accounts.bank_accounts')
+                      <span class="required">*</span>
+                    </label>
+                    <div class="select-wrapper">
+                      <select class="form-control modern-select{{ @$errors->has('accounts') ? ' is-invalid' : '' }}"
+                        name="accounts" id="bank_accounts_income">
+                        <option value="">Select bank account...</option>
+                        @foreach ($bank_accounts as $bank_account)
+                        @if (isset($add_income))
+                        <option value="{{ @$bank_account->id }}"
+                          {{ @$add_income->account_id == @$bank_account->id ? 'selected' : '' }}>
+                          {{ @$bank_account->account_name }}
+                          ({{ @$bank_account->bank_name }})</option>
+                        @else
+                        <option value="{{ @$bank_account->id }}">
+                          {{ @$bank_account->account_name }}
+                          ({{ @$bank_account->bank_name }})</option>
+                        @endif
+                        @endforeach
+                      </select>
+                      <div class="select-arrow">
+                        <i class="ti-angle-down"></i>
+                      </div>
+                    </div>
+                    @if ($errors->has('accounts'))
+                    <div class="error-message">
+                      <i class="ti-alert-circle"></i>
+                      <span>{{ @$errors->first('accounts') }}</span>
+                    </div>
+                    @endif
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-col">
+                    <div class="form-group enhanced">
+                      <label class="form-label" for="income_date">
+                        <i class="ti-calendar"></i>
+                        @lang('admin.date')
+                        <span class="required">*</span>
+                      </label>
+                      <div class="input-wrapper date-wrapper">
+                        <input
+                          class="form-control modern-input date-input{{ @$errors->has('date') ? ' is-invalid' : '' }}"
+                          id="startDateIncome"
+                          type="text"
+                          placeholder="Select date"
+                          name="date"
+                          value="{{ isset($add_income) ? date('m/d/Y', strtotime($add_income->date)) : date('m/d/Y') }}">
+                        <button class="date-trigger" data-id="#startDateIncome" type="button">
+                          <i class="ti-calendar"></i>
+                        </button>
+                        <div class="input-border"></div>
+                      </div>
+                      @if ($errors->has('date'))
+                      <div class="error-message">
+                        <i class="ti-alert-circle"></i>
+                        <span>{{ $errors->first('date') }}</span>
+                      </div>
                       @endif
                     </div>
-
                   </div>
-                </div>
-                <div class="row  mt-15">
-                  <div class="col-lg-12">
-                    <label class="primary_input_label" for="">@lang('accounts.a_c_Head') <span class="text-danger">
-                        *</span></label>
-                    <select class="primary_select  form-control{{ @$errors->has('income_head') ? ' is-invalid' : '' }}"
-                      name="income_head">
-                      <option data-display="@lang('accounts.a_c_Head') *" value="">
-                        @lang('accounts.a_c_Head') *</option>
-                      @foreach ($income_heads as $income_head)
-                      @if (isset($add_income))
-                      <option value="{{ @$income_head->id }}"
-                        {{ @$add_income->income_head_id == @$income_head->id ? 'selected' : '' }}>
-                        {{ @$income_head->head }}</option>
-                      @else
-                      <option value="{{ @$income_head->id }}"
-                        {{ old('income_head') == @$income_head->id ? 'selected' : '' }}>
-                        {{ @$income_head->head }}</option>
+
+                  <div class="form-col">
+                    <div class="form-group enhanced">
+                      <label class="form-label" for="income_amount">
+                        <i class="ti-money"></i>
+                        @lang('accounts.amount')
+                        <span class="required">*</span>
+                      </label>
+                      <div class="input-wrapper amount-wrapper">
+                        <div class="currency-symbol">{{ generalSetting()->currency_symbol ?? '$' }}</div>
+                        <input
+                          oninput="numberCheckWithDot(this)"
+                          class="form-control modern-input amount-input{{ @$errors->has('amount') ? ' is-invalid' : '' }}"
+                          type="text"
+                          name="amount"
+                          id="income_amount"
+                          step="0.1"
+                          placeholder="0.00"
+                          value="{{ isset($add_income) ? $add_income->amount : old('amount') }}">
+                        <div class="input-border"></div>
+                      </div>
+                      @if ($errors->has('amount'))
+                      <div class="error-message">
+                        <i class="ti-alert-circle"></i>
+                        <span>{{ @$errors->first('amount') }}</span>
+                      </div>
                       @endif
-                      @endforeach
-                    </select>
-                    @if (@$errors->has('income_head'))
-                    <span class="text-danger invalid-select" role="alert">
-                      {{ @$errors->first('income_head') }}
-                    </span>
-                    @endif
+                    </div>
                   </div>
                 </div>
 
-                <div class="row mt-15">
-                  <div class="col-lg-12">
-                    <label class="primary_input_label" for="">@lang('accounts.payment_method') <span
-                        class="text-danger"> *</span></label>
-                    <select
-                      class="primary_select  form-control{{ @$errors->has('payment_method') ? ' is-invalid' : '' }}"
-                      name="payment_method" id="payment_method">
-                      <option data-display="@lang('accounts.payment_method') *" value="">
-                        @lang('accounts.payment_method') *</option>
-                      @foreach ($payment_methods as $payment_method)
-                      @if (isset($add_income))
-                      <option data-string="{{ $payment_method->method }}" value="{{ @$payment_method->id }}"
-                        {{ @$add_income->payment_method_id == @$payment_method->id ? 'selected' : '' }}>
-                        {{ @$payment_method->method }}
-                      </option>
-                      @else
-                      <option data-string="{{ $payment_method->method }}" value="{{ @$payment_method->id }}">
-                        {{ @$payment_method->method }}</option>
-                      @endif
-                      @endforeach
-                    </select>
-                    @if (@$errors->has('payment_method'))
-                    <span class="text-danger invalid-select" role="alert">
-                      {{ @$errors->first('payment_method') }}
-                    </span>
-                    @endif
-                  </div>
-                </div>
-                <div class="row mt-15 d-none" id="bankAccount">
-                  <div class="col-lg-12">
-                    <label class="primary_input_label" for="">@lang('accounts.bank_accounts') <span class="text-danger">
-                        *</span></label>
-                    <select class="primary_select  form-control{{ @$errors->has('accounts') ? ' is-invalid' : '' }}"
-                      name="accounts">
-                      <option data-display="@lang('accounts.bank_accounts') *" value="">
-                        @lang('accounts.bank_accounts') *</option>
-                      @foreach ($bank_accounts as $bank_account)
-                      @if (isset($add_income))
-                      <option value="{{ @$bank_account->id }}"
-                        {{ @$add_income->account_id == @$bank_account->id ? 'selected' : '' }}>
-                        {{ @$bank_account->account_name }}
-                        ({{ @$bank_account->bank_name }})</option>
-                      @else
-                      <option value="{{ @$bank_account->id }}">
-                        {{ @$bank_account->account_name }}
-                        ({{ @$bank_account->bank_name }})</option>
-                      @endif
-                      @endforeach
-                    </select>
-                    @if ($errors->has('accounts'))
-                    <span class="text-danger invalid-select" role="alert">
-                      {{ @$errors->first('accounts') }}
-                    </span>
-                    @endif
-                  </div>
-                </div>
-
-
-                <div class="row  mt-15">
-                  <div class="col-lg-12">
-                    <div class="primary_input">
-                      <label class="primary_input_label" for="">@lang('admin.date') <span class="text-danger">
-                          *</span></label>
-                      <div class="primary_datepicker_input">
-                        <div class="no-gutters input-right-icon">
-                          <div class="col">
-                            <div class="">
-                              <input
-                                class="primary_input_field  primary_input_field date form-control form-control{{ @$errors->has('date') ? ' is-invalid' : '' }}"
-                                id="startDate" type="text" placeholder="@lang('common.date') *" name="date"
-                                value="{{ isset($add_income) ? date('m/d/Y', strtotime($add_income->date)) : date('m/d/Y') }}">
-                            </div>
+                <div class="form-section">
+                  <div class="form-group enhanced">
+                    <label class="form-label" for="file_upload_income">
+                      <i class="ti-paperclip"></i>
+                      @lang('common.file')
+                    </label>
+                    <div class="file-upload-wrapper">
+                      <div class="file-upload-area">
+                        <input type="file" name="file" id="file_upload_income" class="file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        <div class="file-upload-content">
+                          <div class="file-icon">
+                            <i class="ti-cloud-up"></i>
                           </div>
-                          <button class="btn-date" data-id="#startDate" type="button">
-                            <label class="m-0 p-0" for="startDate">
-                              <i class="ti-calendar" id="start-date-icon"></i>
-                            </label>
-                          </button>
+                          <div class="file-text">
+                            <span class="file-main-text">
+                              {{ isset($add_income) ? ($add_income->file != '' ? basename(getFilePath3($add_income->file)) : 'Click to upload or drag file here') : 'Click to upload or drag file here' }}
+                            </span>
+                            <span class="file-sub-text">PDF, DOC, DOCX, JPG, JPEG, PNG allowed</span>
+                          </div>
                         </div>
                       </div>
-                      <span class="text-danger">{{ $errors->first('date') }}</span>
                     </div>
-                  </div>
-                </div>
-                <div class="row  mt-15">
-                  <div class="col-lg-12">
-                    <div class="primary_input">
-                      <label class="primary_input_label" for="">@lang('accounts.amount')
-                        ({{ generalSetting()->currency_symbol }}) <span class="text-danger">
-                          *</span></label>
-                      <input oninput="numberCheckWithDot(this)"
-                        class="primary_input_field form-control{{ @$errors->has('amount') ? ' is-invalid' : '' }}"
-                        type="text" step="0.1" name="amount"
-                        value="{{ isset($add_income) ? $add_income->amount : old('amount') }}">
-
-
-                      @if ($errors->has('amount'))
-                      <span class="text-danger">
-                        {{ @$errors->first('amount') }}
-                      </span>
-                      @endif
-                    </div>
-                  </div>
-                </div>
-                <div class="row mt-15">
-                  <div class="col-lg-12 mt-15">
-                    <div class="primary_input">
-                      <div class="primary_file_uploader">
-                        <input class="primary_input_field" type="text" id="placeholderInput"
-                          placeholder="{{ isset($add_income) ? ($add_income->file != '' ? getFilePath3($add_income->file) : trans('common.file')) : trans('common.file') }}"
-                          readonly>
-                        <button class="" type="button">
-                          <label class="primary-btn small fix-gr-bg" for="browseFile">{{ __('common.browse') }}</label>
-                          <input type="file" class="d-none" name="file" id="browseFile">
-                        </button>
-                      </div>
-                    </div>
-                    <code>(PDF,DOC,DOCX,JPG,JPEG,PNG are allowed for upload)</code>
                     @if ($errors->has('file'))
-                    <span class="text-danger d-block">
-                      {{ $errors->first('file') }}
-                    </span>
+                    <div class="error-message">
+                      <i class="ti-alert-circle"></i>
+                      <span>{{ $errors->first('file') }}</span>
+                    </div>
                     @endif
-
                   </div>
                 </div>
-                <div class="row mt-15">
-                  <div class="col-lg-12">
-                    <div class="primary_input">
-                      <label class="primary_input_label" for="">@lang('common.description')
-                        <span></span></label>
-                      <textarea class="primary_input_field form-control" cols="0" rows="4"
-                        name="description">{{ isset($add_income) ? $add_income->description : old('description') }}</textarea>
 
-
+                <div class="form-section">
+                  <div class="form-group enhanced">
+                    <label class="form-label" for="income_description">
+                      <i class="ti-align-left"></i>
+                      @lang('common.description')
+                    </label>
+                    <div class="textarea-wrapper">
+                      <textarea
+                        class="form-control modern-textarea"
+                        name="description"
+                        id="income_description"
+                        rows="4"
+                        placeholder="Enter income description (optional)">{{ isset($add_income) ? $add_income->description : old('description') }}</textarea>
+                      <div class="input-border"></div>
                     </div>
                   </div>
-
                 </div>
-                @php
-                $tooltip = '';
-                if (userPermission('add_income_store') || userPermission('add_income_edit')) {
-                $tooltip = '';
-                } else {
-                $tooltip = 'You have no permission to add';
-                }
-                @endphp
-                <div class="row mt-40">
-                  <div class="col-lg-12 text-center">
-                    <button class="primary-btn fix-gr-bg" data-toggle="tooltip" title="{{ @$tooltip }}">
-                      <span class="ti-check"></span>
+
+                <div class="form-actions">
+                  @php
+                  $tooltip = '';
+                  if (userPermission('add_income_store') || userPermission('add_income_edit')) {
+                      $tooltip = '';
+                  } else {
+                      $tooltip = 'You have no permission to add';
+                  }
+                  @endphp
+                  <button class="btn btn-modern-primary" type="submit" data-toggle="tooltip" title="{{ @$tooltip }}">
+                    <i class="ti-check"></i>
+                    <span>
                       @if (@$add_income)
                       @lang('accounts.update_income')
                       @else
                       @lang('accounts.save_income')
                       @endif
-
-                    </button>
-                  </div>
+                    </span>
+                  </button>
+                  <button class="btn btn-modern-secondary" type="reset">
+                    <i class="ti-reload"></i>
+                    <span>Reset</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -667,6 +738,63 @@ function deleteIncome(id) {
   m.find('input[name=id]').val(id);
   m.modal('show');
 }
+// Modern Form Enhancements for Income
+$(document).ready(function() {
+  // Bank account section toggle for income
+  function toggleBankAccountIncome() {
+    const paymentMethod = $('#payment_method_income');
+    const bankSection = $('#bankAccountSectionIncome');
+    const selectedOption = paymentMethod.find('option:selected');
+    const methodText = selectedOption.data('string') || selectedOption.text();
+
+    if (methodText && (methodText.toLowerCase().includes('bank') || methodText.toLowerCase().includes('cheque'))) {
+      bankSection.addClass('show');
+    } else {
+      bankSection.removeClass('show');
+    }
+  }
+
+  $('#payment_method_income').on('change', toggleBankAccountIncome);
+
+  // Initialize on page load
+  toggleBankAccountIncome();
+
+  // File upload feedback for income
+  $('#file_upload_income').on('change', function() {
+    const fileInput = this;
+    const fileText = $(this).siblings('.file-upload-content').find('.file-main-text');
+
+    if (fileInput.files && fileInput.files[0]) {
+      const fileName = fileInput.files[0].name;
+      fileText.text(fileName);
+      $(this).closest('.file-upload-area').addClass('has-file');
+    } else {
+      fileText.text('Click to upload or drag file here');
+      $(this).closest('.file-upload-area').removeClass('has-file');
+    }
+  });
+
+  // Enhanced input interactions
+  $('.modern-input, .modern-select, .modern-textarea').on('focus', function() {
+    $(this).closest('.form-group').addClass('focused');
+  }).on('blur', function() {
+    $(this).closest('.form-group').removeClass('focused');
+
+    if ($(this).val()) {
+      $(this).closest('.form-group').addClass('has-value');
+    } else {
+      $(this).closest('.form-group').removeClass('has-value');
+    }
+  });
+
+  // Initialize has-value state
+  $('.modern-input, .modern-select, .modern-textarea').each(function() {
+    if ($(this).val()) {
+      $(this).closest('.form-group').addClass('has-value');
+    }
+  });
+});
+
 // Toggle icon rotation like expense view
 $(document).on('show.bs.collapse',
   '#incomeDateAccordion .collapse, #incomeNameAccordion .collapse, #incomeMethodAccordion .collapse',
@@ -1124,6 +1252,424 @@ $(function() {
 });
 </script>
 <style>
+/* Modern Form Styling for Income */
+.modern-form-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafb 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.modern-form-card:hover {
+  box-shadow: 0 12px 48px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+.form-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  padding: 24px;
+  color: white;
+}
+
+.form-header-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.form-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.form-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.form-subtitle {
+  margin: 4px 0 0 0;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.form-body {
+  padding: 32px;
+}
+
+.form-section {
+  margin-bottom: 24px;
+}
+
+.form-section.collapse-section {
+  max-height: 0;
+  overflow: hidden;
+  margin-bottom: 0;
+  transition: all 0.3s ease;
+}
+
+.form-section.collapse-section.show {
+  max-height: 200px;
+  margin-bottom: 24px;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.form-col {
+  flex: 1;
+}
+
+.form-group.enhanced {
+  position: relative;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-label i {
+  color: #10b981;
+  font-size: 16px;
+}
+
+.required {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.modern-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #374151;
+  background: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.modern-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  background: #f0fdf4;
+}
+
+.modern-input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.input-border {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #10b981, #059669);
+  transition: width 0.3s ease;
+}
+
+.input-wrapper:focus-within .input-border {
+  width: 100%;
+}
+
+.date-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.date-trigger {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #10b981;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s ease;
+}
+
+.date-trigger:hover {
+  color: #059669;
+}
+
+.amount-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #10b981;
+  font-weight: 600;
+  font-size: 16px;
+  z-index: 2;
+}
+
+.amount-input {
+  padding-left: 40px;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.modern-select {
+  width: 100%;
+  padding: 14px 40px 14px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #374151;
+  background: #ffffff;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modern-select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  background: #f0fdf4;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #10b981;
+  font-size: 16px;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.modern-select:focus + .select-arrow {
+  transform: translateY(-50%) rotate(180deg);
+  color: #059669;
+}
+
+.textarea-wrapper {
+  position: relative;
+}
+
+.modern-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #374151;
+  background: #ffffff;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.modern-textarea:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  background: #f0fdf4;
+}
+
+.file-upload-wrapper {
+  position: relative;
+}
+
+.file-upload-area {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.file-upload-area:hover {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  transform: translateY(-2px);
+}
+
+.file-upload-area.has-file {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+}
+
+.file-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.file-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+}
+
+.file-main-text {
+  font-weight: 600;
+  color: #374151;
+  font-size: 15px;
+}
+
+.file-sub-text {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.error-message i {
+  font-size: 14px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-modern-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-modern-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-modern-secondary {
+  background: white;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-modern-secondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+  transform: translateY(-1px);
+}
+
+/* Responsive Design for Forms */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-header {
+    padding: 20px;
+  }
+
+  .form-body {
+    padding: 24px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-modern-primary,
+  .btn-modern-secondary {
+    justify-content: center;
+  }
+}
+
 /* Professional Card and Accordion Styling */
 #incomeDateAccordion .card-header,
 #incomeNameAccordion .card-header,
