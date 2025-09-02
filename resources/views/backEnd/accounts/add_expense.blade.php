@@ -482,7 +482,7 @@ if (!empty(@$setting->currency_symbol)) {
                               <th style="min-width:120px">@lang('accounts.payment_method')</th>
                               <th style="min-width:140px">@lang('accounts.a_c_Head')</th>
                               <th style="min-width:100px" class="text-right">@lang('accounts.amount')</th>
-                              <th style="width:120px" class="text-right">@lang('common.action')</th>
+                              <th style="width:180px" class="text-right">@lang('common.action')</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -497,25 +497,22 @@ if (!empty(@$setting->currency_symbol)) {
                               <td class="text-right font-weight-600">
                                 {{ generalSetting()->currency_symbol }}{{ number_format($expense->amount,2) }}</td>
                               <td class="text-right">
-                                <div class="action-dropdown-wrapper position-relative">
-                                  <button class="btn btn-custom-action" type="button"
-                                    data-expense-id="{{ $expense->id }}">
+                                <div class="action-buttons-wrapper">
+                                  <button class="btn-dots-trigger" type="button" data-expense-id="{{ $expense->id }}">
                                     <i class="ti-more-alt"></i>
                                   </button>
-                                  <div class="custom-dropdown-menu">
+                                  <div class="inline-action-buttons d-none">
                                     @if(userPermission('add-expense-edit'))
-                                    <a class="custom-dropdown-item"
+                                    <a class="btn btn-outline-primary btn-sm" title="@lang('common.edit')"
                                       href="{{ route('add-expense-edit', $expense->id) }}">
                                       <i class="ti-pencil-alt"></i>
-                                      <span>@lang('common.edit')</span>
                                     </a>
                                     @endif
                                     @if(userPermission('add-expense-delete'))
-                                    <a class="custom-dropdown-item text-danger expense-delete-trigger" href="#"
-                                      data-expense-id="{{ $expense->id }}">
+                                    <button class="btn btn-outline-danger btn-sm expense-delete-trigger" type="button"
+                                      title="@lang('common.delete')" data-expense-id="{{ $expense->id }}">
                                       <i class="ti-trash"></i>
-                                      <span>@lang('common.delete')</span>
-                                    </a>
+                                    </button>
                                     @endif
                                   </div>
                                 </div>
@@ -570,7 +567,7 @@ if (!empty(@$setting->currency_symbol)) {
                               <th style="min-width:120px">@lang('accounts.payment_method')</th>
                               <th style="min-width:140px">@lang('accounts.a_c_Head')</th>
                               <th style="min-width:100px" class="text-right">@lang('accounts.amount')</th>
-                              <th style="width:120px" class="text-right">@lang('common.action')</th>
+                              <th style="width:180px" class="text-right">@lang('common.action')</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -585,25 +582,22 @@ if (!empty(@$setting->currency_symbol)) {
                               <td class="text-right font-weight-600">
                                 {{ generalSetting()->currency_symbol }}{{ number_format($expense->amount,2) }}</td>
                               <td class="text-right">
-                                <div class="action-dropdown-wrapper position-relative">
-                                  <button class="btn btn-custom-action" type="button"
-                                    data-expense-id="{{ $expense->id }}">
+                                <div class="action-buttons-wrapper">
+                                  <button class="btn-dots-trigger" type="button" data-expense-id="{{ $expense->id }}">
                                     <i class="ti-more-alt"></i>
                                   </button>
-                                  <div class="custom-dropdown-menu">
+                                  <div class="inline-action-buttons d-none">
                                     @if(userPermission('add-expense-edit'))
-                                    <a class="custom-dropdown-item"
+                                    <a class="btn btn-outline-primary btn-sm" title="@lang('common.edit')"
                                       href="{{ route('add-expense-edit', $expense->id) }}">
                                       <i class="ti-pencil-alt"></i>
-                                      <span>@lang('common.edit')</span>
                                     </a>
                                     @endif
                                     @if(userPermission('add-expense-delete'))
-                                    <a class="custom-dropdown-item text-danger expense-delete-trigger" href="#"
-                                      data-expense-id="{{ $expense->id }}">
+                                    <button class="btn btn-outline-danger btn-sm expense-delete-trigger" type="button"
+                                      title="@lang('common.delete')" data-expense-id="{{ $expense->id }}">
                                       <i class="ti-trash"></i>
-                                      <span>@lang('common.delete')</span>
-                                    </a>
+                                    </button>
                                     @endif
                                   </div>
                                 </div>
