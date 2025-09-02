@@ -1218,7 +1218,7 @@ $(function() {
 
 .dropdown {
   position: relative;
-  z-index: 10;
+  z-index: 999;
 }
 
 .dropdown.show .dropdown-menu {
