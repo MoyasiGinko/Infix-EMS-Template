@@ -340,70 +340,86 @@
                 $totalForDate = $incomesForDate->sum('amount');
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
-                  <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
+                  <div
+                    class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $incCollapseId }}"
                     aria-expanded="{{ $loop->first ? 'true':'false' }}" data-total="{{ $totalForDate }}">
                     <div class="d-flex align-items-center">
-                      <i class="ti-angle-down mr-2"></i>
-                      <span class="font-weight-600">{{ $displayDate }}</span>
+                      <i class="ti-angle-down mr-3 collapse-icon"></i>
+                      <div>
+                        <span class="font-weight-bold text-dark">{{ $displayDate }}</span>
+                        <div class="text-muted small">{{ $incomesForDate->count() }} entries</div>
+                      </div>
                     </div>
-                    <div class="d-flex align-items-center">
-                      <span class="mr-3 font-weight-500">{{ generalSetting()->currency_symbol }}
-                        {{ number_format($totalForDate,2) }}</span>
-                      <span class="badge badge-info">{{ $incomesForDate->count() }}</span>
+                    <div class="text-right">
+                      <div class="amount-display">
+                        <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
+                        <span
+                          class="amount-value font-weight-bold text-primary">{{ number_format($totalForDate,2) }}</span>
+                      </div>
+                      <span class="badge badge-primary badge-pill">{{ $incomesForDate->count() }}</span>
                     </div>
                   </div>
                   <div id="{{ $incCollapseId }}" class="collapse @if($loop->first) show @endif"
                     data-parent="#incomeDateAccordion">
                     <div class="card-body p-0">
-                      <table class="table table-sm m-0 income-table">
-                        <thead>
-                          <tr>
-                            <th style="width:50px;">#</th>
-                            <th>Name</th>
-                            <th>Payment Method</th>
-                            <th>Head</th>
-                            <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})</th>
-                            <th class="text-center" style="width:140px;">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @foreach($incomesForDate as $row)
-                          @php
-                          // Correct head resolution: primary A/C chart head, else legacy income head name
-                          $headName = optional($row->ACHead)->head
-                          ?? optional($row->incomeHeads)->name
-                          ?? '';
-                          @endphp
-                          <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $row->name }}</td>
-                            <td>{{ optional($row->paymentMethod)->method }}</td>
-                            <td>{{ $headName }}</td>
-                            <td class="text-right">{{ number_format($row->amount,2) }}</td>
-                            <td class="text-center">
-                              <div class="dropdown CRM_dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button"
-                                  id="dropdownMenuButton{{ $row->id }}" data-toggle="dropdown" aria-haspopup="true"
-                                  aria-expanded="false">
-                                  Select
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right"
-                                  aria-labelledby="dropdownMenuButton{{ $row->id }}">
-                                  @if (userPermission('add_income_edit'))
-                                  <a class="dropdown-item" href="{{ route('add_income_edit', $row->id) }}">Edit</a>
-                                  @endif
-                                  @if (userPermission('add_income_delete'))
-                                  <a class="dropdown-item income-delete-trigger" href="#"
-                                    data-income-id="{{ $row->id }}">Delete</a>
-                                  @endif
+                      <div class="table-responsive">
+                        <table class="table table-sm mb-0 table-striped">
+                          <thead class="thead-light">
+                            <tr>
+                              <th style="width:60px" class="text-center">#</th>
+                              <th style="min-width:150px">Name</th>
+                              <th style="min-width:120px">Payment Method</th>
+                              <th style="min-width:140px">Head</th>
+                              <th style="min-width:100px" class="text-right">Amount</th>
+                              <th style="width:120px" class="text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @foreach($incomesForDate as $row)
+                            @php
+                            // Correct head resolution: primary A/C chart head, else legacy income head name
+                            $headName = optional($row->ACHead)->head
+                            ?? optional($row->incomeHeads)->name
+                            ?? '';
+                            @endphp
+                            <tr>
+                              <td class="text-center">{{ $loop->iteration }}</td>
+                              <td class="font-weight-500">{{ $row->name }}</td>
+                              <td><span
+                                  class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span>
+                              </td>
+                              <td class="text-muted">{{ $headName }}</td>
+                              <td class="text-right font-weight-600">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
+                              <td class="text-right">
+                                <div class="dropdown CRM_dropdown">
+                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    id="dropdownMenuButton{{ $row->id }}" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+                                    Select
+                                  </button>
+                                  <div class="dropdown-menu dropdown-menu-right"
+                                    aria-labelledby="dropdownMenuButton{{ $row->id }}">
+                                    @if (userPermission('add_income_edit'))
+                                    <a class="dropdown-item" href="{{ route('add_income_edit', $row->id) }}">
+                                      <i class="ti-pencil-alt mr-2"></i>Edit
+                                    </a>
+                                    @endif
+                                    @if (userPermission('add_income_delete'))
+                                    <a class="dropdown-item text-danger income-delete-trigger" href="#"
+                                      data-income-id="{{ $row->id }}">
+                                      <i class="ti-trash mr-2"></i>Delete
+                                    </a>
+                                    @endif
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                          @endforeach
-                        </tbody>
-                      </table>
+                              </td>
+                            </tr>
+                            @endforeach
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -428,68 +444,79 @@
                 $totalForName = $incomesForName->sum('amount');
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
-                  <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
+                  <div class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $incNameCollapseId }}" aria-expanded="false"
                     data-total="{{ $totalForName }}">
                     <div class="d-flex align-items-center">
-                      <i class="ti-angle-down mr-2"></i>
-                      <span class="font-weight-600">{{ $displayName }}</span>
+                      <i class="ti-angle-down mr-3 collapse-icon"></i>
+                      <div>
+                        <span class="font-weight-bold text-dark">{{ $displayName }}</span>
+                        <div class="text-muted small">{{ $incomesForName->count() }} entries</div>
+                      </div>
                     </div>
-                    <div class="d-flex align-items-center">
-                      <span class="mr-3 font-weight-500">{{ generalSetting()->currency_symbol }}
-                        {{ number_format($totalForName,2) }}</span>
-                      <span class="badge badge-info">{{ $incomesForName->count() }}</span>
+                    <div class="text-right">
+                      <div class="amount-display">
+                        <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
+                        <span class="amount-value font-weight-bold text-primary">{{ number_format($totalForName,2) }}</span>
+                      </div>
+                      <span class="badge badge-primary badge-pill">{{ $incomesForName->count() }}</span>
                     </div>
                   </div>
                   <div id="{{ $incNameCollapseId }}" class="collapse" data-parent="#incomeNameAccordion">
                     <div class="card-body p-0">
-                      <table class="table table-sm m-0 income-table">
-                        <thead>
-                          <tr>
-                            <th style="width:50px;">#</th>
-                            <th>Name</th>
-                            <th>Payment Method</th>
-                            <th>Head</th>
-                            <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})</th>
-                            <th class="text-center" style="width:140px;">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @foreach($incomesForName as $row)
-                          @php
-                          $headName = optional($row->ACHead)->head
-                          ?? optional($row->incomeHeads)->name
-                          ?? '';
-                          @endphp
-                          <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $row->name }}</td>
-                            <td>{{ optional($row->paymentMethod)->method }}</td>
-                            <td>{{ $headName }}</td>
-                            <td class="text-right">{{ number_format($row->amount,2) }}</td>
-                            <td class="text-center">
-                              <div class="dropdown CRM_dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button"
-                                  id="dropdownMenuButton{{ $row->id }}" data-toggle="dropdown" aria-haspopup="true"
-                                  aria-expanded="false">
-                                  Select
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right"
-                                  aria-labelledby="dropdownMenuButton{{ $row->id }}">
-                                  @if (userPermission('add_income_edit'))
-                                  <a class="dropdown-item" href="{{ route('add_income_edit', $row->id) }}">Edit</a>
-                                  @endif
-                                  @if (userPermission('add_income_delete'))
-                                  <a class="dropdown-item income-delete-trigger" href="#"
-                                    data-income-id="{{ $row->id }}">Delete</a>
-                                  @endif
+                      <div class="table-responsive">
+                        <table class="table table-sm mb-0 table-striped">
+                          <thead class="thead-light">
+                            <tr>
+                              <th style="width:60px" class="text-center">#</th>
+                              <th style="min-width:150px">Name</th>
+                              <th style="min-width:120px">Payment Method</th>
+                              <th style="min-width:140px">Head</th>
+                              <th style="min-width:100px" class="text-right">Amount</th>
+                              <th style="width:120px" class="text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @foreach($incomesForName as $row)
+                            @php
+                            $headName = optional($row->ACHead)->head
+                            ?? optional($row->incomeHeads)->name
+                            ?? '';
+                            @endphp
+                            <tr>
+                              <td class="text-center">{{ $loop->iteration }}</td>
+                              <td class="font-weight-500">{{ $row->name }}</td>
+                              <td><span class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span></td>
+                              <td class="text-muted">{{ $headName }}</td>
+                              <td class="text-right font-weight-600">{{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
+                              <td class="text-right">
+                                <div class="dropdown CRM_dropdown">
+                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    id="dropdownMenuButton{{ $row->id }}" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+                                    Select
+                                  </button>
+                                  <div class="dropdown-menu dropdown-menu-right"
+                                    aria-labelledby="dropdownMenuButton{{ $row->id }}">
+                                    @if (userPermission('add_income_edit'))
+                                    <a class="dropdown-item" href="{{ route('add_income_edit', $row->id) }}">
+                                      <i class="ti-pencil-alt mr-2"></i>Edit
+                                    </a>
+                                    @endif
+                                    @if (userPermission('add_income_delete'))
+                                    <a class="dropdown-item text-danger income-delete-trigger" href="#"
+                                      data-income-id="{{ $row->id }}">
+                                      <i class="ti-trash mr-2"></i>Delete
+                                    </a>
+                                    @endif
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                          @endforeach
-                        </tbody>
-                      </table>
+                              </td>
+                            </tr>
+                            @endforeach
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -513,68 +540,79 @@
                 $totalForMethod = $incomesForMethod->sum('amount');
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
-                  <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
+                  <div class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $incMethodCollapseId }}" aria-expanded="false"
                     data-total="{{ $totalForMethod }}">
                     <div class="d-flex align-items-center">
-                      <i class="ti-angle-down mr-2"></i>
-                      <span class="font-weight-600">{{ $displayMethod ?: 'Unknown' }}</span>
+                      <i class="ti-angle-down mr-3 collapse-icon"></i>
+                      <div>
+                        <span class="font-weight-bold text-dark">{{ $displayMethod ?: 'Unknown' }}</span>
+                        <div class="text-muted small">{{ $incomesForMethod->count() }} entries</div>
+                      </div>
                     </div>
-                    <div class="d-flex align-items-center">
-                      <span class="mr-3 font-weight-500">{{ generalSetting()->currency_symbol }}
-                        {{ number_format($totalForMethod,2) }}</span>
-                      <span class="badge badge-info">{{ $incomesForMethod->count() }}</span>
+                    <div class="text-right">
+                      <div class="amount-display">
+                        <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
+                        <span class="amount-value font-weight-bold text-primary">{{ number_format($totalForMethod,2) }}</span>
+                      </div>
+                      <span class="badge badge-primary badge-pill">{{ $incomesForMethod->count() }}</span>
                     </div>
                   </div>
                   <div id="{{ $incMethodCollapseId }}" class="collapse" data-parent="#incomeMethodAccordion">
                     <div class="card-body p-0">
-                      <table class="table table-sm m-0 income-table">
-                        <thead>
-                          <tr>
-                            <th style="width:50px;">#</th>
-                            <th>Name</th>
-                            <th>Payment Method</th>
-                            <th>Head</th>
-                            <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})</th>
-                            <th class="text-center" style="width:140px;">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @foreach($incomesForMethod as $row)
-                          @php
-                          $headName = optional($row->ACHead)->head
-                          ?? optional($row->incomeHeads)->name
-                          ?? '';
-                          @endphp
-                          <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $row->name }}</td>
-                            <td>{{ optional($row->paymentMethod)->method }}</td>
-                            <td>{{ $headName }}</td>
-                            <td class="text-right">{{ number_format($row->amount,2) }}</td>
-                            <td class="text-center">
-                              <div class="dropdown CRM_dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button"
-                                  id="dropdownMenuButton{{ $row->id }}" data-toggle="dropdown" aria-haspopup="true"
-                                  aria-expanded="false">
-                                  Select
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right"
-                                  aria-labelledby="dropdownMenuButton{{ $row->id }}">
-                                  @if (userPermission('add_income_edit'))
-                                  <a class="dropdown-item" href="{{ route('add_income_edit', $row->id) }}">Edit</a>
-                                  @endif
-                                  @if (userPermission('add_income_delete'))
-                                  <a class="dropdown-item income-delete-trigger" href="#"
-                                    data-income-id="{{ $row->id }}">Delete</a>
-                                  @endif
+                      <div class="table-responsive">
+                        <table class="table table-sm mb-0 table-striped">
+                          <thead class="thead-light">
+                            <tr>
+                              <th style="width:60px" class="text-center">#</th>
+                              <th style="min-width:150px">Name</th>
+                              <th style="min-width:120px">Payment Method</th>
+                              <th style="min-width:140px">Head</th>
+                              <th style="min-width:100px" class="text-right">Amount</th>
+                              <th style="width:120px" class="text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @foreach($incomesForMethod as $row)
+                            @php
+                            $headName = optional($row->ACHead)->head
+                            ?? optional($row->incomeHeads)->name
+                            ?? '';
+                            @endphp
+                            <tr>
+                              <td class="text-center">{{ $loop->iteration }}</td>
+                              <td class="font-weight-500">{{ $row->name }}</td>
+                              <td><span class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span></td>
+                              <td class="text-muted">{{ $headName }}</td>
+                              <td class="text-right font-weight-600">{{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
+                              <td class="text-right">
+                                <div class="dropdown CRM_dropdown">
+                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    id="dropdownMenuButton{{ $row->id }}" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+                                    Select
+                                  </button>
+                                  <div class="dropdown-menu dropdown-menu-right"
+                                    aria-labelledby="dropdownMenuButton{{ $row->id }}">
+                                    @if (userPermission('add_income_edit'))
+                                    <a class="dropdown-item" href="{{ route('add_income_edit', $row->id) }}">
+                                      <i class="ti-pencil-alt mr-2"></i>Edit
+                                    </a>
+                                    @endif
+                                    @if (userPermission('add_income_delete'))
+                                    <a class="dropdown-item text-danger income-delete-trigger" href="#"
+                                      data-income-id="{{ $row->id }}">
+                                      <i class="ti-trash mr-2"></i>Delete
+                                    </a>
+                                    @endif
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                          @endforeach
-                        </tbody>
-                      </table>
+                              </td>
+                            </tr>
+                            @endforeach
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1038,64 +1076,235 @@ $(function() {
 });
 </script>
 <style>
+/* Professional Card and Accordion Styling */
 #incomeDateAccordion .card-header,
 #incomeNameAccordion .card-header,
 #incomeMethodAccordion .card-header {
   cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid #007bff;
 }
 
-#incomeDateAccordion i.ti-angle-down,
-#incomeNameAccordion i.ti-angle-down,
-#incomeMethodAccordion i.ti-angle-down {
-  transition: transform .2s ease;
+#incomeDateAccordion .card-header:hover,
+#incomeNameAccordion .card-header:hover,
+#incomeMethodAccordion .card-header:hover {
+  background: linear-gradient(45deg, #f8f9ff 0%, #e8f0ff 100%) !important;
+  border-left: 4px solid #0056b3;
+  transform: translateX(2px);
 }
 
-#incomePagination ul.pagination {
-  margin-bottom: 0;
+/* Collapse Icon Styling */
+.collapse-icon {
+  transition: transform 0.3s ease;
+  color: #007bff;
+  font-size: 16px;
 }
 
 #incomeDateAccordion i.ti-angle-down.rotated,
 #incomeNameAccordion i.ti-angle-down.rotated,
-/* Table visual improvements */
+#incomeMethodAccordion i.ti-angle-down.rotated {
+  transform: rotate(180deg);
+}
+
+/* Amount Display Styling */
+.amount-display {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.currency-symbol {
+  font-size: 14px;
+  color: #6c757d;
+  margin-right: 2px;
+}
+
+.amount-value {
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+/* Gradient Backgrounds */
+.bg-gradient-light {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+/* Table Professional Styling */
+.group-accordion table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
 .group-accordion table thead th {
-  background: #f5f7fb;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   font-weight: 600;
-  border-bottom: 1px solid #e2e6ec;
+  border-bottom: 2px solid #cbd5e0;
+  color: #2d3748;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 12px 8px;
 }
 
 .group-accordion table tbody td {
   vertical-align: middle;
+  padding: 12px 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.group-accordion table tbody tr {
+  transition: background-color 0.2s ease;
 }
 
 .group-accordion table tbody tr:nth-child(even) {
-  background: #fafbfc;
+  background: #fbfcfd;
 }
 
+.group-accordion table tbody tr:hover {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  transform: scale(1.001);
+}
+
+/* Card Styling */
 .group-accordion .card {
-  border: 1px solid #e6edf2;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  transition: all 0.3s ease;
 }
 
-.group-accordion .card-header {
-  border: 0;
-  border-left: 4px solid #4e8ff7;
+.group-accordion .card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
 }
 
-.group-accordion .card-header .badge {
-  background: #4e8ff7;
+/* Badge Styling */
+.badge-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border: none;
+  font-weight: 500;
 }
 
+.badge-outline-info {
+  color: #17a2b8;
+  border: 1px solid #17a2b8;
+  background: rgba(23, 162, 184, 0.1);
+  font-weight: 500;
+}
+
+/* Button Styling */
+.btn-outline-secondary {
+  border: 1px solid #6c757d;
+  color: #6c757d;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-secondary:hover {
+  background: #6c757d;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Dropdown Styling */
+.dropdown-menu {
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  z-index: 1050 !important;
+  position: absolute !important;
+}
+
+.dropdown {
+  position: relative;
+  z-index: 10;
+}
+
+.dropdown.show .dropdown-menu {
+  z-index: 1060 !important;
+}
+
+.dropdown-item {
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.dropdown-item.text-danger:hover {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  color: #c53030 !important;
+}
+
+/* Typography */
+.font-weight-500 {
+  font-weight: 500;
+}
+
+.font-weight-600 {
+  font-weight: 600;
+}
+
+/* Totals Bar */
 .income-totals-bar {
-  background: #eef4fb;
-  border: 1px solid #d6e3f3;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
 }
 
+/* Pagination */
+#incomePagination ul.pagination {
+  margin-bottom: 0;
+}
+
+.pagination .page-item .page-link {
+  border: 1px solid #dee2e6;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.pagination .page-item .page-link:hover {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+}
+
+.pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border-color: #007bff;
+}
+
+/* Export Buttons */
 .primary-btn.small {
-  padding: 4px 10px;
-  line-height: 1.2;
+  padding: 6px 12px;
+  line-height: 1.3;
+  font-size: 13px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
 }
 
-#incomeMethodAccordion i.ti-angle-down.rotated {
-  transform: rotate(180deg);
+.primary-btn.small:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .group-accordion table {
+    font-size: 12px;
+  }
+
+  .card-header {
+    padding: 8px 12px !important;
+  }
+
+  .amount-value {
+    font-size: 14px;
+  }
 }
 </style>
 @endpush
