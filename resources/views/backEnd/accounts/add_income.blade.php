@@ -369,8 +369,12 @@
                         </thead>
                         <tbody>
                           @foreach($incomesForDate as $row)
-                          @php $headName = optional($row->a_c_head)->head ?? optional($row->ACHead)->head ??
-                          optional($row->incomeHead)->head ?? ''; @endphp
+                          @php
+                          // Correct head resolution: primary A/C chart head, else legacy income head name
+                          $headName = optional($row->ACHead)->head
+                          ?? optional($row->incomeHeads)->name
+                          ?? '';
+                          @endphp
                           <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $row->name }}</td>
@@ -452,8 +456,11 @@
                         </thead>
                         <tbody>
                           @foreach($incomesForName as $row)
-                          @php $headName = optional($row->a_c_head)->head ?? optional($row->ACHead)->head ??
-                          optional($row->incomeHead)->head ?? ''; @endphp
+                          @php
+                          $headName = optional($row->ACHead)->head
+                          ?? optional($row->incomeHeads)->name
+                          ?? '';
+                          @endphp
                           <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $row->name }}</td>
@@ -534,8 +541,11 @@
                         </thead>
                         <tbody>
                           @foreach($incomesForMethod as $row)
-                          @php $headName = optional($row->a_c_head)->head ?? optional($row->ACHead)->head ??
-                          optional($row->incomeHead)->head ?? ''; @endphp
+                          @php
+                          $headName = optional($row->ACHead)->head
+                          ?? optional($row->incomeHeads)->name
+                          ?? '';
+                          @endphp
                           <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $row->name }}</td>
