@@ -361,18 +361,25 @@ if (!empty(@$setting->currency_symbol)) {
                 $totalForDate = $expensesForDate->sum('amount');
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
-                  <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
+                  <div
+                    class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $collapseId }}"
                     aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="{{ $collapseId }}"
                     data-total="{{ $totalForDate }}">
-                    <div>
-                      <i class="ti-angle-down ml-2"></i>
-                      <span class="font-weight-bold">{{ $displayDate }}</span>
+                    <div class="d-flex align-items-center">
+                      <i class="ti-angle-down mr-3 collapse-icon"></i>
+                      <div>
+                        <span class="font-weight-bold text-dark">{{ $displayDate }}</span>
+                        <div class="text-muted small">{{ $expensesForDate->count() }} entries</div>
+                      </div>
                     </div>
-                    <div>
-                      <span class="mr-3 font-weight-500">{{ generalSetting()->currency_symbol }}
-                        {{ number_format($totalForDate,2) }}</span>
-                      <span class="badge badge-info">{{ $expensesForDate->count() }}</span>
+                    <div class="text-right">
+                      <div class="amount-display">
+                        <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
+                        <span
+                          class="amount-value font-weight-bold text-primary">{{ number_format($totalForDate,2) }}</span>
+                      </div>
+                      <span class="badge badge-primary badge-pill">{{ $expensesForDate->count() }}</span>
                     </div>
                   </div>
                   <div id="{{ $collapseId }}" class="collapse @if($loop->first) show @endif"
@@ -382,25 +389,28 @@ if (!empty(@$setting->currency_symbol)) {
                         <table class="table table-sm mb-0 table-striped">
                           <thead class="thead-light">
                             <tr>
-                              <th style="width:50px">#</th>
-                              <th>@lang('common.name')</th>
-                              <th>@lang('accounts.payment_method')</th>
-                              <th>@lang('accounts.a_c_Head')</th>
-                              <th class="text-right">@lang('accounts.amount')</th>
-                              <th class="text-center">@lang('common.action')</th>
+                              <th style="width:60px" class="text-center">#</th>
+                              <th style="min-width:150px">@lang('common.name')</th>
+                              <th style="min-width:120px">@lang('accounts.payment_method')</th>
+                              <th style="min-width:140px">@lang('accounts.a_c_Head')</th>
+                              <th style="min-width:100px" class="text-right">@lang('accounts.amount')</th>
+                              <th style="width:120px" class="text-right">@lang('common.action')</th>
                             </tr>
                           </thead>
                           <tbody>
                             @foreach($expensesForDate as $index => $expense)
                             <tr>
-                              <td>{{ $index + 1 }}</td>
-                              <td>{{ $expense->name }}</td>
-                              <td>{{ optional($expense->paymentMethod)->method }}</td>
-                              <td>{{ optional($expense->ACHead)->head }}</td>
-                              <td class="text-right">{{ number_format($expense->amount,2) }}</td>
-                              <td class="text-center">
+                              <td class="text-center">{{ $index + 1 }}</td>
+                              <td class="font-weight-500">{{ $expense->name }}</td>
+                              <td><span
+                                  class="badge badge-outline-info">{{ optional($expense->paymentMethod)->method }}</span>
+                              </td>
+                              <td class="text-muted">{{ optional($expense->ACHead)->head }}</td>
+                              <td class="text-right font-weight-600">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($expense->amount,2) }}</td>
+                              <td class="text-right">
                                 <div class="dropdown CRM_dropdown">
-                                  <button class="btn btn-secondary dropdown-toggle" type="button"
+                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
                                     id="dropdownMenuButton{{ $expense->id }}" data-toggle="dropdown"
                                     aria-haspopup="true" aria-expanded="false">
                                     @lang('common.select')
@@ -408,12 +418,15 @@ if (!empty(@$setting->currency_symbol)) {
                                   <div class="dropdown-menu dropdown-menu-right"
                                     aria-labelledby="dropdownMenuButton{{ $expense->id }}">
                                     @if(userPermission('add-expense-edit'))
-                                    <a class="dropdown-item"
-                                      href="{{ route('add-expense-edit', $expense->id) }}">@lang('common.edit')</a>
+                                    <a class="dropdown-item" href="{{ route('add-expense-edit', $expense->id) }}">
+                                      <i class="ti-pencil-alt mr-2"></i>@lang('common.edit')
+                                    </a>
                                     @endif
                                     @if(userPermission('add-expense-delete'))
-                                    <a class="dropdown-item expense-delete-trigger" href="#"
-                                      data-expense-id="{{ $expense->id }}">@lang('common.delete')</a>
+                                    <a class="dropdown-item text-danger expense-delete-trigger" href="#"
+                                      data-expense-id="{{ $expense->id }}">
+                                      <i class="ti-trash mr-2"></i>@lang('common.delete')
+                                    </a>
                                     @endif
                                   </div>
                                 </div>
@@ -439,17 +452,24 @@ if (!empty(@$setting->currency_symbol)) {
                 $totalForHead = $expensesForHead->sum('amount');
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
-                  <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
+                  <div
+                    class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $collapseId }}" aria-expanded="false"
                     aria-controls="{{ $collapseId }}" data-total="{{ $totalForHead }}">
-                    <div>
-                      <span class="font-weight-bold">{{ $displayHead }}</span>
-                      <span class="text-muted ml-2 font-weight-bold" style="font-size:14px;">@lang('accounts.total'):
-                        {{ number_format($totalForHead,2) }}</span>
+                    <div class="d-flex align-items-center">
+                      <i class="ti-angle-down mr-3 collapse-icon"></i>
+                      <div>
+                        <span class="font-weight-bold text-dark">{{ $displayHead }}</span>
+                        <div class="text-muted small">{{ $expensesForHead->count() }} entries</div>
+                      </div>
                     </div>
-                    <div>
-                      <span class="badge badge-info">{{ $expensesForHead->count() }}</span>
-                      <i class="ti-angle-down ml-2"></i>
+                    <div class="text-right">
+                      <div class="amount-display">
+                        <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
+                        <span
+                          class="amount-value font-weight-bold text-primary">{{ number_format($totalForHead,2) }}</span>
+                      </div>
+                      <span class="badge badge-primary badge-pill">{{ $expensesForHead->count() }}</span>
                     </div>
                   </div>
                   <div id="{{ $collapseId }}" class="collapse" data-parent="#expenseHeadAccordion">
@@ -458,34 +478,41 @@ if (!empty(@$setting->currency_symbol)) {
                         <table class="table table-sm mb-0 table-striped">
                           <thead class="thead-light">
                             <tr>
-                              <th style="width:50px">#</th>
-                              <th>@lang('common.name')</th>
-                              <th>@lang('accounts.payment_method')</th>
-                              <th>@lang('accounts.a_c_Head')</th>
-                              <th class="text-right">@lang('accounts.amount')</th>
-                              <th class="text-center">@lang('common.action')</th>
+                              <th style="width:60px" class="text-center">#</th>
+                              <th style="min-width:150px">@lang('common.name')</th>
+                              <th style="min-width:120px">@lang('accounts.payment_method')</th>
+                              <th style="min-width:140px">@lang('accounts.a_c_Head')</th>
+                              <th style="min-width:100px" class="text-right">@lang('accounts.amount')</th>
+                              <th style="width:120px" class="text-right">@lang('common.action')</th>
                             </tr>
                           </thead>
                           <tbody>
                             @foreach($expensesForHead as $index => $expense)
                             <tr>
-                              <td>{{ $index + 1 }}</td>
-                              <td>{{ $expense->name }}</td>
-                              <td>{{ optional($expense->paymentMethod)->method }}</td>
-                              <td>{{ optional($expense->ACHead)->head }}</td>
-                              <td class="text-right">{{ number_format($expense->amount,2) }}</td>
-                              <td class="text-center">
+                              <td class="text-center">{{ $index + 1 }}</td>
+                              <td class="font-weight-500">{{ $expense->name }}</td>
+                              <td><span
+                                  class="badge badge-outline-info">{{ optional($expense->paymentMethod)->method }}</span>
+                              </td>
+                              <td class="text-muted">{{ optional($expense->ACHead)->head }}</td>
+                              <td class="text-right font-weight-600">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($expense->amount,2) }}</td>
+                              <td class="text-right">
                                 <div class="dropdown CRM_dropdown">
-                                  <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown"
-                                    aria-haspopup="true" aria-expanded="false">@lang('common.select')</button>
+                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">@lang('common.select')</button>
                                   <div class="dropdown-menu dropdown-menu-right">
                                     @if(userPermission('add-expense-edit'))
-                                    <a class="dropdown-item"
-                                      href="{{ route('add-expense-edit', $expense->id) }}">@lang('common.edit')</a>
+                                    <a class="dropdown-item" href="{{ route('add-expense-edit', $expense->id) }}">
+                                      <i class="ti-pencil-alt mr-2"></i>@lang('common.edit')
+                                    </a>
                                     @endif
                                     @if(userPermission('add-expense-delete'))
-                                    <a class="dropdown-item expense-delete-trigger" href="#"
-                                      data-expense-id="{{ $expense->id }}">@lang('common.delete')</a>
+                                    <a class="dropdown-item text-danger expense-delete-trigger" href="#"
+                                      data-expense-id="{{ $expense->id }}">
+                                      <i class="ti-trash mr-2"></i>@lang('common.delete')
+                                    </a>
                                     @endif
                                   </div>
                                 </div>
@@ -509,17 +536,24 @@ if (!empty(@$setting->currency_symbol)) {
                 $totalForMethod = $expensesForMethod->sum('amount');
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
-                  <div class="card-header bg-white p-2 cursor-pointer d-flex justify-content-between align-items-center"
+                  <div
+                    class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $collapseId }}" aria-expanded="false"
                     aria-controls="{{ $collapseId }}" data-total="{{ $totalForMethod }}">
-                    <div>
-                      <span class="font-weight-bold">{{ $displayMethod }}</span>
-                      <span class="text-muted ml-2 font-weight-bold" style="font-size:14px;">@lang('accounts.total'):
-                        {{ number_format($totalForMethod,2) }}</span>
+                    <div class="d-flex align-items-center">
+                      <i class="ti-angle-down mr-3 collapse-icon"></i>
+                      <div>
+                        <span class="font-weight-bold text-dark">{{ $displayMethod }}</span>
+                        <div class="text-muted small">{{ $expensesForMethod->count() }} entries</div>
+                      </div>
                     </div>
-                    <div>
-                      <span class="badge badge-info">{{ $expensesForMethod->count() }}</span>
-                      <i class="ti-angle-down ml-2"></i>
+                    <div class="text-right">
+                      <div class="amount-display">
+                        <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
+                        <span
+                          class="amount-value font-weight-bold text-primary">{{ number_format($totalForMethod,2) }}</span>
+                      </div>
+                      <span class="badge badge-primary badge-pill">{{ $expensesForMethod->count() }}</span>
                     </div>
                   </div>
                   <div id="{{ $collapseId }}" class="collapse" data-parent="#expenseMethodAccordion">
@@ -528,34 +562,41 @@ if (!empty(@$setting->currency_symbol)) {
                         <table class="table table-sm mb-0 table-striped">
                           <thead class="thead-light">
                             <tr>
-                              <th style="width:50px">#</th>
-                              <th>@lang('common.name')</th>
-                              <th>@lang('accounts.payment_method')</th>
-                              <th>@lang('accounts.a_c_Head')</th>
-                              <th class="text-right">@lang('accounts.amount')</th>
-                              <th class="text-center">@lang('common.action')</th>
+                              <th style="width:60px" class="text-center">#</th>
+                              <th style="min-width:150px">@lang('common.name')</th>
+                              <th style="min-width:120px">@lang('accounts.payment_method')</th>
+                              <th style="min-width:140px">@lang('accounts.a_c_Head')</th>
+                              <th style="min-width:100px" class="text-right">@lang('accounts.amount')</th>
+                              <th style="width:120px" class="text-right">@lang('common.action')</th>
                             </tr>
                           </thead>
                           <tbody>
                             @foreach($expensesForMethod as $index => $expense)
                             <tr>
-                              <td>{{ $index + 1 }}</td>
-                              <td>{{ $expense->name }}</td>
-                              <td>{{ optional($expense->paymentMethod)->method }}</td>
-                              <td>{{ optional($expense->ACHead)->head }}</td>
-                              <td class="text-right">{{ number_format($expense->amount,2) }}</td>
-                              <td class="text-center">
+                              <td class="text-center">{{ $index + 1 }}</td>
+                              <td class="font-weight-500">{{ $expense->name }}</td>
+                              <td><span
+                                  class="badge badge-outline-info">{{ optional($expense->paymentMethod)->method }}</span>
+                              </td>
+                              <td class="text-muted">{{ optional($expense->ACHead)->head }}</td>
+                              <td class="text-right font-weight-600">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($expense->amount,2) }}</td>
+                              <td class="text-right">
                                 <div class="dropdown CRM_dropdown">
-                                  <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown"
-                                    aria-haspopup="true" aria-expanded="false">@lang('common.select')</button>
+                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">@lang('common.select')</button>
                                   <div class="dropdown-menu dropdown-menu-right">
                                     @if(userPermission('add-expense-edit'))
-                                    <a class="dropdown-item"
-                                      href="{{ route('add-expense-edit', $expense->id) }}">@lang('common.edit')</a>
+                                    <a class="dropdown-item" href="{{ route('add-expense-edit', $expense->id) }}">
+                                      <i class="ti-pencil-alt mr-2"></i>@lang('common.edit')
+                                    </a>
                                     @endif
                                     @if(userPermission('add-expense-delete'))
-                                    <a class="dropdown-item expense-delete-trigger" href="#"
-                                      data-expense-id="{{ $expense->id }}">@lang('common.delete')</a>
+                                    <a class="dropdown-item text-danger expense-delete-trigger" href="#"
+                                      data-expense-id="{{ $expense->id }}">
+                                      <i class="ti-trash mr-2"></i>@lang('common.delete')
+                                    </a>
                                     @endif
                                   </div>
                                 </div>
@@ -1071,20 +1112,28 @@ $(function() {
 });
 </script>
 <style>
+/* Professional Card and Accordion Styling */
 #expenseDateAccordion .card-header,
 #expenseHeadAccordion .card-header,
 #expenseMethodAccordion .card-header {
   cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid #007bff;
 }
 
-#expenseDateAccordion i.ti-angle-down,
-#expenseHeadAccordion i.ti-angle-down,
-#expenseMethodAccordion i.ti-angle-down {
-  transition: transform .2s ease;
+#expenseDateAccordion .card-header:hover,
+#expenseHeadAccordion .card-header:hover,
+#expenseMethodAccordion .card-header:hover {
+  background: linear-gradient(45deg, #f8f9ff 0%, #e8f0ff 100%) !important;
+  border-left: 4px solid #0056b3;
+  transform: translateX(2px);
 }
 
-#expensePagination ul.pagination {
-  margin-bottom: 0;
+/* Collapse Icon Styling */
+.collapse-icon {
+  transition: transform 0.3s ease;
+  color: #007bff;
+  font-size: 16px;
 }
 
 #expenseDateAccordion i.ti-angle-down.rotated,
@@ -1093,42 +1142,194 @@ $(function() {
   transform: rotate(180deg);
 }
 
-/* Table visual improvements */
+/* Amount Display Styling */
+.amount-display {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.currency-symbol {
+  font-size: 14px;
+  color: #6c757d;
+  margin-right: 2px;
+}
+
+.amount-value {
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+/* Gradient Backgrounds */
+.bg-gradient-light {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+/* Table Professional Styling */
+.group-accordion table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
 .group-accordion table thead th {
-  background: #f5f7fb;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   font-weight: 600;
-  border-bottom: 1px solid #e2e6ec;
+  border-bottom: 2px solid #cbd5e0;
+  color: #2d3748;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 12px 8px;
 }
 
 .group-accordion table tbody td {
   vertical-align: middle;
+  padding: 12px 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.group-accordion table tbody tr {
+  transition: background-color 0.2s ease;
 }
 
 .group-accordion table tbody tr:nth-child(even) {
-  background: #fafbfc;
+  background: #fbfcfd;
 }
 
+.group-accordion table tbody tr:hover {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  transform: scale(1.001);
+}
+
+/* Card Styling */
 .group-accordion .card {
-  border: 1px solid #e6edf2;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
 }
 
-.group-accordion .card-header {
-  border: 0;
-  border-left: 4px solid #4e8ff7;
+.group-accordion .card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
-.group-accordion .card-header .badge {
-  background: #4e8ff7;
+/* Badge Styling */
+.badge-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border: none;
+  font-weight: 500;
 }
 
+.badge-outline-info {
+  color: #17a2b8;
+  border: 1px solid #17a2b8;
+  background: rgba(23, 162, 184, 0.1);
+  font-weight: 500;
+}
+
+/* Button Styling */
+.btn-outline-secondary {
+  border: 1px solid #6c757d;
+  color: #6c757d;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-secondary:hover {
+  background: #6c757d;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Dropdown Styling */
+.dropdown-menu {
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+}
+
+.dropdown-item {
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.dropdown-item.text-danger:hover {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  color: #c53030 !important;
+}
+
+/* Typography */
+.font-weight-500 {
+  font-weight: 500;
+}
+
+.font-weight-600 {
+  font-weight: 600;
+}
+
+/* Totals Bar */
 .expense-totals-bar {
-  background: #eef4fb;
-  border: 1px solid #d6e3f3;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
+/* Pagination */
+#expensePagination ul.pagination {
+  margin-bottom: 0;
+}
+
+.pagination .page-item .page-link {
+  border: 1px solid #dee2e6;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.pagination .page-item .page-link:hover {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+}
+
+.pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border-color: #007bff;
+}
+
+/* Export Buttons */
 .primary-btn.small {
-  padding: 4px 10px;
-  line-height: 1.2;
+  padding: 6px 12px;
+  line-height: 1.3;
+  font-size: 13px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.primary-btn.small:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .group-accordion table {
+    font-size: 12px;
+  }
+
+  .card-header {
+    padding: 8px 12px !important;
+  }
+
+  .amount-value {
+    font-size: 14px;
+  }
 }
 </style>
 @endpush
