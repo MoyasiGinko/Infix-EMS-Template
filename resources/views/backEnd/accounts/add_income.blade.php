@@ -357,27 +357,28 @@
                   <div id="{{ $incCollapseId }}" class="collapse @if($loop->first) show @endif"
                     data-parent="#incomeDateAccordion">
                     <div class="card-body p-0">
-                      <table class="table table-sm m-0">
+                      <table class="table table-sm m-0 income-table">
                         <thead>
                           <tr>
-                            <th style="width:40px;">#</th>
+                            <th style="width:50px;">#</th>
                             <th>Name</th>
                             <th>Payment Method</th>
                             <th>Head</th>
-                            <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})
-                            </th>
-                            <th>Action</th>
+                            <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})</th>
+                            <th class="text-right" style="width:140px;">Action</th>
                           </tr>
                         </thead>
                         <tbody>
                           @foreach($incomesForDate as $row)
+                          @php $headName = optional($row->a_c_head)->head ?? optional($row->ACHead)->head ??
+                          optional($row->incomeHead)->head ?? ''; @endphp
                           <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $row->name }}</td>
                             <td>{{ optional($row->paymentMethod)->method }}</td>
-                            <td>{{ optional($row->a_c_head)->head }}</td>
+                            <td>{{ $headName }}</td>
                             <td class="text-right">{{ number_format($row->amount,2) }}</td>
-                            <td>
+                            <td class="text-right">
                               @if (userPermission('add_income_edit'))
                               <a href="{{ route('add_income_edit', $row->id) }}"
                                 class="primary-btn small tr-bg mr-1">Edit</a>
@@ -430,27 +431,28 @@
                   </div>
                   <div id="{{ $incNameCollapseId }}" class="collapse" data-parent="#incomeNameAccordion">
                     <div class="card-body p-0">
-                      <table class="table table-sm m-0">
+                      <table class="table table-sm m-0 income-table">
                         <thead>
                           <tr>
-                            <th style="width:40px;">#</th>
+                            <th style="width:50px;">#</th>
                             <th>Name</th>
                             <th>Payment Method</th>
-                            <th>Date</th>
-                            <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})
-                            </th>
-                            <th>Action</th>
+                            <th>Head</th>
+                            <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})</th>
+                            <th class="text-right" style="width:140px;">Action</th>
                           </tr>
                         </thead>
                         <tbody>
                           @foreach($incomesForName as $row)
+                          @php $headName = optional($row->a_c_head)->head ?? optional($row->ACHead)->head ??
+                          optional($row->incomeHead)->head ?? ''; @endphp
                           <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $row->name }}</td>
                             <td>{{ optional($row->paymentMethod)->method }}</td>
-                            <td>{{ $row->date }}</td>
+                            <td>{{ $headName }}</td>
                             <td class="text-right">{{ number_format($row->amount,2) }}</td>
-                            <td>
+                            <td class="text-right">
                               @if (userPermission('add_income_edit'))
                               <a href="{{ route('add_income_edit', $row->id) }}"
                                 class="primary-btn small tr-bg mr-1">Edit</a>
@@ -492,12 +494,51 @@
                     data-total="{{ $totalForMethod }}">
                     <div class="d-flex align-items-center">
                       <i class="ti-angle-down mr-2"></i>
-                      <span class="font-weight-600">{{ $displayMethod }}</span>
+                      <span class="font-weight-600">{{ $displayMethod ?: 'Unknown' }}</span>
                     </div>
                     <div class="d-flex align-items-center">
                       <span class="mr-3 font-weight-500">{{ generalSetting()->currency_symbol }}
                         {{ number_format($totalForMethod,2) }}</span>
                       <span class="badge badge-info">{{ $incomesForMethod->count() }}</span>
+                    </div>
+                  </div>
+                  <div id="{{ $incMethodCollapseId }}" class="collapse" data-parent="#incomeMethodAccordion">
+                    <div class="card-body p-0">
+                      <table class="table table-sm m-0 income-table">
+                        <thead>
+                          <tr>
+                            <th style="width:50px;">#</th>
+                            <th>Name</th>
+                            <th>Payment Method</th>
+                            <th>Head</th>
+                            <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})</th>
+                            <th class="text-right" style="width:140px;">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @foreach($incomesForMethod as $row)
+                          @php $headName = optional($row->a_c_head)->head ?? optional($row->ACHead)->head ??
+                          optional($row->incomeHead)->head ?? ''; @endphp
+                          <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $row->name }}</td>
+                            <td>{{ optional($row->paymentMethod)->method }}</td>
+                            <td>{{ $headName }}</td>
+                            <td class="text-right">{{ number_format($row->amount,2) }}</td>
+                            <td class="text-right">
+                              @if (userPermission('add_income_edit'))
+                              <a href="{{ route('add_income_edit', $row->id) }}"
+                                class="primary-btn small tr-bg mr-1">Edit</a>
+                              @endif
+                              @if (userPermission('add_income_delete'))
+                              <a href="#" class="primary-btn small tr-bg income-delete-trigger"
+                                data-income-id="{{ $row->id }}">Delete</a>
+                              @endif
+                            </td>
+                          </tr>
+                          @endforeach
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
