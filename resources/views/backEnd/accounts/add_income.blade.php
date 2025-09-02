@@ -311,10 +311,9 @@
               </div>
               <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
                 <div class="mb-2">
-                  <label class="mb-0 mr-2">Show</label>
+                  <label class="mb-0 mr-2">Show entries</label>
                   <select id="incomePageLength" class="form-control"
                     style="min-width:90px;display:inline-block;"></select>
-                  <span>entries</span>
                 </div>
                 <div id="incomePagination" class="mb-2"></div>
               </div>
