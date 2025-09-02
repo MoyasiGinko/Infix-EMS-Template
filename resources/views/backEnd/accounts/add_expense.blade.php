@@ -1248,6 +1248,17 @@ $(function() {
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 6px;
+  z-index: 1050 !important;
+  position: absolute !important;
+}
+
+.dropdown {
+  position: relative;
+  z-index: 10;
+}
+
+.dropdown.show .dropdown-menu {
+  z-index: 1060 !important;
 }
 
 .dropdown-item {
