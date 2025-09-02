@@ -366,14 +366,13 @@ if (!empty(@$setting->currency_symbol)) {
                     aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="{{ $collapseId }}"
                     data-total="{{ $totalForDate }}">
                     <div>
+                      <i class="ti-angle-down ml-2"></i>
                       <span class="font-weight-bold">{{ $displayDate }}</span>
-                      <span class="text-muted ml-2 font-weight-bold" style="font-size:14px;">
-                        @lang('accounts.total'): {{ number_format($totalForDate,2) }}
-                      </span>
                     </div>
                     <div>
+                      <span class="mr-3 font-weight-500">{{ generalSetting()->currency_symbol }}
+                        {{ number_format($totalForDate,2) }}</span>
                       <span class="badge badge-info">{{ $expensesForDate->count() }}</span>
-                      <i class="ti-angle-down ml-2"></i>
                     </div>
                   </div>
                   <div id="{{ $collapseId }}" class="collapse @if($loop->first) show @endif"
