@@ -409,23 +409,24 @@ if (!empty(@$setting->currency_symbol)) {
                               <td class="text-right font-weight-600">
                                 {{ generalSetting()->currency_symbol }}{{ number_format($expense->amount,2) }}</td>
                               <td class="text-right">
-                                <div class="dropdown CRM_dropdown">
-                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                                    id="dropdownMenuButton{{ $expense->id }}" data-toggle="dropdown"
-                                    aria-haspopup="true" aria-expanded="false">
-                                    @lang('common.select')
+                                <div class="action-dropdown-wrapper position-relative">
+                                  <button class="btn btn-custom-action" type="button"
+                                    data-expense-id="{{ $expense->id }}">
+                                    <i class="ti-more-alt"></i>
                                   </button>
-                                  <div class="dropdown-menu dropdown-menu-right"
-                                    aria-labelledby="dropdownMenuButton{{ $expense->id }}">
+                                  <div class="custom-dropdown-menu">
                                     @if(userPermission('add-expense-edit'))
-                                    <a class="dropdown-item" href="{{ route('add-expense-edit', $expense->id) }}">
-                                      <i class="ti-pencil-alt mr-2"></i>@lang('common.edit')
+                                    <a class="custom-dropdown-item"
+                                      href="{{ route('add-expense-edit', $expense->id) }}">
+                                      <i class="ti-pencil-alt"></i>
+                                      <span>@lang('common.edit')</span>
                                     </a>
                                     @endif
                                     @if(userPermission('add-expense-delete'))
-                                    <a class="dropdown-item text-danger expense-delete-trigger" href="#"
+                                    <a class="custom-dropdown-item text-danger expense-delete-trigger" href="#"
                                       data-expense-id="{{ $expense->id }}">
-                                      <i class="ti-trash mr-2"></i>@lang('common.delete')
+                                      <i class="ti-trash"></i>
+                                      <span>@lang('common.delete')</span>
                                     </a>
                                     @endif
                                   </div>
@@ -498,20 +499,24 @@ if (!empty(@$setting->currency_symbol)) {
                               <td class="text-right font-weight-600">
                                 {{ generalSetting()->currency_symbol }}{{ number_format($expense->amount,2) }}</td>
                               <td class="text-right">
-                                <div class="dropdown CRM_dropdown">
-                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                                    data-toggle="dropdown" aria-haspopup="true"
-                                    aria-expanded="false">@lang('common.select')</button>
-                                  <div class="dropdown-menu dropdown-menu-right">
+                                <div class="action-dropdown-wrapper position-relative">
+                                  <button class="btn btn-custom-action" type="button"
+                                    data-expense-id="{{ $expense->id }}">
+                                    <i class="ti-more-alt"></i>
+                                  </button>
+                                  <div class="custom-dropdown-menu">
                                     @if(userPermission('add-expense-edit'))
-                                    <a class="dropdown-item" href="{{ route('add-expense-edit', $expense->id) }}">
-                                      <i class="ti-pencil-alt mr-2"></i>@lang('common.edit')
+                                    <a class="custom-dropdown-item"
+                                      href="{{ route('add-expense-edit', $expense->id) }}">
+                                      <i class="ti-pencil-alt"></i>
+                                      <span>@lang('common.edit')</span>
                                     </a>
                                     @endif
                                     @if(userPermission('add-expense-delete'))
-                                    <a class="dropdown-item text-danger expense-delete-trigger" href="#"
+                                    <a class="custom-dropdown-item text-danger expense-delete-trigger" href="#"
                                       data-expense-id="{{ $expense->id }}">
-                                      <i class="ti-trash mr-2"></i>@lang('common.delete')
+                                      <i class="ti-trash"></i>
+                                      <span>@lang('common.delete')</span>
                                     </a>
                                     @endif
                                   </div>
@@ -582,20 +587,24 @@ if (!empty(@$setting->currency_symbol)) {
                               <td class="text-right font-weight-600">
                                 {{ generalSetting()->currency_symbol }}{{ number_format($expense->amount,2) }}</td>
                               <td class="text-right">
-                                <div class="dropdown CRM_dropdown">
-                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                                    data-toggle="dropdown" aria-haspopup="true"
-                                    aria-expanded="false">@lang('common.select')</button>
-                                  <div class="dropdown-menu dropdown-menu-right">
+                                <div class="action-dropdown-wrapper position-relative">
+                                  <button class="btn btn-custom-action" type="button"
+                                    data-expense-id="{{ $expense->id }}">
+                                    <i class="ti-more-alt"></i>
+                                  </button>
+                                  <div class="custom-dropdown-menu">
                                     @if(userPermission('add-expense-edit'))
-                                    <a class="dropdown-item" href="{{ route('add-expense-edit', $expense->id) }}">
-                                      <i class="ti-pencil-alt mr-2"></i>@lang('common.edit')
+                                    <a class="custom-dropdown-item"
+                                      href="{{ route('add-expense-edit', $expense->id) }}">
+                                      <i class="ti-pencil-alt"></i>
+                                      <span>@lang('common.edit')</span>
                                     </a>
                                     @endif
                                     @if(userPermission('add-expense-delete'))
-                                    <a class="dropdown-item text-danger expense-delete-trigger" href="#"
+                                    <a class="custom-dropdown-item text-danger expense-delete-trigger" href="#"
                                       data-expense-id="{{ $expense->id }}">
-                                      <i class="ti-trash mr-2"></i>@lang('common.delete')
+                                      <i class="ti-trash"></i>
+                                      <span>@lang('common.delete')</span>
                                     </a>
                                     @endif
                                   </div>
@@ -850,6 +859,35 @@ document.addEventListener('click', function(e) {
     if (id) {
       deleteExpense(id);
     }
+  }
+});
+
+// Custom Action Dropdown Handler
+document.addEventListener('click', function(e) {
+  var actionBtn = e.target.closest('.btn-custom-action');
+
+  if (actionBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Close all other dropdowns
+    document.querySelectorAll('.action-dropdown-wrapper.show').forEach(wrapper => {
+      if (wrapper !== actionBtn.parentElement) {
+        wrapper.classList.remove('show');
+      }
+    });
+
+    // Toggle current dropdown
+    actionBtn.parentElement.classList.toggle('show');
+
+    return;
+  }
+
+  // Close dropdown when clicking outside
+  if (!e.target.closest('.action-dropdown-wrapper')) {
+    document.querySelectorAll('.action-dropdown-wrapper.show').forEach(wrapper => {
+      wrapper.classList.remove('show');
+    });
   }
 });
 // Export logic using hidden DataTable instance
@@ -1259,6 +1297,99 @@ $(function() {
 
 .dropdown.show .dropdown-menu {
   z-index: 1060 !important;
+}
+
+/* Custom Action Button & Dropdown */
+.action-dropdown-wrapper {
+  position: relative !important;
+  z-index: 1000 !important;
+}
+
+.btn-custom-action {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1001 !important;
+}
+
+.btn-custom-action:hover {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-color: #007bff;
+  color: #007bff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+.btn-custom-action:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.custom-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1100 !important;
+  display: none;
+  min-width: 160px;
+  padding: 6px 0;
+  margin: 2px 0 0 0;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateY(-5px) scale(0.95);
+  transition: all 0.2s ease;
+}
+
+.action-dropdown-wrapper.show .custom-dropdown-menu {
+  display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.custom-dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 16px;
+  color: #495057;
+  text-decoration: none;
+  background-color: transparent;
+  border: 0;
+  transition: all 0.2s ease;
+}
+
+.custom-dropdown-item:hover {
+  color: #007bff;
+  background-color: rgba(0, 123, 255, 0.08);
+  text-decoration: none;
+}
+
+.custom-dropdown-item.text-danger:hover {
+  color: #dc3545 !important;
+  background-color: rgba(220, 53, 69, 0.08);
+}
+
+.custom-dropdown-item i {
+  width: 16px;
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.custom-dropdown-item span {
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .dropdown-item {
