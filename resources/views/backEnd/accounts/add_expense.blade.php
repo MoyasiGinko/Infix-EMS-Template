@@ -330,8 +330,8 @@ if (!empty(@$setting->currency_symbol)) {
               </div>
               <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
                 <div class="mb-2">
-                  <label class="mb-0 mr-2">@lang('common.show')</label>
-                  <select id="expensePageLength" class="primary_select" style="min-width:90px;display:inline-block;">
+                  <label class="mb-0 mr-2">Show</label>
+                  <select id="expensePageLength" class="form-control" style="min-width:90px;display:inline-block;">
                     <option value="10">10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>
@@ -573,10 +573,11 @@ if (!empty(@$setting->currency_symbol)) {
               </div>
               <!-- Totals summary footer -->
               <div id="expenseTotalsSummary" class="mt-3 mb-4">
-                <div class="d-flex flex-wrap align-items-center">
-                  <div class="mr-4 mb-2"><strong>Page Total:</strong> <span id="expensePageTotalAmount">0.00</span>
-                  </div>
-                  <div class="mb-2"><strong>Grand Total:</strong> <span id="expenseGrandTotalAmount">0.00</span></div>
+                <div class="expense-totals-bar d-flex flex-wrap align-items-center p-2 rounded shadow-sm">
+                  <span class="mr-4"><strong>Page Total:</strong> {{ generalSetting()->currency_symbol }} <span
+                      id="expensePageTotalAmount">0.00</span></span>
+                  <span class="mr-4"><strong>Grand Total:</strong> {{ generalSetting()->currency_symbol }} <span
+                      id="expenseGrandTotalAmount">0.00</span></span>
                 </div>
               </div>
             </div>
@@ -628,12 +629,16 @@ function deleteExpense(id) {
   modal.modal('show');
 }
 // Optional: toggle icon rotation on collapse
-$(document).on('show.bs.collapse', '#expenseDateAccordion .collapse', function() {
-  $(this).prev('.card-header').find('i.ti-angle-down').addClass('rotated');
-});
-$(document).on('hide.bs.collapse', '#expenseDateAccordion .collapse', function() {
-  $(this).prev('.card-header').find('i.ti-angle-down').removeClass('rotated');
-});
+$(document).on('show.bs.collapse',
+  '#expenseDateAccordion .collapse, #expenseHeadAccordion .collapse, #expenseMethodAccordion .collapse',
+  function() {
+    $(this).prev('.card-header').find('i.ti-angle-down').addClass('rotated');
+  });
+$(document).on('hide.bs.collapse',
+  '#expenseDateAccordion .collapse, #expenseHeadAccordion .collapse, #expenseMethodAccordion .collapse',
+  function() {
+    $(this).prev('.card-header').find('i.ti-angle-down').removeClass('rotated');
+  });
 
 // Hybrid client-side pagination for grouped accordions
 (function() {
@@ -1067,11 +1072,15 @@ $(function() {
 });
 </script>
 <style>
-#expenseDateAccordion .card-header {
+#expenseDateAccordion .card-header,
+#expenseHeadAccordion .card-header,
+#expenseMethodAccordion .card-header {
   cursor: pointer;
 }
 
-#expenseDateAccordion i.ti-angle-down {
+#expenseDateAccordion i.ti-angle-down,
+#expenseHeadAccordion i.ti-angle-down,
+#expenseMethodAccordion i.ti-angle-down {
   transition: transform .2s ease;
 }
 
@@ -1079,8 +1088,48 @@ $(function() {
   margin-bottom: 0;
 }
 
-#expenseDateAccordion i.ti-angle-down.rotated {
+#expenseDateAccordion i.ti-angle-down.rotated,
+#expenseHeadAccordion i.ti-angle-down.rotated,
+#expenseMethodAccordion i.ti-angle-down.rotated {
   transform: rotate(180deg);
+}
+
+/* Table visual improvements */
+.group-accordion table thead th {
+  background: #f5f7fb;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e6ec;
+}
+
+.group-accordion table tbody td {
+  vertical-align: middle;
+}
+
+.group-accordion table tbody tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+.group-accordion .card {
+  border: 1px solid #e6edf2;
+}
+
+.group-accordion .card-header {
+  border: 0;
+  border-left: 4px solid #4e8ff7;
+}
+
+.group-accordion .card-header .badge {
+  background: #4e8ff7;
+}
+
+.expense-totals-bar {
+  background: #eef4fb;
+  border: 1px solid #d6e3f3;
+}
+
+.primary-btn.small {
+  padding: 4px 10px;
+  line-height: 1.2;
 }
 </style>
 @endpush
