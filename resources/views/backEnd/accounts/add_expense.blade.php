@@ -394,7 +394,7 @@ if (!empty(@$setting->currency_symbol)) {
                               <th style="min-width:120px">@lang('accounts.payment_method')</th>
                               <th style="min-width:140px">@lang('accounts.a_c_Head')</th>
                               <th style="min-width:100px" class="text-right">@lang('accounts.amount')</th>
-                              <th style="width:120px" class="text-right">@lang('common.action')</th>
+                              <th style="width:180px" class="text-right">@lang('common.action')</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -409,25 +409,23 @@ if (!empty(@$setting->currency_symbol)) {
                               <td class="text-right font-weight-600">
                                 {{ generalSetting()->currency_symbol }}{{ number_format($expense->amount,2) }}</td>
                               <td class="text-right">
-                                <div class="action-dropdown-wrapper position-relative">
-                                  <button class="btn btn-custom-action" type="button"
-                                    data-expense-id="{{ $expense->id }}">
+                                <div class="action-buttons-wrapper" data-expense-id="{{ $expense->id }}">
+                                  <button class="btn btn-dots-trigger" type="button">
                                     <i class="ti-more-alt"></i>
                                   </button>
-                                  <div class="custom-dropdown-menu">
+                                  <div class="inline-action-buttons d-none">
                                     @if(userPermission('add-expense-edit'))
-                                    <a class="custom-dropdown-item"
-                                      href="{{ route('add-expense-edit', $expense->id) }}">
+                                    <a class="btn btn-sm btn-outline-primary action-btn-edit"
+                                      href="{{ route('add-expense-edit', $expense->id) }}" title="@lang('common.edit')">
                                       <i class="ti-pencil-alt"></i>
-                                      <span>@lang('common.edit')</span>
                                     </a>
                                     @endif
                                     @if(userPermission('add-expense-delete'))
-                                    <a class="custom-dropdown-item text-danger expense-delete-trigger" href="#"
-                                      data-expense-id="{{ $expense->id }}">
+                                    <button
+                                      class="btn btn-sm btn-outline-danger action-btn-delete expense-delete-trigger"
+                                      type="button" data-expense-id="{{ $expense->id }}" title="@lang('common.delete')">
                                       <i class="ti-trash"></i>
-                                      <span>@lang('common.delete')</span>
-                                    </a>
+                                    </button>
                                     @endif
                                   </div>
                                 </div>
@@ -864,6 +862,37 @@ document.addEventListener('click', function(e) {
 
 // Custom Action Dropdown Handler
 document.addEventListener('click', function(e) {
+  // New inline action buttons handler
+  var dotsBtn = e.target.closest('.btn-dots-trigger');
+
+  if (dotsBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var wrapper = dotsBtn.closest('.action-buttons-wrapper');
+    var dotsButton = wrapper.querySelector('.btn-dots-trigger');
+    var inlineButtons = wrapper.querySelector('.inline-action-buttons');
+
+    // Hide dots button and show inline buttons
+    dotsButton.classList.add('d-none');
+    inlineButtons.classList.remove('d-none');
+
+    return;
+  }
+
+  // Close all expanded buttons when clicking outside
+  if (!e.target.closest('.action-buttons-wrapper')) {
+    document.querySelectorAll('.action-buttons-wrapper').forEach(wrapper => {
+      var dotsButton = wrapper.querySelector('.btn-dots-trigger');
+      var inlineButtons = wrapper.querySelector('.inline-action-buttons');
+
+      if (dotsButton && inlineButtons) {
+        dotsButton.classList.remove('d-none');
+        inlineButtons.classList.add('d-none');
+      }
+    });
+  }
+
   var actionBtn = e.target.closest('.btn-custom-action');
 
   if (actionBtn) {
@@ -1303,6 +1332,105 @@ $(function() {
 .action-dropdown-wrapper {
   position: relative !important;
   z-index: 1000 !important;
+}
+
+/* New Inline Action Buttons Wrapper */
+.action-buttons-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 160px;
+  position: relative;
+}
+
+.btn-dots-trigger {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.btn-dots-trigger:hover {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-color: #007bff;
+  color: #007bff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+.btn-dots-trigger:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.inline-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.action-btn-edit,
+.action-btn-delete {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.action-btn-edit:hover,
+.action-btn-delete:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+}
+
+.action-btn-edit {
+  border: 1px solid #007bff;
+  color: #007bff;
+  background: white;
+}
+
+.action-btn-edit:hover {
+  background: #007bff;
+  color: white;
+}
+
+.action-btn-delete {
+  border: 1px solid #dc3545;
+  color: #dc3545;
+  background: white;
+}
+
+.action-btn-delete:hover {
+  background: #dc3545;
+  color: white;
 }
 
 .btn-custom-action {

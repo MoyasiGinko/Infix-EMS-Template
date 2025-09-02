@@ -393,22 +393,20 @@
                               <td class="text-right font-weight-600">
                                 {{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
                               <td class="text-right">
-                                <div class="action-dropdown-wrapper position-relative">
-                                  <button class="btn btn-custom-action" type="button" data-income-id="{{ $row->id }}">
+                                <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
+                                  <button class="btn btn-dots-trigger" type="button">
                                     <i class="ti-more-alt"></i>
                                   </button>
-                                  <div class="custom-dropdown-menu">
+                                  <div class="inline-action-buttons d-none">
                                     @if (userPermission('add_income_edit'))
-                                    <a class="custom-dropdown-item" href="{{ route('add_income_edit', $row->id) }}">
+                                    <a class="btn btn-sm btn-outline-primary action-btn-edit" href="{{ route('add_income_edit', $row->id) }}" title="Edit">
                                       <i class="ti-pencil-alt"></i>
-                                      <span>Edit</span>
                                     </a>
                                     @endif
                                     @if (userPermission('add_income_delete'))
-                                    <a class="custom-dropdown-item text-danger income-delete-trigger" href="#" data-income-id="{{ $row->id }}">
+                                    <button class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger" type="button" data-income-id="{{ $row->id }}" title="Delete">
                                       <i class="ti-trash"></i>
-                                      <span>Delete</span>
-                                    </a>
+                                    </button>
                                     @endif
                                   </div>
                                 </div>
@@ -488,22 +486,20 @@
                               <td class="text-muted">{{ $headName }}</td>
                               <td class="text-right font-weight-600">{{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
                               <td class="text-right">
-                                <div class="action-dropdown-wrapper position-relative">
-                                  <button class="btn btn-custom-action" type="button" data-income-id="{{ $row->id }}">
+                                <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
+                                  <button class="btn btn-dots-trigger" type="button">
                                     <i class="ti-more-alt"></i>
                                   </button>
-                                  <div class="custom-dropdown-menu">
+                                  <div class="inline-action-buttons d-none">
                                     @if (userPermission('add_income_edit'))
-                                    <a class="custom-dropdown-item" href="{{ route('add_income_edit', $row->id) }}">
+                                    <a class="btn btn-sm btn-outline-primary action-btn-edit" href="{{ route('add_income_edit', $row->id) }}" title="Edit">
                                       <i class="ti-pencil-alt"></i>
-                                      <span>Edit</span>
                                     </a>
                                     @endif
                                     @if (userPermission('add_income_delete'))
-                                    <a class="custom-dropdown-item text-danger income-delete-trigger" href="#" data-income-id="{{ $row->id }}">
+                                    <button class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger" type="button" data-income-id="{{ $row->id }}" title="Delete">
                                       <i class="ti-trash"></i>
-                                      <span>Delete</span>
-                                    </a>
+                                    </button>
                                     @endif
                                   </div>
                                 </div>
@@ -582,22 +578,20 @@
                               <td class="text-muted">{{ $headName }}</td>
                               <td class="text-right font-weight-600">{{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
                               <td class="text-right">
-                                <div class="action-dropdown-wrapper position-relative">
-                                  <button class="btn btn-custom-action" type="button" data-income-id="{{ $row->id }}">
+                                <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
+                                  <button class="btn btn-dots-trigger" type="button">
                                     <i class="ti-more-alt"></i>
                                   </button>
-                                  <div class="custom-dropdown-menu">
+                                  <div class="inline-action-buttons d-none">
                                     @if (userPermission('add_income_edit'))
-                                    <a class="custom-dropdown-item" href="{{ route('add_income_edit', $row->id) }}">
+                                    <a class="btn btn-sm btn-outline-primary action-btn-edit" href="{{ route('add_income_edit', $row->id) }}" title="Edit">
                                       <i class="ti-pencil-alt"></i>
-                                      <span>Edit</span>
                                     </a>
                                     @endif
                                     @if (userPermission('add_income_delete'))
-                                    <a class="custom-dropdown-item text-danger income-delete-trigger" href="#" data-income-id="{{ $row->id }}">
+                                    <button class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger" type="button" data-income-id="{{ $row->id }}" title="Delete">
                                       <i class="ti-trash"></i>
-                                      <span>Delete</span>
-                                    </a>
+                                    </button>
                                     @endif
                                   </div>
                                 </div>
@@ -850,6 +844,37 @@ document.addEventListener('click', function(e) {
 
 // Custom Action Dropdown Handler for Income
 document.addEventListener('click', function(e) {
+  // New inline action buttons handler
+  var dotsBtn = e.target.closest('.btn-dots-trigger');
+
+  if (dotsBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var wrapper = dotsBtn.closest('.action-buttons-wrapper');
+    var dotsButton = wrapper.querySelector('.btn-dots-trigger');
+    var inlineButtons = wrapper.querySelector('.inline-action-buttons');
+
+    // Hide dots button and show inline buttons
+    dotsButton.classList.add('d-none');
+    inlineButtons.classList.remove('d-none');
+
+    return;
+  }
+
+  // Close all expanded buttons when clicking outside
+  if (!e.target.closest('.action-buttons-wrapper')) {
+    document.querySelectorAll('.action-buttons-wrapper').forEach(wrapper => {
+      var dotsButton = wrapper.querySelector('.btn-dots-trigger');
+      var inlineButtons = wrapper.querySelector('.inline-action-buttons');
+
+      if (dotsButton && inlineButtons) {
+        dotsButton.classList.remove('d-none');
+        inlineButtons.classList.add('d-none');
+      }
+    });
+  }
+
   var actionBtn = e.target.closest('.btn-custom-action');
 
   if (actionBtn) {
@@ -1249,6 +1274,72 @@ $(function() {
 }
 
 /* Custom Action Button & Dropdown */
+/* Custom Action Buttons for Income */
+.action-buttons-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.btn-dots-trigger {
+  background: transparent;
+  border: 1px solid #e0e6ed;
+  color: #495057;
+  padding: 6px 12px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  min-width: 36px;
+  height: 32px;
+  transition: all 0.2s ease;
+}
+
+.btn-dots-trigger:hover {
+  background-color: #f8f9fa;
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+.inline-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: slideIn 0.2s ease-out;
+}
+
+.inline-action-buttons .btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.inline-action-buttons .btn:hover {
+  transform: translateY(-1px);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .action-dropdown-wrapper {
   position: relative !important;
   z-index: 1000 !important;
