@@ -365,7 +365,7 @@
                             <th>Payment Method</th>
                             <th>Head</th>
                             <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})</th>
-                            <th class="text-right" style="width:140px;">Action</th>
+                            <th class="text-center" style="width:140px;">Action</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -378,15 +378,24 @@
                             <td>{{ optional($row->paymentMethod)->method }}</td>
                             <td>{{ $headName }}</td>
                             <td class="text-right">{{ number_format($row->amount,2) }}</td>
-                            <td class="text-right">
-                              @if (userPermission('add_income_edit'))
-                              <a href="{{ route('add_income_edit', $row->id) }}"
-                                class="primary-btn small tr-bg mr-1">Edit</a>
-                              @endif
-                              @if (userPermission('add_income_delete'))
-                              <a href="#" class="primary-btn small tr-bg income-delete-trigger"
-                                data-income-id="{{ $row->id }}">Delete</a>
-                              @endif
+                            <td class="text-center">
+                              <div class="dropdown CRM_dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button"
+                                  id="dropdownMenuButton{{ $row->id }}" data-toggle="dropdown" aria-haspopup="true"
+                                  aria-expanded="false">
+                                  Select
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right"
+                                  aria-labelledby="dropdownMenuButton{{ $row->id }}">
+                                  @if (userPermission('add_income_edit'))
+                                  <a class="dropdown-item" href="{{ route('add_income_edit', $row->id) }}">Edit</a>
+                                  @endif
+                                  @if (userPermission('add_income_delete'))
+                                  <a class="dropdown-item income-delete-trigger" href="#"
+                                    data-income-id="{{ $row->id }}">Delete</a>
+                                  @endif
+                                </div>
+                              </div>
                             </td>
                           </tr>
                           @endforeach
@@ -439,7 +448,7 @@
                             <th>Payment Method</th>
                             <th>Head</th>
                             <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})</th>
-                            <th class="text-right" style="width:140px;">Action</th>
+                            <th class="text-center" style="width:140px;">Action</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -452,15 +461,24 @@
                             <td>{{ optional($row->paymentMethod)->method }}</td>
                             <td>{{ $headName }}</td>
                             <td class="text-right">{{ number_format($row->amount,2) }}</td>
-                            <td class="text-right">
-                              @if (userPermission('add_income_edit'))
-                              <a href="{{ route('add_income_edit', $row->id) }}"
-                                class="primary-btn small tr-bg mr-1">Edit</a>
-                              @endif
-                              @if (userPermission('add_income_delete'))
-                              <a href="#" class="primary-btn small tr-bg income-delete-trigger"
-                                data-income-id="{{ $row->id }}">Delete</a>
-                              @endif
+                            <td class="text-center">
+                              <div class="dropdown CRM_dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button"
+                                  id="dropdownMenuButton{{ $row->id }}" data-toggle="dropdown" aria-haspopup="true"
+                                  aria-expanded="false">
+                                  Select
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right"
+                                  aria-labelledby="dropdownMenuButton{{ $row->id }}">
+                                  @if (userPermission('add_income_edit'))
+                                  <a class="dropdown-item" href="{{ route('add_income_edit', $row->id) }}">Edit</a>
+                                  @endif
+                                  @if (userPermission('add_income_delete'))
+                                  <a class="dropdown-item income-delete-trigger" href="#"
+                                    data-income-id="{{ $row->id }}">Delete</a>
+                                  @endif
+                                </div>
+                              </div>
                             </td>
                           </tr>
                           @endforeach
@@ -512,7 +530,7 @@
                             <th>Payment Method</th>
                             <th>Head</th>
                             <th class="text-right">Amount ({{ generalSetting()->currency_symbol }})</th>
-                            <th class="text-right" style="width:140px;">Action</th>
+                            <th class="text-center" style="width:140px;">Action</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -525,15 +543,24 @@
                             <td>{{ optional($row->paymentMethod)->method }}</td>
                             <td>{{ $headName }}</td>
                             <td class="text-right">{{ number_format($row->amount,2) }}</td>
-                            <td class="text-right">
-                              @if (userPermission('add_income_edit'))
-                              <a href="{{ route('add_income_edit', $row->id) }}"
-                                class="primary-btn small tr-bg mr-1">Edit</a>
-                              @endif
-                              @if (userPermission('add_income_delete'))
-                              <a href="#" class="primary-btn small tr-bg income-delete-trigger"
-                                data-income-id="{{ $row->id }}">Delete</a>
-                              @endif
+                            <td class="text-center">
+                              <div class="dropdown CRM_dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button"
+                                  id="dropdownMenuButton{{ $row->id }}" data-toggle="dropdown" aria-haspopup="true"
+                                  aria-expanded="false">
+                                  Select
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right"
+                                  aria-labelledby="dropdownMenuButton{{ $row->id }}">
+                                  @if (userPermission('add_income_edit'))
+                                  <a class="dropdown-item" href="{{ route('add_income_edit', $row->id) }}">Edit</a>
+                                  @endif
+                                  @if (userPermission('add_income_delete'))
+                                  <a class="dropdown-item income-delete-trigger" href="#"
+                                    data-income-id="{{ $row->id }}">Delete</a>
+                                  @endif
+                                </div>
+                              </div>
                             </td>
                           </tr>
                           @endforeach
@@ -634,6 +661,7 @@ $(document).on('hide.bs.collapse',
     $lengthSelect.append('<option value="' + v + '" ' + (v === pageLength ? 'selected' : '') + '>' + v +
       '</option>');
   });
+  $lengthSelect.val(pageLength);
 
   function currentAccordion() {
     const g = $('#incomeGroupBy').val();
