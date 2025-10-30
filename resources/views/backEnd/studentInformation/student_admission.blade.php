@@ -2211,30 +2211,30 @@
               </div>
             </div>
           </div>
-          <div class="admission-form-footer">
-            @php
-            $tooltip = '';
-            if (userPermission('student_store')) {
-            $tooltip = '';
-            } else {
-            $tooltip = 'You have no permission to add';
-            }
-            @endphp
-            <button class="primary-btn fix-gr-bg submit" id="_submit_btn_admission" data-toggle="tooltip"
-              title="{{ $tooltip }}">
-              <span class="ti-check"></span>
-              @lang('student.save_student')
-            </button>
-          </div>
         </div>
       </div>
+    </div>
+    <div class="admission-form-footer">
+      @php
+      $tooltip = '';
+      if (userPermission('student_store')) {
+      $tooltip = '';
+      } else {
+      $tooltip = 'You have no permission to add';
+      }
+      @endphp
+      <button class="primary-btn fix-gr-bg submit" id="_submit_btn_admission" data-toggle="tooltip"
+        title="{{ $tooltip }}">
+        <span class="ti-check"></span>
+        @lang('student.save_student')
+      </button>
     </div>
   </div>
   </div>
   </div>
-  </div>
+  @if (userPermission('student_store'))
   {{ html()->form()->close() }}
-
+  @endif
   </div>
 </section>
 {{-- student photo --}}
