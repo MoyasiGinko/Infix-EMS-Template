@@ -1227,7 +1227,7 @@
                           <div class="row">
                             <div class="col-lg-12">
                               <div class="main-title">
-                                <h4 class="stu-sub-head">@lang('common.fathers_info')
+                                <h4 class="stu-sub-head">@lang('student.parents_and_guardian_info')
                                 </h4>
                               </div>
                             </div>
