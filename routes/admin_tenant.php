@@ -483,9 +483,9 @@ Route::group(['middleware' => ['XSS', 'subscriptionAccessUrl']], function () {
         // mark sheet Report
         Route::get('mark-sheet-report', ['as' => 'mark_sheet_report', 'uses' => 'Admin\Examination\SmExaminationController@markSheetReport']);
         Route::post('mark-sheet-report', ['as' => 'mark_sheet_reports', 'uses' => 'Admin\Examination\SmExaminationController@markSheetReportSearch']);
-        
+
         Route::get('mark-sheet-report/print/{exam_id}/{class_id}/{section_id}/{student_id}', ['as' => 'mark_sheet_report_print', 'uses' => 'Admin\Examination\SmExaminationController@markSheetReportStudentPrint']);
-        
+
 
         // mark sheet report student
         Route::get('mark-sheet-report-student', ['as' => 'mark_sheet_report_student', 'uses' => 'Admin\Examination\SmExaminationController@markSheetReportStudent'])->middleware('userRolePermission:mark_sheet_report_student');
@@ -1139,6 +1139,9 @@ Route::group(['middleware' => ['XSS', 'subscriptionAccessUrl']], function () {
 
         // Ajax Sibling info detail
         Route::get('ajaxSiblingInfoDetail', 'Admin\StudentInfo\SmStudentAjaxController@ajaxSiblingInfoDetail');
+
+    // Guardian lookup
+    Route::get('guardian-search', 'Admin\StudentInfo\SmStudentAjaxController@searchGuardian')->name('guardian.search');
 
         // Datatables
         Route::get('student-list-datatable', ['as' => 'student_list_datatable', 'uses' => 'DatatableQueryController@studentDetailsDatatable'])->middleware('userRolePermission:student_list');

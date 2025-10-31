@@ -41,6 +41,74 @@
   box-shadow: 0 10px 24px rgba(124, 58, 237, 0.25);
 }
 
+.guardian-suggestion-root {
+  position: relative;
+}
+
+.guardian-suggestion-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.14);
+  padding: 6px 0;
+  z-index: 50;
+}
+
+.guardian-suggestion-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.guardian-suggestion-heading {
+  padding: 8px 16px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6366f1;
+}
+
+.guardian-suggestion-option {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  text-align: left;
+  color: #1f2937;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+.guardian-suggestion-option:hover,
+.guardian-suggestion-option:focus {
+  background: rgba(59, 130, 246, 0.08);
+  outline: none;
+}
+
+.guardian-suggestion-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.guardian-suggestion-empty {
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+
 .modern-tab-content {
   margin-top: 30px;
 }
@@ -1231,7 +1299,8 @@
                           </div>
                         </div>
                         <!-- End Sibling Add Modal -->
-                        <div class="parent_details" id="parent_details">
+                        <div class="parent_details" id="parent_details" @if($existingParent) style="display:none;"
+                          @endif>
 
                           <div class="row">
                             <div class="col-lg-12">
@@ -1523,7 +1592,7 @@
                         @endif
                         @if (is_show('guardians_email'))
                         <div class="col-lg-6 mt-4">
-                          <div class="primary_input ">
+                          <div class="primary_input guardian-suggestion-root">
                             <label class="primary_input_label" for="">@lang('student.guardian_email')
                               @if (is_required('guardians_email') && generalSetting()->with_guardian == 1)
                               <span class="text-danger">
@@ -1533,7 +1602,13 @@
                             <input oninput="emailCheck(this)"
                               class="primary_input_field form-control{{ $errors->has('guardians_email') ? ' is-invalid' : '' }}"
                               type="text" name="guardians_email" id="guardians_email"
-                              value="{{ old('guardians_email') }}">
+                              value="{{ old('guardians_email') }}" autocomplete="off"
+                              data-guardian-search-field="email">
+
+                            <div class="guardian-suggestion-panel d-none" id="guardian_email_suggestions"
+                              data-heading="{{ __('student.matching_guardians') }}">
+                              <ul class="guardian-suggestion-list"></ul>
+                            </div>
 
 
                             @if ($errors->has('guardians_email'))
@@ -1572,7 +1647,7 @@
                         </div>
                         @if (is_show('guardians_phone'))
                         <div class="col-lg-6 mt-4">
-                          <div class="primary_input ">
+                          <div class="primary_input guardian-suggestion-root">
                             <label class="primary_input_label" for="">@lang('student.guardian_phone')
                               @if (is_required('guardians_phone') == true)
                               <span class="text-danger">
@@ -1582,7 +1657,13 @@
                             <input
                               class="primary_input_field form-control{{ $errors->has('guardians_phone') ? ' is-invalid' : '' }}"
                               type="text" name="guardians_phone" id="guardians_phone"
-                              value="{{ old('guardians_phone') }}">
+                              value="{{ old('guardians_phone') }}" autocomplete="off"
+                              data-guardian-search-field="phone">
+
+                            <div class="guardian-suggestion-panel d-none" id="guardian_phone_suggestions"
+                              data-heading="{{ __('student.matching_guardians') }}">
+                              <ul class="guardian-suggestion-list"></ul>
+                            </div>
 
 
                             @if ($errors->has('guardians_phone'))

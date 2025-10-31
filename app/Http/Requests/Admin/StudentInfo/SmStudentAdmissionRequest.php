@@ -327,11 +327,7 @@ class SmStudentAdmissionRequest extends FormRequest
                 'email_address' => ['bail', Rule::requiredIf(function () use ($field): bool {
                     return in_array('email_address', $field);
                 }), 'sometimes', 'nullable', 'email', Rule::unique('users', 'email')->ignore(optional($student)->user_id)],
-                'phone_number' => ['bail', Rule::requiredIf(function () use ($field): bool {
-                    return in_array('phone_number', $field);
-                }),'regex:/^(?!-)[+0-9]{6,15}$/', Rule::unique('users', 'phone_number')->where(function ($query) use ($student) {
-                    return $query->whereNotNull('phone_number')->where('id', '!=', (optional($student)->user_id));
-                })],
+                'phone_number' => ['bail', 'required', 'regex:/^(?!-)[+0-9]{6,15}$/', 'max:100'],
                 'guardians_email' => [
                     'bail',
                     Rule::requiredIf(function () use ($field): bool {
