@@ -1066,7 +1066,16 @@
                         <div class="col-lg-12 text-right">
                           <div class="row">
                             <div class="col-lg-7 text-left" id="parent_info">
-                              <input type="hidden" name="parent_id" value="">
+                              @php
+                              $existingParent = old('parent_id') ? \App\SmParent::find(old('parent_id')) : null;
+                              @endphp
+                              <input type="hidden" name="parent_id" id="parent_id" value="{{ old('parent_id') }}">
+                              @if ($existingParent)
+                              <div class="alert primary-btn small parent_remove" id="parent_remove">
+                                &times;<strong> @lang('student.guardian'):
+                                  {{ $existingParent->guardians_name }}{{ $existingParent->guardians_email ? ' ('.$existingParent->guardians_email.')' : '' }}</strong>
+                              </div>
+                              @endif
 
                             </div>
                             <div class="col-lg-5">
