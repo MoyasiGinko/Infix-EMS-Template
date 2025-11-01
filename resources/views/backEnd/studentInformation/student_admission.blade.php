@@ -55,6 +55,25 @@
   box-shadow: 0 14px 32px rgba(37, 99, 235, 0.08);
 }
 
+.admission-tabs-modern .nav-item {
+  flex: 1 1 200px;
+  position: relative;
+  z-index: 1;
+}
+
+.admission-tabs-modern .nav-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -40px;
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.28) 0%, rgba(124, 58, 237, 0.28) 100%);
+  transform: translateY(-50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
 .admission-tabs-modern .nav-link {
   border: none;
   border-radius: 12px;
@@ -66,6 +85,11 @@
   background: rgba(255, 255, 255, 0.8);
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 100%;
+  position: relative;
 }
 
 .admission-tabs-modern .nav-link:hover,
@@ -79,6 +103,55 @@
   background: linear-gradient(135deg, var(--admission-primary) 0%, var(--admission-secondary) 100%);
   color: #ffffff;
   box-shadow: 0 18px 32px rgba(124, 58, 237, 0.28);
+}
+
+.admission-tabs-modern .nav-link .step-index {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--admission-primary-dark);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+  box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.35);
+  transition: all 0.25s ease;
+}
+
+.admission-tabs-modern .nav-link.active .step-index {
+  background: #ffffff;
+  color: var(--admission-primary-dark);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+
+.admission-tabs-modern .nav-link .step-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+}
+
+.admission-tabs-modern .nav-link .step-copy strong {
+  font-weight: 700;
+  font-size: 14px;
+  color: inherit;
+  letter-spacing: 0.2px;
+}
+
+.admission-tabs-modern .nav-link .step-copy small {
+  font-size: 12px;
+  color: var(--admission-text-muted);
+  letter-spacing: 0.3px;
+  text-transform: none;
+}
+
+.admission-tabs-modern .nav-link.active .step-copy small {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .modern-tab-content {
@@ -300,6 +373,10 @@
     justify-content: flex-start;
   }
 
+  .admission-tabs-modern .nav-item:not(:last-child)::after {
+    display: none;
+  }
+
   .modern-section-card {
     padding: 28px 22px;
   }
@@ -310,6 +387,17 @@
 
   .admission-form-footer {
     justify-content: center;
+  }
+}
+
+@media (max-width: 1199px) {
+  .admission-tabs-modern .nav-item {
+    flex: 1 1 250px;
+  }
+
+  .admission-tabs-modern .nav-item:not(:last-child)::after {
+    right: -24px;
+    width: 48px;
   }
 }
 </style>
@@ -361,27 +449,47 @@
               <ul class="nav nav-tabs tabs_scroll_nav px-0 no-scroll admission-tabs-modern" role="tablist">
                 <li class="nav-item">
                   <a class="nav-link active" href="#student_guardian_info" role="tab" data-toggle="tab">
-                    @lang('student.personal_info') &amp; @lang('student.parents_and_guardian_info')
+                    <span class="step-index">1</span>
+                    <span class="step-copy">
+                      <strong>@lang('student.personal_info')</strong>
+                      <small>@lang('student.parents_and_guardian_info')</small>
+                    </span>
                   </a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="#document_info" role="tab" data-toggle="tab">
-                    @lang('student.document_info')
+                    <span class="step-index">2</span>
+                    <span class="step-copy">
+                      <strong>@lang('student.document_info')</strong>
+                      <small>{{ __('Details & files') }}</small>
+                    </span>
                   </a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="#previous_school_info" role="tab" data-toggle="tab">
-                    @lang('student.previous_school_info')
+                    <span class="step-index">3</span>
+                    <span class="step-copy">
+                      <strong>@lang('student.previous_school_info')</strong>
+                      <small>{{ __('Academic history') }}</small>
+                    </span>
                   </a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="#Other_info" role="tab" data-toggle="tab">
-                    @lang('student.Other_info')
+                    <span class="step-index">4</span>
+                    <span class="step-copy">
+                      <strong>@lang('student.Other_info')</strong>
+                      <small>{{ __('Logistics & extras') }}</small>
+                    </span>
                   </a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="#custom_field" role="tab" data-toggle="tab">
-                    @lang('student.custom_field')
+                    <span class="step-index">5</span>
+                    <span class="step-copy">
+                      <strong>@lang('student.custom_field')</strong>
+                      <small>{{ __('Custom data points') }}</small>
+                    </span>
                   </a>
                 </li>
               </ul>
