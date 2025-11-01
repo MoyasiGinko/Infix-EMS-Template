@@ -21,46 +21,9 @@ class SmStudentAdmissionRequest extends FormRequest
      */
     use CustomFields;
 
-    /**
-     * Cached parent instance detected for this request.
-     */
-    protected ?SmParent $detectedParent = null;
-
     public function authorize(): bool
     {
         return true;
-    }
-
-    protected function prepareForValidation(): void
-    {
-        if (! Auth::check()) {
-            return;
-        }
-
-        if ($this->parent_id) {
-            $this->detectedParent = SmParent::find($this->parent_id);
-
-            return;
-        }
-
-        if ($this->staff_parent) {
-            return;
-        }
-
-        $existingParent = null;
-
-        if ($this->filled('guardians_email')) {
-            $existingParent = SmParent::where('guardians_email', $this->guardians_email)->first();
-        }
-
-        if (! $existingParent && $this->filled('guardians_phone')) {
-            $existingParent = SmParent::where('guardians_mobile', $this->guardians_phone)->first();
-        }
-
-        if ($existingParent) {
-            $this->detectedParent = $existingParent;
-            $this->merge(['parent_id' => $existingParent->id]);
-        }
     }
 
     protected function guardianUserId(?SmStudent $student): ?int
@@ -70,11 +33,13 @@ class SmStudentAdmissionRequest extends FormRequest
             return $studentGuardianId;
         }
 
-        if (! $this->detectedParent && $this->parent_id) {
-            $this->detectedParent = SmParent::find($this->parent_id);
+        if ($this->parent_id) {
+            $parent = SmParent::find($this->parent_id);
+
+            return optional($parent)->user_id;
         }
 
-        return optional($this->detectedParent)->user_id;
+        return null;
     }
 
     /**
@@ -338,9 +303,9 @@ class SmStudentAdmissionRequest extends FormRequest
                     'email',
                     $guardianEmailRule,
                 ],
-                'guardians_phone' => ['bail', 'nullable', Rule::requiredIf(function () use ($field): bool {
+                'guardians_phone' => ['bail', Rule::requiredIf(function () use ($field): bool {
                     return ! $this->parent_id && ! $this->staff_parent && in_array('guardians_phone', $field);
-                }),'nullable','regex:/^(?!-)[+0-9]{6,15}$/', 'max:100', 'different:phone_number'],
+                }), 'nullable', 'regex:/^(?!-)[+0-9]{6,15}$/', 'max:100'],
                 'roll_number' => ['sometimes', 'nullable', Rule::requiredIf(function () use ($field): bool {
                     return $this->filled('session') && in_array('roll_number', $field);
                 }), Rule::unique('sm_students', 'roll_no')->ignore(optional($student)->id)->where('school_id', $school_id)->where('academic_id', $academic_id)->whereIn('class_id', $class_ids)->whereIn('section_id', $section_ids)],

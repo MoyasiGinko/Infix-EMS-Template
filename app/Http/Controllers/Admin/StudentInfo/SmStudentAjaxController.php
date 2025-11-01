@@ -7,7 +7,6 @@ use App\Models\StudentRecord;
 use App\Scopes\GlobalAcademicScope;
 use App\Scopes\StatusAcademicSchoolScope;
 use App\SmAcademicYear;
-use App\SmParent;
 use App\SmAssignSubject;
 use App\SmAssignVehicle;
 use App\SmClass;
@@ -86,60 +85,6 @@ class SmStudentAjaxController extends Controller
         $type = $staff ? 'staff' : 'sibling';
 
         return response()->json([$sibling_detail, $parent_detail, $staff, $type]);
-    }
-
-    public function searchGuardian(Request $request)
-    {
-        $query = trim((string) $request->get('query', ''));
-        $field = $request->get('field');
-
-        if ($query === '') {
-            return response()->json(['data' => []]);
-        }
-
-        $searchTerm = mb_strtolower($query);
-        $schoolId = Auth::user()->school_id;
-
-        $guardians = SmParent::query()
-            ->where('school_id', $schoolId)
-            ->where(function ($q) use ($searchTerm, $field): void {
-                if ($field === 'email') {
-                    $q->whereRaw('LOWER(guardians_email) LIKE ?', ['%'.$searchTerm.'%']);
-                } elseif ($field === 'phone') {
-                    $q->whereRaw('LOWER(guardians_mobile) LIKE ?', ['%'.$searchTerm.'%']);
-                } else {
-                    $q->where(function ($inner) use ($searchTerm): void {
-                        $inner->whereRaw('LOWER(guardians_email) LIKE ?', ['%'.$searchTerm.'%'])
-                            ->orWhereRaw('LOWER(guardians_mobile) LIKE ?', ['%'.$searchTerm.'%'])
-                            ->orWhereRaw('LOWER(guardians_name) LIKE ?', ['%'.$searchTerm.'%']);
-                    });
-                }
-            })
-            ->orderByRaw('CASE WHEN LOWER(guardians_email) = ? THEN 0 ELSE 1 END', [$searchTerm])
-            ->limit(10)
-            ->get([
-                'id',
-                'guardians_name',
-                'guardians_email',
-                'guardians_mobile',
-                'guardians_address',
-                'guardians_occupation',
-                'guardians_relation',
-            ])
-            ->map(function (SmParent $guardian) {
-                return [
-                    'id' => $guardian->id,
-                    'name' => $guardian->guardians_name,
-                    'email' => $guardian->guardians_email,
-                    'phone' => $guardian->guardians_mobile,
-                    'address' => $guardian->guardians_address,
-                    'occupation' => $guardian->guardians_occupation,
-                    'relation' => $guardian->guardians_relation,
-                ];
-            })
-            ->values();
-
-        return response()->json(['data' => $guardians]);
     }
 
     public function ajaxGetVehicle(Request $request)

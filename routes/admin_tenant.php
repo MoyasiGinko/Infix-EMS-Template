@@ -1139,10 +1139,6 @@ Route::group(['middleware' => ['XSS', 'subscriptionAccessUrl']], function () {
 
         // Ajax Sibling info detail
         Route::get('ajaxSiblingInfoDetail', 'Admin\StudentInfo\SmStudentAjaxController@ajaxSiblingInfoDetail');
-
-    // Guardian lookup
-    Route::get('guardian-search', 'Admin\StudentInfo\SmStudentAjaxController@searchGuardian')->name('guardian.search');
-
         // Datatables
         Route::get('student-list-datatable', ['as' => 'student_list_datatable', 'uses' => 'DatatableQueryController@studentDetailsDatatable'])->middleware('userRolePermission:student_list');
 
