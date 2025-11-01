@@ -18,30 +18,6 @@
   --admission-text-strong: #0f172a;
   --admission-text-muted: #475569;
   --admission-shadow: rgba(15, 23, 42, 0.08);
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.studentadmission .modern-tab-content,
-.studentadmission .modern-section-card,
-.studentadmission .admission-tabs-modern {
-  backdrop-filter: blur(12px);
-}
-
-.admin-visitor-area.up_st_admin_visitor {
-  background: linear-gradient(140deg, rgba(226, 232, 240, 0.45) 0%, rgba(248, 250, 252, 0.7) 100%);
-  padding-top: 20px;
-  padding-bottom: 40px;
-}
-
-.studentadmission .primary-btn.fix-gr-bg {
-  background-image: linear-gradient(135deg, var(--admission-primary) 0%, var(--admission-secondary) 100%);
-  border: none;
-}
-
-.studentadmission .primary-btn.fix-gr-bg:hover,
-.studentadmission .primary-btn.fix-gr-bg:focus {
-  box-shadow: 0 22px 38px rgba(37, 99, 235, 0.24);
-  transform: translateY(-2px);
 }
 
 .admission-tabs-modern {
@@ -159,7 +135,7 @@
 }
 
 .modern-section-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(240, 249, 255, 0.88) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 255, 0.9) 100%);
   border-radius: 22px;
   border: 1px solid var(--admission-border);
   padding: 38px 34px;
@@ -249,26 +225,23 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.studentadmission .primary_input_label,
-.studentadmission .primary_input label,
-.studentadmission label.primary_input_label {
-  font-weight: 800 !important;
-  color: var(--admission-text-strong) !important;
+.modern-section-card .primary_input_label,
+.modern-section-card label {
+  font-weight: 800;
+  color: var(--admission-text-strong);
   font-size: 14px;
-  letter-spacing: 0.32px;
+  letter-spacing: 0.35px;
   margin-bottom: 10px;
-  line-height: 1.35;
-  text-transform: uppercase;
+  line-height: 1.3;
+  transition: color 0.2s ease;
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  transition: color 0.2s ease;
+  gap: 8px;
 }
 
-.studentadmission .primary_input_label::before,
-.studentadmission label.primary_input_label::before,
-.studentadmission .primary_input label::before {
+.modern-section-card .primary_input_label::before,
+.modern-section-card label::before {
   content: '';
   width: 8px;
   height: 8px;
@@ -277,11 +250,11 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
 }
 
-.studentadmission .modern-section-card .primary_input_field,
-.studentadmission .modern-section-card .primary_select,
-.studentadmission .modern-section-card textarea.primary_input_field {
+.modern-section-card .primary_input_field,
+.modern-section-card .primary_select,
+.modern-section-card textarea.primary_input_field {
   border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
+  border: 1px solid #d1d5db;
   padding: 14px 16px;
   transition: all 0.25s ease, transform 0.2s ease;
   background: var(--admission-surface);
@@ -290,29 +263,23 @@
   font-weight: 600;
 }
 
-.studentadmission .modern-section-card .primary_input_field:not(.is-invalid):hover,
-.studentadmission .modern-section-card .primary_select:hover,
-.studentadmission .modern-section-card textarea.primary_input_field:not(.is-invalid):hover {
-  border-color: rgba(37, 99, 235, 0.6);
-}
-
-.studentadmission .modern-section-card .primary_input_field::placeholder,
-.studentadmission .modern-section-card textarea.primary_input_field::placeholder {
+.modern-section-card .primary_input_field::placeholder,
+.modern-section-card textarea.primary_input_field::placeholder {
   color: var(--admission-muted);
   opacity: 0.7;
 }
 
-.studentadmission .modern-section-card .primary_input_field:focus,
-.studentadmission .modern-section-card .primary_select:focus,
-.studentadmission .modern-section-card textarea.primary_input_field:focus {
+.modern-section-card .primary_input_field:focus,
+.modern-section-card .primary_select:focus,
+.modern-section-card textarea.primary_input_field:focus {
   border-color: var(--admission-primary);
   background: #ffffff;
-  box-shadow: 0 18px 36px rgba(37, 99, 235, 0.18), 0 0 0 4px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
   transform: translateY(-1px);
 }
 
-.studentadmission .modern-section-card .primary_input_field.is-invalid,
-.studentadmission .modern-section-card textarea.primary_input_field.is-invalid {
+.modern-section-card .primary_input_field.is-invalid,
+.modern-section-card textarea.primary_input_field.is-invalid {
   border-color: #f97316;
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
 }
