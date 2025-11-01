@@ -6,52 +6,67 @@
 @section('css')
 <link rel="stylesheet" type="text/css" href="{{ asset('public/backEnd/') }}/css/croppie.css">
 <style>
+.studentadmission {
+  --admission-primary: #2563eb;
+  --admission-primary-dark: #1d4ed8;
+  --admission-secondary: #7c3aed;
+  --admission-accent: #22d3ee;
+  --admission-muted: #64748b;
+  --admission-surface: #f8fafc;
+  --admission-border: #e2e8f0;
+  --admission-text-strong: #0f172a;
+  --admission-text-muted: #475569;
+  --admission-shadow: rgba(15, 23, 42, 0.08);
+}
+
 .admission-tabs-modern {
-  background: linear-gradient(135deg, #f5f7fa 0%, #eef2ff 100%);
-  border-radius: 14px;
-  padding: 12px;
-  border: 1px solid #e2e8f0;
-  gap: 8px;
+  background: linear-gradient(135deg, rgba(250, 250, 255, 0.95) 0%, #ecf2ff 100%);
+  border-radius: 16px;
+  padding: 14px;
+  border: 1px solid var(--admission-border);
+  gap: 10px;
   display: inline-flex;
   flex-wrap: wrap;
+  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.08);
 }
 
 .admission-tabs-modern .nav-link {
   border: none;
-  border-radius: 10px;
-  padding: 10px 18px;
+  border-radius: 12px;
+  padding: 11px 20px;
   margin: 4px;
   font-weight: 600;
-  color: #475569;
-  background: rgba(255, 255, 255, 0.65);
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+  letter-spacing: 0.15px;
+  color: var(--admission-text-muted);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
   transition: all 0.2s ease;
 }
 
 .admission-tabs-modern .nav-link:hover,
 .admission-tabs-modern .nav-link:focus {
-  color: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+  color: var(--admission-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.16);
 }
 
 .admission-tabs-modern .nav-link.active {
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, var(--admission-primary) 0%, var(--admission-secondary) 100%);
   color: #ffffff;
-  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 18px 32px rgba(124, 58, 237, 0.28);
 }
 
 .modern-tab-content {
-  margin-top: 30px;
+  margin-top: 32px;
 }
 
 .modern-section-card {
   background: #ffffff;
-  border-radius: 18px;
-  border: 1px solid #e5e7eb;
-  padding: 32px 28px;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-  margin-bottom: 28px;
+  border-radius: 22px;
+  border: 1px solid var(--admission-border);
+  padding: 36px 32px;
+  box-shadow: 0 24px 48px var(--admission-shadow);
+  margin-bottom: 32px;
   position: relative;
   overflow: hidden;
 }
@@ -60,7 +75,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(124, 58, 237, 0.08));
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(124, 58, 237, 0.08));
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 0;
@@ -81,56 +96,104 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .section-header-flex .stu-sub-head {
   margin-bottom: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--admission-text-strong);
+  letter-spacing: 0.2px;
+}
+
+.modern-section-card .primary_input {
+  background: rgba(248, 250, 252, 0.9);
+  border-radius: 14px;
+  border: 1px solid transparent;
+  padding: 16px 18px 14px;
+  transition: all 0.25s ease;
+}
+
+.modern-section-card .primary_input:focus-within {
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.12);
+}
+
+.modern-section-card .primary_input .primary_file_uploader {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  border: 1px dashed rgba(37, 99, 235, 0.25);
+  padding: 10px 12px;
+  transition: all 0.25s ease;
+}
+
+.modern-section-card .primary_input .primary_file_uploader:focus-within {
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .modern-section-card .primary_input_label,
 .modern-section-card label {
-  font-weight: 600;
-  color: #334155;
+  font-weight: 700;
+  color: var(--admission-text-strong);
+  font-size: 13px;
+  letter-spacing: 0.25px;
+  margin-bottom: 8px;
 }
 
 .modern-section-card .primary_input_field,
-.modern-section-card .primary_select {
-  border-radius: 10px;
+.modern-section-card .primary_select,
+.modern-section-card textarea.primary_input_field {
+  border-radius: 12px;
   border: 1px solid #d1d5db;
-  padding: 12px 14px;
-  transition: all 0.2s ease;
-  background: #f8fafc;
+  padding: 12px 16px;
+  transition: all 0.25s ease;
+  background: var(--admission-surface);
+  width: 100%;
+  color: var(--admission-text-strong);
+  font-weight: 500;
+}
+
+.modern-section-card .primary_input_field::placeholder,
+.modern-section-card textarea.primary_input_field::placeholder {
+  color: var(--admission-muted);
+  opacity: 0.7;
 }
 
 .modern-section-card .primary_input_field:focus,
-.modern-section-card .primary_select:focus {
-  border-color: #6366f1;
+.modern-section-card .primary_select:focus,
+.modern-section-card textarea.primary_input_field:focus {
+  border-color: var(--admission-primary);
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.modern-section-card .primary_input_field.is-invalid,
+.modern-section-card textarea.primary_input_field.is-invalid {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
 }
 
 .modern-dual-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
+  gap: 28px;
 }
 
 .modern-info-group {
-  padding: 18px 20px;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #f8fafc 0%, #eef2f7 100%);
-  border: 1px solid #e2e8f0;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(248, 250, 252, 0.95) 0%, #eef2ff 100%);
+  border: 1px solid var(--admission-border);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .modern-info-group .group-title {
   font-size: 15px;
   font-weight: 700;
-  color: #1d4ed8;
+  color: var(--admission-primary-dark);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 12px;
@@ -142,9 +205,24 @@
 .admission-form-footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 12px;
-  padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
+  margin-top: 14px;
+  padding-top: 24px;
+  border-top: 1px solid var(--admission-border);
+  gap: 12px;
+}
+
+.admission-form-footer .primary-btn {
+  border-radius: 12px;
+  padding: 12px 26px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  box-shadow: 0 18px 32px rgba(37, 99, 235, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admission-form-footer .primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 36px rgba(37, 99, 235, 0.25);
 }
 
 @media (max-width: 767px) {
@@ -155,7 +233,7 @@
   }
 
   .modern-section-card {
-    padding: 24px 18px;
+    padding: 28px 22px;
   }
 
   .modern-dual-grid {
