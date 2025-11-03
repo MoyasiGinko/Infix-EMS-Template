@@ -13,25 +13,55 @@
     $shiftName = shiftEnable() ? optional(optional($record)->shift)->shift_name : null;
     $invoiceDate = optional($feesinvoice)->create_date ?? optional($feesinvoice)->created_at;
     $transactions = ($feesTranscations ?? collect())->whereNotNull('payment_method')->values();
+    $rawBalance = round($balanceAmount, 2);
+    $displayBalance = $rawBalance;
+    if ($displayBalance < 0) {
+        $displayBalance = 0;
+    }
+    $isSettled = $rawBalance <= 0.01;
+    $statusVariant = 'fees-ledger__status--due';
+    $statusLabel = __('fees.unpaid');
+    if ($isSettled) {
+        $displayBalance = 0;
+        $statusVariant = 'fees-ledger__status--paid';
+        $statusLabel = __('fees.paid');
+    } elseif ($paidAmount > 0) {
+        $statusVariant = 'fees-ledger__status--partial';
+        $statusLabel = __('fees.partial');
+    }
+    $statusMeta = __('accounts.balance') . ': ' . $currencySymbol . number_format($displayBalance, 2);
+    $statusCountText = __('Total payments: :count', ['count' => $transactions->count()]);
+    $lastPaymentDate = optional($transactions->sortByDesc('created_at')->first())->created_at ?? null;
+    if ($lastPaymentDate) {
+        $statusCountText .= ' | ' . __('Last payment: :date', ['date' => dateConvert($lastPaymentDate)]);
+    }
 @endphp
 <div class="fees-modal__header fees-modal__header--info">
-    <div>
-        <span class="fees-modal__eyebrow">@lang('fees::feesModule.payment_details')</span>
-        <h4 class="fees-modal__title" id="viewFeesPaymentLabel">@lang('fees::feesModule.view_payment_of') - ({{ $feesinvoice->invoice_id }})</h4>
-        @if ($studentName)
-            <p class="fees-modal__subtitle">{{ $studentName }}</p>
-        @endif
-        <div class="fees-modal__meta">
-            @if ($className || $sectionName)
-                <span><i class="ti-layers"></i>
-                    {{ trim($className . ($sectionName ? ' - ' . $sectionName : '')) }}</span>
+    <div class="fees-ledger__header">
+        <div class="fees-ledger__header-info">
+            <span class="fees-modal__eyebrow">@lang('fees::feesModule.payment_details')</span>
+            <h4 class="fees-modal__title" id="viewFeesPaymentLabel">@lang('fees::feesModule.view_payment_of') - ({{ $feesinvoice->invoice_id }})</h4>
+            @if ($studentName)
+                <p class="fees-modal__subtitle">{{ $studentName }}</p>
             @endif
-            @if ($shiftName)
-                <span><i class="ti-timer"></i> {{ $shiftName }}</span>
-            @endif
-            @if ($invoiceDate)
-                <span><i class="ti-calendar"></i> {{ dateConvert($invoiceDate) }}</span>
-            @endif
+            <div class="fees-modal__meta">
+                @if ($className || $sectionName)
+                    <span><i class="ti-layers"></i>
+                        {{ trim($className . ($sectionName ? ' - ' . $sectionName : '')) }}</span>
+                @endif
+                @if ($shiftName)
+                    <span><i class="ti-timer"></i> {{ $shiftName }}</span>
+                @endif
+                @if ($invoiceDate)
+                    <span><i class="ti-calendar"></i> {{ dateConvert($invoiceDate) }}</span>
+                @endif
+            </div>
+        </div>
+        <div class="fees-ledger__status {{ $statusVariant }}">
+            <span class="fees-ledger__status-label">@lang('common.status')</span>
+            <span class="fees-ledger__status-value">{{ $statusLabel }}</span>
+            <span class="fees-ledger__status-meta">{{ $statusMeta }}</span>
+            <span class="fees-ledger__status-count">{{ $statusCountText }}</span>
         </div>
     </div>
     <button type="button" class="fees-modal__close" data-dismiss="modal" aria-label="@lang('common.close')">
@@ -39,6 +69,7 @@
     </button>
 </div>
 <div class="fees-modal__body">
+    <span class="fees-ledger__section-heading">{{ __('Invoice snapshot') }}</span>
     <div class="fees-ledger__summary">
         <div class="fees-ledger__summary-card">
             <span class="fees-ledger__summary-label">@lang('accounts.amount')</span>
@@ -56,12 +87,17 @@
             <span class="fees-ledger__summary-label">@lang('fees.paid')</span>
             <span class="fees-ledger__summary-value"><span>{{ $currencySymbol }}</span>{{ number_format($paidAmount, 2) }}</span>
         </div>
-        <div class="fees-ledger__summary-card {{ $balanceAmount > 0 ? 'balance-negative' : '' }}">
+        <div class="fees-ledger__summary-card {{ $displayBalance > 0.01 ? 'balance-negative' : '' }}">
             <span class="fees-ledger__summary-label">@lang('accounts.balance')</span>
-            <span class="fees-ledger__summary-value"><span>{{ $currencySymbol }}</span>{{ number_format($balanceAmount, 2) }}</span>
+            <span class="fees-ledger__summary-value"><span>{{ $currencySymbol }}</span>{{ number_format($displayBalance, 2) }}</span>
         </div>
     </div>
+    <span class="fees-ledger__section-heading">{{ __('Payment ledger') }}</span>
     <div class="fees-ledger__table">
+        <div class="fees-modal__table-caption">
+            <span>{{ __('Payment records') }}</span>
+            <span>@lang('common.total'): {{ $transactions->count() }}@if ($lastPaymentDate) | {{ __('Last payment: :date', ['date' => dateConvert($lastPaymentDate)]) }}@endif</span>
+        </div>
         <div class="table-responsive">
             <table class="table fees-modal-table" cellspacing="0" width="100%">
                 <thead>

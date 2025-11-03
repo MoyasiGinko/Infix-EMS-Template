@@ -694,13 +694,13 @@
 }
 
 .fees-modal .modal-dialog {
-  max-width: 520px;
+  max-width: 720px;
   width: 100%;
   margin: 1.75rem auto;
 }
 
 .fees-modal__dialog--wide {
-  max-width: 960px;
+  max-width: 1120px;
 }
 
 .fees-modal__content {
@@ -1048,6 +1048,119 @@
   gap: 6px;
 }
 
+.fees-ledger__header {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+}
+
+.fees-ledger__header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fees-ledger__status {
+  align-self: stretch;
+  min-width: 240px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.fees-ledger__status-label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.fees-ledger__status-value {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.fees-ledger__status-meta,
+.fees-ledger__status-count {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.fees-ledger__status--paid {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.45), rgba(16, 185, 129, 0.35));
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.32);
+}
+
+.fees-ledger__status--partial {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.45), rgba(245, 158, 11, 0.35));
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.3);
+}
+
+.fees-ledger__status--due {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.45), rgba(239, 68, 68, 0.35));
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.28);
+}
+
+.fees-ledger__section-heading {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #4338ca;
+}
+
+.fees-ledger__section-heading+.fees-ledger__summary {
+  margin-top: 14px;
+}
+
+.fees-ledger__section-heading+.fees-ledger__table {
+  margin-top: 18px;
+}
+
+.fees-modal__table-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #475569;
+  margin-bottom: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fees-modal-table tbody tr:not(:last-child) {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fees-modal-table tbody tr:hover {
+  background: rgba(79, 70, 229, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.fees-modal-table tbody td strong {
+  font-size: 14px;
+}
+
+@media (min-width: 1600px) {
+  .fees-modal__dialog--wide {
+    max-width: 1280px;
+  }
+}
+
 @media (max-width: 1200px) {
   .fees-hero {
     padding: 32px 30px;
@@ -1065,6 +1178,17 @@
   .fees-invoice-toolbar__right {
     flex: 1 1 100%;
     justify-content: flex-start;
+  }
+
+  .fees-ledger__header {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .fees-ledger__status {
+    min-width: auto;
+    text-align: left;
+    padding: 18px 20px;
   }
 }
 
@@ -1144,19 +1268,15 @@
   }
 
   .fees-modal .modal-dialog {
-    max-width: calc(100% - 28px);
+    max-width: calc(100% - 24px);
     margin: 1.5rem auto;
-  }
-
-  .fees-modal__content {
-    border-radius: 18px;
   }
 
   .fees-modal__header {
     padding: 24px;
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 16px;
   }
 
   .fees-modal__close {
@@ -1165,19 +1285,122 @@
 
   .fees-modal__body,
   .fees-modal__footer {
-    padding: 24px;
+    padding: 22px 18px;
+  }
+
+  .fees-ledger__status {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .fees-ledger__status-value {
+    font-size: 18px;
+  }
+
+  .fees-ledger__status-meta,
+  .fees-ledger__status-count {
+    text-align: right;
+  }
+
+  .fees-ledger__summary {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .fees-ledger__summary-card {
+    padding: 16px;
+  }
+
+  .fees-ledger__summary-value {
+    font-size: 18px;
+  }
+
+  .fees-ledger__summary-value span {
+    font-size: 13px;
+  }
+
+  .fees-ledger__table {
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+
+  .fees-modal-table thead {
+    display: none;
+  }
+
+  .fees-modal-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    padding: 18px 16px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    margin-bottom: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .fees-modal-table tbody tr:hover {
+    transform: none;
+  }
+
+  .fees-modal-table tbody td {
+    border: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .fees-modal-table tbody td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6366f1;
+  }
+
+  .fees-modal__table-actions {
+    justify-content: flex-start;
+  }
+
+  .fees-modal__table-actions .primary-btn {
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  .fees-modal .modal-dialog {
+    max-width: calc(100% - 16px);
+    margin: 1.25rem auto;
+  }
+
+  .fees-modal__body,
+  .fees-modal__footer {
+    padding: 20px 16px;
+  }
+
+  .fees-ledger__status {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .fees-ledger__status-meta,
+  .fees-ledger__status-count {
+    text-align: left;
   }
 
   .fees-ledger__summary {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
   }
 
-  .fees-ledger__table {
-    overflow-x: auto;
-  }
-
-  .fees-modal-table {
-    min-width: 640px;
+  .fees-modal-table tbody tr {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1442,7 +1665,8 @@ $canCreateInvoice = $isStaffView && userPermission('fees.fees-invoice-store');
         <div>
           <span class="fees-modal__eyebrow">@lang('common.confirmation')</span>
           <h4 class="fees-modal__title" id="deleteFeesPaymentLabel">@lang('fees::feesModule.delete_fees_invoice')</h4>
-          <p class="fees-modal__subtitle">{{ __('Deleting this invoice will remove all approved payment records associated with it.') }}</p>
+          <p class="fees-modal__subtitle">
+            {{ __('Deleting this invoice will remove all approved payment records associated with it.') }}</p>
         </div>
         <button type="button" class="fees-modal__close" data-dismiss="modal" aria-label="@lang('common.close')">
           <span aria-hidden="true">&times;</span>
