@@ -14,6 +14,7 @@ use App\SmBankStatement;
 use App\SmPaymentMethhod;
 use App\SmGeneralSettings;
 use Illuminate\Http\Request;
+use Carbon\CarbonInterface;
 use App\Models\StudentRecord;
 use Illuminate\Validation\Rule;
 use App\SmPaymentGatewaySetting;
@@ -1571,6 +1572,10 @@ class FeesController extends Controller
 
                     if (! $timestamp) {
                         return '';
+                    }
+
+                    if ($timestamp instanceof CarbonInterface) {
+                        $timestamp = $timestamp->toDateString();
                     }
 
                     return dateConvert($timestamp);
