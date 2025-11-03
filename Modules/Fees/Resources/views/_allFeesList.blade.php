@@ -833,9 +833,9 @@ div#table_id_wrapper {
       <div class="fees-page-header">
         <div class="fees-page-header__content">
           <span class="fees-page-header__eyebrow">{{ __('fees::feesModule.fees_invoice') }}</span>
-          <h2 class="fees-page-header__title">{{ __('Track student billing with confidence') }}</h2>
+          <h2 class="fees-page-header__title">{{ __('Fees Invoice Management') }}</h2>
           <p class="fees-page-header__subtitle">
-            {{ __('Stay on top of payments, waivers and balances with live updates and exports.') }}</p>
+            {{ __('View and manage student fee invoices, payments, and balances.') }}</p>
         </div>
         <div class="fees-page-header__actions">
           @if ($canCreateInvoice)
@@ -845,7 +845,7 @@ div#table_id_wrapper {
           </a>
           @endif
           <span
-            class="fees-page-header__hint">{{ __('Use the toolbar to search, refresh, export and customize the invoice list instantly.') }}</span>
+            class="fees-page-header__hint">{{ __('Search, filter, export or customize columns using the toolbar below.') }}</span>
         </div>
       </div>
       @endif
@@ -944,18 +944,7 @@ div#table_id_wrapper {
                 </div>
               </x-table>
             </div>
-            <div class="fees-invoice-card__footer">
-              <div class="fees-invoice-card__footer-info">
-                <span
-                  class="fees-invoice-card__footer-title">{{ __('Share exports or column presets with your finance team in one click.') }}</span>
-                <span
-                  class="fees-invoice-card__footer-subtitle">{{ __('Refresh to pull in the latest transactions before publishing reports.') }}</span>
-              </div>
-              <div class="fees-invoice-card__footer-meta">
-                <i class="ti-info-alt"></i>
-                <span>{{ __('Data updates instantly after each payment confirmation.') }}</span>
-              </div>
-            </div>
+
           </div>
         </div>
         @else
