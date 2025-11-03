@@ -693,6 +693,361 @@
   }
 }
 
+.fees-modal .modal-dialog {
+  max-width: 520px;
+  width: 100%;
+  margin: 1.75rem auto;
+}
+
+.fees-modal__dialog--wide {
+  max-width: 960px;
+}
+
+.fees-modal__content {
+  background: #f8fafc;
+  border: none;
+  border-radius: 22px;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+.fees-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 28px 32px;
+  color: #fff;
+  background: linear-gradient(135deg, #4338ca, #312e81);
+}
+
+.fees-modal__header--danger {
+  background: linear-gradient(135deg, #be123c, #f97316);
+}
+
+.fees-modal__header--info {
+  background: linear-gradient(135deg, #0ea5e9, #4338ca);
+}
+
+.fees-modal__eyebrow {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.fees-modal__title {
+  margin: 6px 0 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.fees-modal__subtitle {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+}
+
+.fees-modal__close {
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.fees-modal__close:hover,
+.fees-modal__close:focus {
+  background: rgba(255, 255, 255, 0.32);
+  transform: translateY(-1px);
+  color: #fff;
+}
+
+.fees-modal__body {
+  padding: 32px;
+  background: #f8fafc;
+  color: #0f172a;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fees-modal__footer {
+  padding: 0 32px 32px;
+  background: #f8fafc;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.fees-modal__alert {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  color: #b91c1c;
+}
+
+.fees-modal__alert-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(248, 113, 113, 0.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.fees-modal__alert strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.fees-modal__loader {
+  padding: 64px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #4338ca;
+  text-align: center;
+}
+
+.fees-modal__spinner {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 4px solid rgba(79, 70, 229, 0.2);
+  border-top-color: #4338ca;
+  animation: feesSpin 0.85s linear infinite;
+}
+
+.fees-modal__error {
+  padding: 48px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #b91c1c;
+  text-align: center;
+}
+
+.fees-modal__error-icon {
+  font-size: 36px;
+}
+
+.fees-modal__action-btn {
+  min-width: 140px;
+  border-radius: 14px;
+  padding: 12px 22px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fees-modal__action-btn--light {
+  background: #fff;
+  border: 1px solid rgba(79, 70, 229, 0.28);
+  color: #4338ca;
+}
+
+.fees-modal__action-btn--light:hover,
+.fees-modal__action-btn--light:focus {
+  background: rgba(79, 70, 229, 0.08);
+  color: #4338ca;
+}
+
+.fees-modal__action-btn--danger {
+  background: linear-gradient(135deg, #dc2626, #f97316);
+  color: #fff;
+  border: none;
+}
+
+.fees-modal__action-btn--danger:hover,
+.fees-modal__action-btn--danger:focus {
+  opacity: 0.92;
+  color: #fff;
+}
+
+.fees-ledger__summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.fees-ledger__summary-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fees-ledger__summary-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.fees-ledger__summary-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+.fees-ledger__summary-value span {
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 4px;
+  color: #6366f1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fees-ledger__summary-card.balance-negative {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(239, 68, 68, 0.12));
+  border-color: rgba(239, 68, 68, 0.28);
+}
+
+.fees-ledger__table {
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.fees-modal-table {
+  margin: 0;
+}
+
+.fees-modal-table thead {
+  background: rgba(79, 70, 229, 0.08);
+}
+
+.fees-modal-table thead th {
+  border-bottom: none;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: #4338ca;
+  padding: 16px 18px;
+}
+
+.fees-modal-table tbody td {
+  border-top: 1px solid rgba(229, 231, 235, 0.7);
+  padding: 18px;
+  vertical-align: top;
+  font-size: 13px;
+  color: #1f2937;
+}
+
+.fees-modal-table tbody tr:first-child td {
+  border-top: none;
+}
+
+.fees-modal-table tbody tr:hover {
+  background: rgba(79, 70, 229, 0.05);
+}
+
+.fees-modal__inline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fees-modal__inline-form .row {
+  margin: 0;
+}
+
+.fees-modal__inline-form .col-md-10,
+.fees-modal__inline-form .col-md-2 {
+  padding: 0;
+}
+
+.fees-modal__inline-form .col-md-2 {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.fees-modal__table-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.fees-modal__table-actions .primary-btn {
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.fees-modal__empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fees-modal__cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fees-modal__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  background: rgba(79, 70, 229, 0.08);
+  color: #4338ca;
+}
+
+.fees-modal__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 12px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.fees-modal__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 @media (max-width: 1200px) {
   .fees-hero {
     padding: 32px 30px;
@@ -786,6 +1141,43 @@
 
   .fees-invoice-card__body {
     padding: 22px 16px 28px;
+  }
+
+  .fees-modal .modal-dialog {
+    max-width: calc(100% - 28px);
+    margin: 1.5rem auto;
+  }
+
+  .fees-modal__content {
+    border-radius: 18px;
+  }
+
+  .fees-modal__header {
+    padding: 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .fees-modal__close {
+    align-self: flex-end;
+  }
+
+  .fees-modal__body,
+  .fees-modal__footer {
+    padding: 24px;
+  }
+
+  .fees-ledger__summary {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .fees-ledger__table {
+    overflow-x: auto;
+  }
+
+  .fees-modal-table {
+    min-width: 640px;
   }
 }
 
@@ -1042,35 +1434,55 @@ $canCreateInvoice = $isStaffView && userPermission('fees.fees-invoice-store');
 </section>
 
 {{-- Delete Modal Start --}}
-<div class="modal fade admin-query" id="deleteFeesPayment">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">@lang('fees::feesModule.delete_fees_invoice')</h4>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="text-center">
-          <h4>@lang('common.are_you_sure_to_delete')</h4>
+<div class="modal fade fees-modal admin-query" id="deleteFeesPayment" tabindex="-1" role="dialog"
+  aria-labelledby="deleteFeesPaymentLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered fees-modal__dialog" role="document">
+    <div class="modal-content fees-modal__content">
+      <div class="fees-modal__header fees-modal__header--danger">
+        <div>
+          <span class="fees-modal__eyebrow">@lang('common.confirmation')</span>
+          <h4 class="fees-modal__title" id="deleteFeesPaymentLabel">@lang('fees::feesModule.delete_fees_invoice')</h4>
+          <p class="fees-modal__subtitle">{{ __('Deleting this invoice will remove all approved payment records associated with it.') }}</p>
         </div>
-        <div class="mt-40 d-flex justify-content-between">
-          <button type="button" class="primary-btn tr-bg" data-dismiss="modal">@lang('common.cancel')</button>
-          {{ html()->form('POST', route('fees.fees-invoice-delete'))->open() }}
-          <input type="hidden" name="feesInvoiceId" value="">
-          <button class="primary-btn fix-gr-bg" type="submit">@lang('common.delete')</button>
-          {{ html()->form()->close() }}
+        <button type="button" class="fees-modal__close" data-dismiss="modal" aria-label="@lang('common.close')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="fees-modal__body">
+        <div class="fees-modal__alert">
+          <span class="fees-modal__alert-icon ti-alert" aria-hidden="true"></span>
+          <div>
+            <strong>@lang('common.are_you_sure_to_delete')</strong>
+            <span>{{ __('This action cannot be undone.') }}</span>
+          </div>
         </div>
       </div>
+      {{ html()->form('POST', route('fees.fees-invoice-delete'))->open() }}
+      <input type="hidden" name="feesInvoiceId" value="">
+      <div class="fees-modal__footer">
+        <button type="button" class="fees-modal__action-btn fees-modal__action-btn--light" data-dismiss="modal">
+          @lang('common.cancel')</button>
+        <button class="fees-modal__action-btn fees-modal__action-btn--danger" type="submit">
+          @lang('common.delete')</button>
+      </div>
+      {{ html()->form()->close() }}
     </div>
   </div>
 </div>
 {{-- Delete Modal End --}}
 
 {{-- View Fees Modal Start --}}
-<div class="modal fade admin-query" id="viewFeesPayment">
-  <div class="modal-dialog modal-dialog-centered max_modal">
-    <div class="modal-content">
+<div class="modal fade fees-modal admin-query" id="viewFeesPayment" tabindex="-1" role="dialog"
+  aria-labelledby="viewFeesPaymentLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered fees-modal__dialog fees-modal__dialog--wide" role="document">
+    <div class="modal-content fees-modal__content">
+      <div class="fees-modal__loader">
+        <span class="fees-modal__spinner" aria-hidden="true"></span>
+        <div>
+          <strong>{{ __('Loading payment details...') }}</strong>
+          <p class="mb-0">{{ __('Please wait while we prepare the ledger view.') }}</p>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1086,17 +1498,40 @@ function feesInvoiceDelete(id) {
 }
 
 function viewPaymentDetailModal(id) {
-  $('#viewFeesPayment').modal('show');
-  let invoiceId = id;
+  const $modal = $('#viewFeesPayment');
+  const $content = $modal.find('.modal-content');
+  const loaderMarkup = `
+    <div class="fees-modal__loader">
+      <span class="fees-modal__spinner" aria-hidden="true"></span>
+      <div>
+        <strong>{{ __('Loading payment details...') }}</strong>
+        <p class="mb-0">{{ __('Please wait while we prepare the ledger view.') }}</p>
+      </div>
+    </div>`;
+  const errorMarkup = `
+    <div class="fees-modal__error">
+      <span class="fees-modal__error-icon ti-alert" aria-hidden="true"></span>
+      <strong>{{ __('We could not load the payment information.') }}</strong>
+      <span>{{ __('Refresh the page and try again, or contact the administrator if the issue persists.') }}</span>
+    </div>`;
+
+  $modal.modal('show');
+  const invoiceId = id;
   $.ajax({
     url: "{{ route('fees.fees-view-payment') }}",
     method: "POST",
     data: {
       invoiceId: invoiceId
     },
-    success: function(response) {
-      $('#viewFeesPayment .modal-content').html(response);
+    beforeSend: function() {
+      $content.html(loaderMarkup);
     },
+    success: function(response) {
+      $content.html(response);
+    },
+    error: function() {
+      $content.html(errorMarkup);
+    }
   });
 }
 $(document).ready(function() {
