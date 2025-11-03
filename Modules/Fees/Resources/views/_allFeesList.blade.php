@@ -26,8 +26,16 @@
   z-index: 2;
 }
 
-.fees-hero h1 {
-  color: #fff;
+.fees-hero__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.fees-hero__top h1 {
+  margin: 0;
   font-size: 30px;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -62,57 +70,45 @@
   opacity: 1;
 }
 
-.fees-page-shell {
-  background: transparent;
-  border: none;
-  padding: 0;
-  box-shadow: none;
-}
-
-.fees-page-header {
+.fees-hero__body {
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
   justify-content: space-between;
   gap: 32px;
-  margin-bottom: 36px;
-  padding: 30px 34px;
-  border-radius: 24px;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.96), rgba(240, 245, 255, 0.94));
-  border: 1px solid rgba(79, 70, 229, 0.18);
-  box-shadow: 0 26px 64px rgba(79, 70, 229, 0.18);
+  margin-top: 28px;
 }
 
-.fees-page-header__content {
+.fees-hero__content {
   max-width: 560px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.fees-page-header__eyebrow {
+.fees-hero__eyebrow {
   font-size: 12px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 700;
-  color: #6366f1;
+  color: #c7d2fe;
 }
 
-.fees-page-header__title {
+.fees-hero__title {
   margin: 0;
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 800;
-  color: #0f172a;
+  color: #fff;
 }
 
-.fees-page-header__subtitle {
+.fees-hero__subtitle {
   margin: 0;
   font-size: 15px;
   line-height: 1.6;
-  color: #334155;
+  color: rgba(226, 232, 240, 0.85);
 }
 
-.fees-page-header__actions {
+.fees-hero__actions {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -157,11 +153,18 @@
   justify-content: center;
 }
 
-.fees-page-header__hint {
+.fees-hero__hint {
   font-size: 12px;
   text-align: right;
-  color: #475569;
+  color: rgba(226, 232, 240, 0.82);
   line-height: 1.5;
+}
+
+.fees-page-shell {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
 }
 
 .fees-invoice-card__footer {
@@ -690,16 +693,16 @@
 }
 
 @media (max-width: 1200px) {
-  .fees-page-header {
-    padding: 24px;
+  .fees-hero {
+    padding: 32px 30px;
   }
 
-  .fees-page-header__actions {
+  .fees-hero__actions {
     width: 100%;
     align-items: flex-start;
   }
 
-  .fees-page-header__hint {
+  .fees-hero__hint {
     text-align: left;
   }
 
@@ -710,18 +713,18 @@
 }
 
 @media (max-width: 992px) {
-  .fees-page-header {
+  .fees-hero__body {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .fees-page-header__actions {
+  .fees-hero__actions {
     align-items: flex-start;
     text-align: left;
     width: 100%;
   }
 
-  .fees-page-header__actions .fees-primary-action {
+  .fees-hero__actions .fees-primary-action {
     width: 100%;
     justify-content: center;
   }
@@ -749,8 +752,7 @@
     border-radius: 22px;
   }
 
-  .fees-page-header {
-    padding: 22px;
+  .fees-hero__body {
     gap: 24px;
   }
 
@@ -808,9 +810,14 @@ div#table_id_wrapper {
 </style>
 @endpush
 @endif
+@php
+$resolvedRole = $role ?? null;
+$isStaffView = in_array($resolvedRole, ['admin', 'lms'], true);
+$canCreateInvoice = $isStaffView && userPermission('fees.fees-invoice-store');
+@endphp
 <section class="sms-breadcrumb mb-20 fees-hero">
   <div class="container-fluid">
-    <div class="row justify-content-between">
+    <div class="fees-hero__top">
       <h1>@lang('fees::feesModule.fees_invoice')</h1>
       <div class="bc-pages">
         <a href="{{ route('dashboard') }}">@lang('common.dashboard')</a>
@@ -818,37 +825,30 @@ div#table_id_wrapper {
         <a href="#">@lang('fees::feesModule.fees_invoice')</a>
       </div>
     </div>
+    <div class="fees-hero__body">
+      <div class="fees-hero__content">
+        <span class="fees-hero__eyebrow">@lang('fees::feesModule.fees_invoice')</span>
+        <h2 class="fees-hero__title">{{ __('Fees Invoice Management') }}</h2>
+        <p class="fees-hero__subtitle">{{ __('View and manage student fee invoices, payments, and balances.') }}</p>
+      </div>
+      @if ($isStaffView)
+      <div class="fees-hero__actions">
+        @if ($canCreateInvoice)
+        <a href="{{ route('fees.fees-invoice') }}" class="fees-primary-action">
+          <span class="fees-primary-action__icon ti-plus"></span>
+          <span class="fees-primary-action__label">@lang('common.add')</span>
+        </a>
+        @endif
+        <span
+          class="fees-hero__hint">{{ __('Search, filter, export or customize columns using the toolbar below.') }}</span>
+      </div>
+      @endif
+    </div>
   </div>
 </section>
 <section class="admin-visitor-area up_st_admin_visitor">
   <div class="container-fluid p-0">
     <div class="white-box fees-page-shell">
-      @php
-      $resolvedRole = $role ?? null;
-      $isStaffView = in_array($resolvedRole, ['admin', 'lms'], true);
-      $canCreateInvoice = $isStaffView && userPermission('fees.fees-invoice-store');
-      @endphp
-
-      @if ($isStaffView)
-      <div class="fees-page-header">
-        <div class="fees-page-header__content">
-          <span class="fees-page-header__eyebrow">{{ __('fees::feesModule.fees_invoice') }}</span>
-          <h2 class="fees-page-header__title">{{ __('Fees Invoice Management') }}</h2>
-          <p class="fees-page-header__subtitle">
-            {{ __('View and manage student fee invoices, payments, and balances.') }}</p>
-        </div>
-        <div class="fees-page-header__actions">
-          @if ($canCreateInvoice)
-          <a href="{{ route('fees.fees-invoice') }}" class="fees-primary-action">
-            <span class="fees-primary-action__icon ti-plus"></span>
-            <span class="fees-primary-action__label">{{ __('common.add') }}</span>
-          </a>
-          @endif
-          <span
-            class="fees-page-header__hint">{{ __('Search, filter, export or customize columns using the toolbar below.') }}</span>
-        </div>
-      </div>
-      @endif
       <div class="row mt-40">
 
         @if ($isStaffView)
