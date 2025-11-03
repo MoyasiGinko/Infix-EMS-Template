@@ -1584,11 +1584,29 @@ class FeesController extends Controller
                     return $btn;
                 })
                 ->filterColumn('roll_no', function ($query, $keyword): void {
+                    $keyword = trim((string) $keyword);
+
+                    if ($keyword === '') {
+                        return;
+                    }
+
                     $query->where(function ($rollQuery) use ($keyword): void {
                         $rollQuery->whereHas('studentInfo', function ($studentQuery) use ($keyword): void {
-                            $studentQuery->where('roll_no', 'like', '%'.$keyword.'%');
+                            $studentQuery->where(function ($studentRollQuery) use ($keyword): void {
+                                $studentRollQuery->where('roll_no', $keyword);
+
+                                if (ctype_digit($keyword)) {
+                                    $studentRollQuery->orWhere('roll_no', (int) $keyword);
+                                }
+                            });
                         })->orWhereHas('recordDetail', function ($recordQuery) use ($keyword): void {
-                            $recordQuery->where('roll_no', 'like', '%'.$keyword.'%');
+                            $recordQuery->where(function ($recordRollQuery) use ($keyword): void {
+                                $recordRollQuery->where('roll_no', $keyword);
+
+                                if (ctype_digit($keyword)) {
+                                    $recordRollQuery->orWhere('roll_no', (int) $keyword);
+                                }
+                            });
                         });
                     });
                 })->filterColumn('amount', function ($query, $keyword): void {
@@ -1612,16 +1630,19 @@ class FeesController extends Controller
                     });
                 })
                 ->filterColumn('student_name', function ($query, $keyword): void {
+                    $keyword = trim((string) $keyword);
+
+                    if ($keyword === '') {
+                        return;
+                    }
+
                     $query->whereHas('studentInfo', function ($studentQuery) use ($keyword): void {
                         $studentQuery->where(function ($studentSubQuery) use ($keyword): void {
                             $studentSubQuery->where('full_name', 'like', '%'.$keyword.'%')
                                 ->orWhere('first_name', 'like', '%'.$keyword.'%')
                                 ->orWhere('last_name', 'like', '%'.$keyword.'%')
-                                ->orWhere('roll_no', 'like', '%'.$keyword.'%')
                                 ->orWhere('admission_no', 'like', '%'.$keyword.'%');
                         });
-                    })->orWhereHas('recordDetail', function ($recordQuery) use ($keyword): void {
-                        $recordQuery->where('roll_no', 'like', '%'.$keyword.'%');
                     });
                 })
                 ->addColumn('create_date', function ($row) {
@@ -1649,23 +1670,40 @@ class FeesController extends Controller
                     return (string) $view;
                 })
                 ->filter(function ($query): void {
-                    $searchValue = request()->input('search.value');
+                    $searchValue = trim((string) request()->input('search.value'));
 
-                    if (! empty($searchValue)) {
-                        $query->where(function ($searchQuery) use ($searchValue): void {
+                    if ($searchValue === '') {
+                        return;
+                    }
+
+                    $isRollSearch = ctype_digit($searchValue);
+
+                    $query->where(function ($searchQuery) use ($searchValue, $isRollSearch): void {
+                        if ($isRollSearch) {
+                            $searchQuery->whereHas('studentInfo', function ($studentQuery) use ($searchValue): void {
+                                $studentQuery->where(function ($studentRollQuery) use ($searchValue): void {
+                                    $studentRollQuery->where('roll_no', $searchValue)
+                                        ->orWhere('roll_no', (int) $searchValue);
+                                });
+                            })->orWhereHas('recordDetail', function ($recordQuery) use ($searchValue): void {
+                                $recordQuery->where(function ($recordRollQuery) use ($searchValue): void {
+                                    $recordRollQuery->where('roll_no', $searchValue)
+                                        ->orWhere('roll_no', (int) $searchValue);
+                                });
+                            });
+                        } else {
                             $searchQuery->whereHas('studentInfo', function ($studentQuery) use ($searchValue): void {
                                 $studentQuery->where(function ($studentSubQuery) use ($searchValue): void {
                                     $studentSubQuery->where('full_name', 'like', '%'.$searchValue.'%')
                                         ->orWhere('first_name', 'like', '%'.$searchValue.'%')
                                         ->orWhere('last_name', 'like', '%'.$searchValue.'%')
-                                        ->orWhere('roll_no', 'like', '%'.$searchValue.'%')
                                         ->orWhere('admission_no', 'like', '%'.$searchValue.'%');
                                 });
                             })->orWhereHas('recordDetail', function ($recordQuery) use ($searchValue): void {
                                 $recordQuery->where('roll_no', 'like', '%'.$searchValue.'%');
                             });
-                        });
-                    }
+                        }
+                    });
                 })
                 ->rawColumns(['student_name', 'admission_no', 'status', 'action', 'date'])
                 ->make(true);
