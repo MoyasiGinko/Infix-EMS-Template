@@ -84,6 +84,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  justify-content: center;
 }
 
 .fees-hero__eyebrow {
@@ -103,7 +104,7 @@
 
 .fees-hero__subtitle {
   margin: 0;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   color: rgba(226, 232, 240, 0.85);
 }
