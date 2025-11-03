@@ -231,6 +231,22 @@
   border-spacing: 0;
 }
 
+.modern-datatable table.modern-table colgroup col[data-name] {
+  width: auto;
+}
+
+.modern-datatable table.modern-table thead tr th:first-child,
+.modern-datatable table.modern-table tbody tr td:first-child {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.modern-datatable table.modern-table thead tr th:last-child,
+.modern-datatable table.modern-table tbody tr td:last-child {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
 .modern-datatable table.modern-table thead th {
   border-top: none;
   border-bottom: none;
@@ -258,6 +274,152 @@
 
 .modern-datatable table.modern-table tbody tr:hover td {
   background: #eef2ff;
+}
+
+.modern-datatable table.modern-table tbody tr td .cell-student {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modern-datatable .cell-student-cell {
+  vertical-align: middle;
+}
+
+.modern-datatable .cell-student__name {
+  font-weight: 700;
+  font-size: 15px;
+  color: #1f2937;
+}
+
+.modern-datatable .cell-student__meta {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6366f1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modern-datatable .cell-roll {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.tag-roll {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(79, 70, 229, 0.12);
+  color: #4338ca;
+}
+
+.modern-datatable .cell-amount,
+.modern-datatable .cell-balance {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modern-datatable .cell-amount__currency,
+.modern-datatable .cell-balance__currency {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.modern-datatable .cell-balance.negative {
+  color: #b91c1c;
+}
+
+.modern-datatable .cell-balance.zero {
+  color: #059669;
+}
+
+.modern-datatable .cell-balance.credit {
+  color: #0f766e;
+}
+
+.modern-datatable .tag-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+
+.tag-status.paid {
+  background: rgba(34, 197, 94, 0.16);
+  color: #15803d;
+}
+
+.tag-status.partial {
+  background: rgba(250, 204, 21, 0.18);
+  color: #b45309;
+}
+
+.tag-status.unpaid {
+  background: rgba(248, 113, 113, 0.18);
+  color: #b91c1c;
+}
+
+.tag-status i {
+  font-size: 14px;
+}
+
+.modern-datatable .cell-date {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modern-datatable .cell-date__main {
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.modern-datatable .cell-date__sub {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
+
+.modern-datatable .cell-serial__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(79, 70, 229, 0.12);
+  color: #312e81;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.modern-datatable .cell-actions {
+  text-align: right;
+}
+
+.modern-datatable .cell-actions .primary-btn {
+  border-radius: 10px;
 }
 
 .fees-invoice-card.is-loading .modern-datatable::after {
@@ -476,6 +638,19 @@ div#table_id_wrapper {
               <x-table>
                 <div class="modern-datatable table-responsive">
                   <table id="table_id" class="table data-table modern-table" cellspacing="0" width="100%">
+                    <colgroup>
+                      <col data-name="serial" style="width:60px;">
+                      <col data-name="student" style="width:210px;">
+                      <col data-name="roll" style="width:140px;">
+                      <col data-name="amount" style="width:120px;">
+                      <col data-name="weaver" style="width:120px;">
+                      <col data-name="fine" style="width:120px;">
+                      <col data-name="paid" style="width:120px;">
+                      <col data-name="balance" style="width:140px;">
+                      <col data-name="status" style="width:120px;">
+                      <col data-name="date" style="width:140px;">
+                      <col data-name="action" style="width:110px;">
+                    </colgroup>
                     <thead>
                       <tr>
                         <th>@lang('common.sl')</th>
@@ -696,6 +871,50 @@ $(document).ready(function() {
   const noExportsMessage = "<span class=\"dropdown-item text-muted small\">{{ __('No export actions available') }}</span>";
   const noColumnsMessage = "<span class=\"dropdown-item text-muted small\">{{ __('No columns available') }}</span>";
 
+  const currencySymbol = "{{ e(generalSetting()->currency_symbol ?? '') }}";
+  const currencySymbolHtml = $('<div/>').text(currencySymbol || '').html();
+  const locale = navigator.language || 'en-US';
+  const numberFormatter = typeof Intl !== 'undefined' ? new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }) : null;
+  const rollLabel = "{{ __('student.roll_no') }}";
+  const createdLabel = "{{ __('common.created') }}";
+  const statusLabels = {
+    paid: "{{ __('fees.paid') }}",
+    partial: "{{ __('fees.partial') }}",
+    unpaid: "{{ __('fees.unpaid') }}",
+  };
+
+  const sanitizeHtml = (value) => $('<div/>').text(value ?? '').html();
+  const parseNumber = (value) => {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const num = parseFloat(String(value).replace(/,/g, ''));
+    return Number.isFinite(num) ? num : null;
+  };
+  const formatNumber = (value) => {
+    const num = parseNumber(value);
+    if (num === null) {
+      return '--';
+    }
+    if (!numberFormatter) {
+      return num.toFixed(2);
+    }
+    return numberFormatter.format(num);
+  };
+  const buildAmountHtml = (value) => {
+    const formatted = formatNumber(value);
+    return `<span class="cell-amount__currency">${currencySymbolHtml}</span><span>${formatted}</span>`;
+  };
+
+  const statusIconMap = {
+    paid: 'ti-check',
+    partial: 'ti-timer',
+    unpaid: 'ti-alert',
+  };
+
   const dt = $dataTable.DataTable({
     processing: true,
     serverSide: true,
@@ -821,6 +1040,75 @@ $(document).ready(function() {
       if ($lengthSelect.length) {
         $lengthSelect.val(String(currentLength));
       }
+    },
+    rowCallback: function(row, data) {
+      const $cells = $('td', row);
+      if (!$cells.length) {
+        return;
+      }
+
+      const serialCell = $cells.eq(0);
+      const serialValue = sanitizeHtml(data.DT_RowIndex);
+      serialCell.html(`<span class="cell-serial__badge">${serialValue}</span>`);
+
+      const studentCell = $cells.eq(1);
+      studentCell.addClass('cell-student-cell');
+      const studentWrapper = $('<div/>').html(data.student_name || '');
+      const studentLinkHtml = studentWrapper.html() || '--';
+      const studentMeta = data.roll_no ? `<span class="cell-student__meta">${rollLabel}: ${sanitizeHtml(data.roll_no)}</span>` : '';
+      studentCell.html(`<div class="cell-student"><span class="cell-student__name">${studentLinkHtml}</span>${studentMeta}</div>`);
+
+      const rollCell = $cells.eq(2);
+      const rollValue = data.roll_no ? `#${sanitizeHtml(data.roll_no)}` : '--';
+      rollCell.html(`<span class="cell-roll"><span class="tag-roll">${rollValue}</span></span>`);
+
+      const amountCell = $cells.eq(3);
+      amountCell.html(`<div class="cell-amount">${buildAmountHtml(data.amount)}</div>`);
+
+      const weaverCell = $cells.eq(4);
+      weaverCell.html(`<div class="cell-amount">${buildAmountHtml(data.weaver)}</div>`);
+
+      const fineCell = $cells.eq(5);
+      fineCell.html(`<div class="cell-amount">${buildAmountHtml(data.fine)}</div>`);
+
+      const paidCell = $cells.eq(6);
+      paidCell.html(`<div class="cell-amount">${buildAmountHtml(data.paid_amount)}</div>`);
+
+      const balanceCell = $cells.eq(7);
+      const balanceNum = parseNumber(data.balance);
+      let balanceState = '';
+      if (balanceNum !== null) {
+        if (balanceNum <= 0) {
+          balanceState = ' zero';
+        } else {
+          balanceState = ' negative';
+        }
+        if (balanceNum < 0) {
+          balanceState = ' credit';
+        }
+      }
+      balanceCell.html(`<div class="cell-balance${balanceState}">${buildAmountHtml(data.balance)}</div>`);
+
+      const statusCell = $cells.eq(8);
+      const paidAmountNum = parseNumber(data.paid_amount);
+      let statusVariant = 'unpaid';
+      if (balanceNum !== null) {
+        if (balanceNum <= 0) {
+          statusVariant = 'paid';
+        } else if (paidAmountNum && paidAmountNum > 0) {
+          statusVariant = 'partial';
+        }
+      }
+      const statusLabel = statusLabels[statusVariant] || statusVariant;
+      const statusIcon = statusIconMap[statusVariant] || 'ti-alert';
+      statusCell.html(`<span class="tag-status ${statusVariant}"><i class="${statusIcon}"></i>${statusLabel}</span>`);
+
+      const dateCell = $cells.eq(9);
+      const dateValue = sanitizeHtml(data.create_date || '--');
+      dateCell.html(`<div class="cell-date"><span class="cell-date__main">${dateValue}</span><span class="cell-date__sub">${createdLabel}</span></div>`);
+
+      const actionCell = $cells.eq(10);
+      actionCell.addClass('cell-actions');
     },
   });
 
