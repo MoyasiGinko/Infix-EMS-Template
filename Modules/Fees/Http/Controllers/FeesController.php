@@ -14,7 +14,7 @@ use App\SmBankStatement;
 use App\SmPaymentMethhod;
 use App\SmGeneralSettings;
 use Illuminate\Http\Request;
-use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\DB;
 use App\Models\StudentRecord;
 use Illuminate\Validation\Rule;
 use App\SmPaymentGatewaySetting;
@@ -1501,7 +1501,18 @@ class FeesController extends Controller
 
         $fees_type = $previous_route == 'lms.fees-invoice' ? 'lms' : 'fees';
 
+        $latestPayments = FmFeesTransaction::select([
+                'fees_invoice_id',
+                DB::raw('MAX(created_at) as latest_paid_at'),
+            ])
+            ->where('school_id', Auth::user()->school_id)
+            ->where('academic_id', getAcademicId())
+            ->groupBy('fees_invoice_id');
+
         $studentInvoices = FmFeesInvoice::where('type', $fees_type)
+            ->leftJoinSub($latestPayments, 'latest_payments', function ($join): void {
+                $join->on('latest_payments.fees_invoice_id', '=', 'fm_fees_invoices.id');
+            })
             ->with([
                 'studentInfo' => function ($query): void {
                     $query->select(['id', 'admission_no', 'first_name', 'last_name', 'full_name', 'roll_no']);
@@ -1512,11 +1523,9 @@ class FeesController extends Controller
                 'recordDetail' => function ($query): void {
                     $query->select(['id', 'roll_no']);
                 },
-                'latestPayment' => function ($query): void {
-                    $query->select(['id', 'fees_invoice_id', 'payment_note', 'payment_method', 'created_at']);
-                },
             ])
             ->select('fm_fees_invoices.*')
+            ->addSelect(DB::raw('latest_payments.latest_paid_at as latest_paid_at'))
             ->where('school_id', Auth::user()->school_id)
             ->where('academic_id', getAcademicId())
             ->withInvoiceDetailsSums();
@@ -1562,19 +1571,13 @@ class FeesController extends Controller
                         return '';
                     }
 
-                    $latestPayment = $row->latestPayment;
-
-                    if (! $latestPayment) {
-                        return '';
-                    }
-
-                    $timestamp = $latestPayment->payment_date ?? $latestPayment->created_at;
+                    $timestamp = $row->latest_paid_at;
 
                     if (! $timestamp) {
                         return '';
                     }
 
-                    if ($timestamp instanceof CarbonInterface) {
+                    if (is_object($timestamp) && method_exists($timestamp, 'toDateString')) {
                         $timestamp = $timestamp->toDateString();
                     }
 
