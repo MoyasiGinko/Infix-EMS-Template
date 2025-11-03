@@ -1501,11 +1501,17 @@ class FeesController extends Controller
         $fees_type = $previous_route == 'lms.fees-invoice' ? 'lms' : 'fees';
 
         $studentInvoices = FmFeesInvoice::where('type', $fees_type)
-            ->with(['studentInfo' => function ($query): void {
-                $query->select(['id', 'admission_no', 'first_name', 'last_name','roll_no']);
-            }, 'invoiceDetails' => function ($query): void {
-                $query->select(['amount', 'weaver', 'fine', 'paid_amount', 'sub_total', 'id']);
-            }])
+            ->with([
+                'studentInfo' => function ($query): void {
+                    $query->select(['id', 'admission_no', 'first_name', 'last_name', 'full_name', 'roll_no']);
+                },
+                'invoiceDetails' => function ($query): void {
+                    $query->select(['amount', 'weaver', 'fine', 'paid_amount', 'sub_total', 'id']);
+                },
+                'recordDetail' => function ($query): void {
+                    $query->select(['id', 'roll_no']);
+                },
+            ])
             ->select('fm_fees_invoices.*')
             ->where('school_id', Auth::user()->school_id)
             ->where('academic_id', getAcademicId())
@@ -1525,7 +1531,13 @@ class FeesController extends Controller
                     return $row->studentInfo->admission_no;
                 })
                 ->addColumn('roll_no', function ($row) {
-                    return $row->studentInfo->roll_no;
+                    $roll = optional($row->studentInfo)->roll_no;
+
+                    if (! empty($roll)) {
+                        return $roll;
+                    }
+
+                    return optional($row->recordDetail)->roll_no;
                 })
                 ->addColumn('amount', function ($row) {
                     return $row->Tamount;
@@ -1572,8 +1584,12 @@ class FeesController extends Controller
                     return $btn;
                 })
                 ->filterColumn('roll_no', function ($query, $keyword): void {
-                    $query->whereHas('studentInfo', function ($query) use ($keyword): void {
-                        $query->where('roll_no', 'like', '%'.$keyword.'%');
+                    $query->where(function ($rollQuery) use ($keyword): void {
+                        $rollQuery->whereHas('studentInfo', function ($studentQuery) use ($keyword): void {
+                            $studentQuery->where('roll_no', 'like', '%'.$keyword.'%');
+                        })->orWhereHas('recordDetail', function ($recordQuery) use ($keyword): void {
+                            $recordQuery->where('roll_no', 'like', '%'.$keyword.'%');
+                        });
                     });
                 })->filterColumn('amount', function ($query, $keyword): void {
                     $query->whereHas('invoiceDetails', function ($query) use ($keyword): void {
@@ -1596,8 +1612,16 @@ class FeesController extends Controller
                     });
                 })
                 ->filterColumn('student_name', function ($query, $keyword): void {
-                    $query->whereHas('studentInfo', function ($query) use ($keyword): void {
-                        $query->where('full_name', 'like', '%'.$keyword.'%');
+                    $query->whereHas('studentInfo', function ($studentQuery) use ($keyword): void {
+                        $studentQuery->where(function ($studentSubQuery) use ($keyword): void {
+                            $studentSubQuery->where('full_name', 'like', '%'.$keyword.'%')
+                                ->orWhere('first_name', 'like', '%'.$keyword.'%')
+                                ->orWhere('last_name', 'like', '%'.$keyword.'%')
+                                ->orWhere('roll_no', 'like', '%'.$keyword.'%')
+                                ->orWhere('admission_no', 'like', '%'.$keyword.'%');
+                        });
+                    })->orWhereHas('recordDetail', function ($recordQuery) use ($keyword): void {
+                        $recordQuery->where('roll_no', 'like', '%'.$keyword.'%');
                     });
                 })
                 ->addColumn('create_date', function ($row) {
@@ -1623,6 +1647,25 @@ class FeesController extends Controller
                     $view = view('fees::__allFeesListAction', ['row' => $row, 'balance' => $balance, 'paid_amount' => $paid_amount, 'role' => $role, 'amount' => $amount]);
 
                     return (string) $view;
+                })
+                ->filter(function ($query): void {
+                    $searchValue = request()->input('search.value');
+
+                    if (! empty($searchValue)) {
+                        $query->where(function ($searchQuery) use ($searchValue): void {
+                            $searchQuery->whereHas('studentInfo', function ($studentQuery) use ($searchValue): void {
+                                $studentQuery->where(function ($studentSubQuery) use ($searchValue): void {
+                                    $studentSubQuery->where('full_name', 'like', '%'.$searchValue.'%')
+                                        ->orWhere('first_name', 'like', '%'.$searchValue.'%')
+                                        ->orWhere('last_name', 'like', '%'.$searchValue.'%')
+                                        ->orWhere('roll_no', 'like', '%'.$searchValue.'%')
+                                        ->orWhere('admission_no', 'like', '%'.$searchValue.'%');
+                                });
+                            })->orWhereHas('recordDetail', function ($recordQuery) use ($searchValue): void {
+                                $recordQuery->where('roll_no', 'like', '%'.$searchValue.'%');
+                            });
+                        });
+                    }
                 })
                 ->rawColumns(['student_name', 'admission_no', 'status', 'action', 'date'])
                 ->make(true);
