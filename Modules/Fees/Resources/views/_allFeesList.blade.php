@@ -855,9 +855,7 @@ div#table_id_wrapper {
         <div class="col-12">
           <div class="fees-invoice-card">
             <div class="fees-invoice-card__header">
-              <div class="fees-invoice-card__title">
-                <h3>@lang('fees::feesModule.fees_invoice')</h3>
-              </div>
+
               <div class="fees-invoice-toolbar">
                 <div class="fees-invoice-toolbar__left">
                   <div class="fees-invoice-length">
