@@ -693,14 +693,23 @@
   }
 }
 
+.fees-modal {
+  --fees-modal-pad-x: clamp(28px, 4vw, 52px);
+  --fees-modal-pad-y: clamp(26px, 3.4vw, 40px);
+  --fees-modal-gap: clamp(18px, 2.4vw, 32px);
+  --fees-modal-title-size: clamp(20px, 2.2vw, 30px);
+  --fees-modal-subtitle-size: clamp(13px, 1.6vw, 18px);
+  --fees-modal-meta-size: clamp(11px, 1.2vw, 14px);
+}
+
 .fees-modal .modal-dialog {
-  max-width: 720px;
+  max-width: 860px;
   width: 100%;
   margin: 1.75rem auto;
 }
 
 .fees-modal__dialog--wide {
-  max-width: 1120px;
+  max-width: 1280px;
 }
 
 .fees-modal__content {
@@ -713,10 +722,10 @@
 
 .fees-modal__header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  padding: 28px 32px;
+  gap: var(--fees-modal-gap);
+  padding: var(--fees-modal-pad-y) var(--fees-modal-pad-x);
   color: #fff;
   background: linear-gradient(135deg, #4338ca, #312e81);
 }
@@ -731,7 +740,7 @@
 
 .fees-modal__eyebrow {
   text-transform: uppercase;
-  font-size: 11px;
+  font-size: clamp(10px, 0.85vw, 13px);
   letter-spacing: 0.18em;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.76);
@@ -739,28 +748,30 @@
 
 .fees-modal__title {
   margin: 6px 0 0;
-  font-size: 20px;
+  font-size: var(--fees-modal-title-size);
   font-weight: 800;
   letter-spacing: 0.01em;
+  line-height: 1.2;
 }
 
 .fees-modal__subtitle {
   margin: 6px 0 0;
   color: rgba(255, 255, 255, 0.82);
-  font-size: 14px;
+  font-size: var(--fees-modal-subtitle-size);
+  line-height: 1.6;
 }
 
 .fees-modal__close {
   border: none;
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: clamp(40px, 3.4vw, 52px);
+  height: clamp(40px, 3.4vw, 52px);
+  border-radius: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: clamp(20px, 1.6vw, 26px);
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -772,20 +783,20 @@
 }
 
 .fees-modal__body {
-  padding: 32px;
+  padding: var(--fees-modal-pad-y) var(--fees-modal-pad-x);
   background: #f8fafc;
   color: #0f172a;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--fees-modal-gap);
 }
 
 .fees-modal__footer {
-  padding: 0 32px 32px;
+  padding: var(--fees-modal-pad-y) var(--fees-modal-pad-x);
   background: #f8fafc;
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: clamp(12px, 1.6vw, 20px);
 }
 
 .fees-modal__alert {
@@ -852,7 +863,7 @@
 .fees-modal__action-btn {
   min-width: 140px;
   border-radius: 14px;
-  padding: 12px 22px;
+  padding: clamp(10px, 1.4vw, 14px) clamp(18px, 2.4vw, 28px);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -885,22 +896,22 @@
 .fees-ledger__summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
+  gap: clamp(16px, 2.3vw, 28px);
 }
 
 .fees-ledger__summary-card {
   background: #ffffff;
   border-radius: 18px;
-  padding: 18px 20px;
+  padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.6vw, 30px);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
   border: 1px solid rgba(148, 163, 184, 0.18);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: clamp(6px, 1.4vw, 12px);
 }
 
 .fees-ledger__summary-label {
-  font-size: 11px;
+  font-size: clamp(10px, 0.95vw, 13px);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #64748b;
@@ -908,13 +919,14 @@
 }
 
 .fees-ledger__summary-value {
-  font-size: 20px;
+  font-size: clamp(18px, 2.1vw, 30px);
   font-weight: 800;
   color: #1f2937;
+  line-height: 1.25;
 }
 
 .fees-ledger__summary-value span {
-  font-size: 14px;
+  font-size: clamp(12px, 1.4vw, 17px);
   font-weight: 600;
   margin-right: 4px;
   color: #6366f1;
@@ -945,19 +957,19 @@
 
 .fees-modal-table thead th {
   border-bottom: none;
-  font-size: 11px;
+  font-size: clamp(10px, 0.95vw, 12px);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 700;
   color: #4338ca;
-  padding: 16px 18px;
+  padding: clamp(14px, 2vw, 20px) clamp(16px, 2.4vw, 22px);
 }
 
 .fees-modal-table tbody td {
   border-top: 1px solid rgba(229, 231, 235, 0.7);
-  padding: 18px;
+  padding: clamp(16px, 2.3vw, 24px);
   vertical-align: top;
-  font-size: 13px;
+  font-size: clamp(12px, 1.1vw, 14px);
   color: #1f2937;
 }
 
@@ -994,12 +1006,12 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: clamp(6px, 1.4vw, 12px);
 }
 
 .fees-modal__table-actions .primary-btn {
   border-radius: 10px;
-  padding: 8px 12px;
+  padding: clamp(7px, 1.1vw, 11px) clamp(10px, 1.6vw, 14px);
 }
 
 .fees-modal__empty {
@@ -1022,9 +1034,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: clamp(5px, 1vw, 8px) clamp(10px, 1.5vw, 14px);
   border-radius: 999px;
-  font-size: 11px;
+  font-size: clamp(10px, 1vw, 12px);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 700;
@@ -1037,7 +1049,7 @@
   flex-wrap: wrap;
   gap: 8px 16px;
   margin-top: 12px;
-  font-size: 12px;
+  font-size: var(--fees-modal-meta-size);
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.82);
 }
@@ -1048,11 +1060,16 @@
   gap: 6px;
 }
 
+.fees-modal__tag i,
+.fees-modal__meta i {
+  font-size: clamp(12px, 1.2vw, 16px);
+}
+
 .fees-ledger__header {
   display: flex;
   align-items: stretch;
   justify-content: space-between;
-  gap: 24px;
+  gap: clamp(20px, 2.8vw, 40px);
   width: 100%;
 }
 
@@ -1064,16 +1081,17 @@
 
 .fees-ledger__status {
   align-self: stretch;
-  min-width: 240px;
+  min-width: clamp(220px, 28vw, 320px);
   background: rgba(255, 255, 255, 0.12);
   border-radius: 18px;
-  padding: 18px 22px;
+  padding: clamp(18px, 2.6vw, 30px) clamp(20px, 3vw, 34px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: clamp(6px, 1.2vw, 12px);
   text-align: right;
   color: rgba(255, 255, 255, 0.92);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  align-items: flex-end;
 }
 
 .fees-ledger__status-label {
@@ -1085,14 +1103,14 @@
 }
 
 .fees-ledger__status-value {
-  font-size: 22px;
+  font-size: clamp(18px, 2vw, 28px);
   font-weight: 800;
   letter-spacing: 0.04em;
 }
 
 .fees-ledger__status-meta,
 .fees-ledger__status-count {
-  font-size: 12px;
+  font-size: var(--fees-modal-meta-size);
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.5;
@@ -1114,7 +1132,7 @@
 }
 
 .fees-ledger__section-heading {
-  font-size: 13px;
+  font-size: clamp(12px, 1.4vw, 16px);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -1134,11 +1152,19 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  font-size: 12px;
+  flex-wrap: wrap;
+  row-gap: 6px;
+  font-size: clamp(11px, 1.1vw, 13px);
   color: #475569;
   margin-bottom: 14px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.fees-modal__table-caption span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .fees-modal-table tbody tr:not(:last-child) {
@@ -1157,7 +1183,7 @@
 
 @media (min-width: 1600px) {
   .fees-modal__dialog--wide {
-    max-width: 1280px;
+    max-width: 1380px;
   }
 }
 
