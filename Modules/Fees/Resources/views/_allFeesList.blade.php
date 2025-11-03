@@ -818,7 +818,7 @@ $canCreateInvoice = $isStaffView && userPermission('fees.fees-invoice-store');
 <section class="sms-breadcrumb mb-20 fees-hero">
   <div class="container-fluid p-0">
     <div class="fees-hero__top">
-      <h1 class="fees-hero__title">@lang('fees::feesModule.fees_invoice')</h1>
+      <h2 class="fees-hero__title">@lang('fees::feesModule.fees_invoice')</h2>
       <nav class="bc-pages" aria-label="breadcrumb">
         <a href="{{ route('dashboard') }}">@lang('common.dashboard')</a>
         <a href="#">@lang('fees.fees')</a>
