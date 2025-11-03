@@ -816,31 +816,27 @@ $isStaffView = in_array($resolvedRole, ['admin', 'lms'], true);
 $canCreateInvoice = $isStaffView && userPermission('fees.fees-invoice-store');
 @endphp
 <section class="sms-breadcrumb mb-20 fees-hero">
-  <div class="container-fluid">
+  <div class="container-fluid p-0">
     <div class="fees-hero__top">
-      <h1>@lang('fees::feesModule.fees_invoice')</h1>
-      <div class="bc-pages">
+      <h1 class="fees-hero__title">@lang('fees::feesModule.fees_invoice')</h1>
+      <nav class="bc-pages" aria-label="breadcrumb">
         <a href="{{ route('dashboard') }}">@lang('common.dashboard')</a>
         <a href="#">@lang('fees.fees')</a>
         <a href="#">@lang('fees::feesModule.fees_invoice')</a>
-      </div>
+      </nav>
     </div>
     <div class="fees-hero__body">
       <div class="fees-hero__content">
-        <span class="fees-hero__eyebrow">@lang('fees::feesModule.fees_invoice')</span>
-        <h2 class="fees-hero__title">{{ __('Fees Invoice Management') }}</h2>
-        <p class="fees-hero__subtitle">{{ __('View and manage student fee invoices, payments, and balances.') }}</p>
+        <p class="fees-hero__subtitle">
+          {{ __('View and manage student fee invoices, payments, and balances.') }}
+        </p>
       </div>
-      @if ($isStaffView)
+      @if ($isStaffView && $canCreateInvoice)
       <div class="fees-hero__actions">
-        @if ($canCreateInvoice)
         <a href="{{ route('fees.fees-invoice') }}" class="fees-primary-action">
           <span class="fees-primary-action__icon ti-plus"></span>
           <span class="fees-primary-action__label">@lang('common.add')</span>
         </a>
-        @endif
-        <span
-          class="fees-hero__hint">{{ __('Search, filter, export or customize columns using the toolbar below.') }}</span>
       </div>
       @endif
     </div>
