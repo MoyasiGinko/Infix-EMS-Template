@@ -3,7 +3,7 @@
 namespace Modules\Fees\Http\Controllers;
 
 use Exception;
-use DataTables;
+use Yajra\DataTables\Facades\DataTables;
 use App\SmClass;
 use App\SmSchool;
 use App\SmStudent;
@@ -1511,6 +1511,9 @@ class FeesController extends Controller
                 'recordDetail' => function ($query): void {
                     $query->select(['id', 'roll_no']);
                 },
+                'latestPayment' => function ($query): void {
+                    $query->select(['id', 'fees_invoice_id', 'payment_note', 'payment_method', 'created_at']);
+                },
             ])
             ->select('fm_fees_invoices.*')
             ->where('school_id', Auth::user()->school_id)
@@ -1550,6 +1553,27 @@ class FeesController extends Controller
                 })
                 ->addColumn('paid_amount', function ($row) {
                     return $row->Tpaidamount;
+                })
+                ->addColumn('paid_date', function ($row) {
+                    $paid_amount = $row->Tpaidamount;
+
+                    if ($paid_amount <= 0) {
+                        return '';
+                    }
+
+                    $latestPayment = $row->latestPayment;
+
+                    if (! $latestPayment) {
+                        return '';
+                    }
+
+                    $timestamp = $latestPayment->payment_date ?? $latestPayment->created_at;
+
+                    if (! $timestamp) {
+                        return '';
+                    }
+
+                    return dateConvert($timestamp);
                 })
                 ->addColumn('balance', function ($row) {
                     $amount = $row->Tamount;
@@ -1705,7 +1729,7 @@ class FeesController extends Controller
                         }
                     });
                 })
-                ->rawColumns(['student_name', 'admission_no', 'status', 'action', 'date'])
+                ->rawColumns(['student_name', 'admission_no', 'status', 'paid_date', 'create_date', 'action'])
                 ->make(true);
         }
 

@@ -3,6 +3,220 @@
 @endpush
 @push('css')
 <style>
+.fees-hero {
+  position: relative;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #312e81, #7c3aed);
+  color: #fff;
+  padding: 38px 42px;
+  overflow: hidden;
+  box-shadow: 0 32px 70px rgba(49, 46, 129, 0.32);
+}
+
+.fees-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.34), transparent 55%), radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.38), transparent 60%);
+  pointer-events: none;
+}
+
+.fees-hero .container-fluid {
+  position: relative;
+  z-index: 2;
+}
+
+.fees-hero h1 {
+  color: #fff;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.fees-hero .bc-pages {
+  display: flex;
+  gap: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.fees-hero .bc-pages a {
+  color: rgba(255, 255, 255, 0.85);
+  position: relative;
+}
+
+.fees-hero .bc-pages a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.35);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.fees-hero .bc-pages a:hover::after {
+  opacity: 1;
+}
+
+.fees-page-shell {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+.fees-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 36px;
+  padding: 30px 34px;
+  border-radius: 24px;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.96), rgba(240, 245, 255, 0.94));
+  border: 1px solid rgba(79, 70, 229, 0.18);
+  box-shadow: 0 26px 64px rgba(79, 70, 229, 0.18);
+}
+
+.fees-page-header__content {
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fees-page-header__eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.fees-page-header__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.fees-page-header__subtitle {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #334155;
+}
+
+.fees-page-header__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 220px;
+}
+
+.fees-primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 26px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #4f46e5, #0ea5e9);
+  color: #fff !important;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: 0 24px 50px rgba(59, 130, 246, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fees-primary-action:hover,
+.fees-primary-action:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 32px 70px rgba(59, 130, 246, 0.34);
+  color: #fff;
+  text-decoration: none;
+}
+
+.fees-primary-action__icon {
+  font-size: 16px;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  align-items: center;
+  justify-content: center;
+}
+
+.fees-page-header__hint {
+  font-size: 12px;
+  text-align: right;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.fees-invoice-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 30px 32px;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(59, 130, 246, 0.08));
+  border-top: 1px solid rgba(79, 70, 229, 0.12);
+}
+
+.fees-invoice-card__footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 520px;
+}
+
+.fees-invoice-card__footer-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #312e81;
+  letter-spacing: 0.04em;
+}
+
+.fees-invoice-card__footer-subtitle {
+  font-size: 13px;
+  color: #4338ca;
+}
+
+.fees-invoice-card__footer-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  color: #4338ca;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+
+.fees-invoice-card__footer-meta i {
+  font-size: 16px;
+}
+
+.cell-date.is-empty .cell-date__main {
+  color: #94a3b8;
+}
+
+.cell-date.is-empty .cell-date__sub {
+  color: #cbd5f5;
+}
+
 .fees-invoice-card {
   position: relative;
   border-radius: 18px;
@@ -469,12 +683,26 @@
   from {
     transform: translate(-50%, -50%) rotate(0deg);
   }
+
   to {
     transform: translate(-50%, -50%) rotate(360deg);
   }
 }
 
 @media (max-width: 1200px) {
+  .fees-page-header {
+    padding: 24px;
+  }
+
+  .fees-page-header__actions {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .fees-page-header__hint {
+    text-align: left;
+  }
+
   .fees-invoice-toolbar__right {
     flex: 1 1 100%;
     justify-content: flex-start;
@@ -482,15 +710,33 @@
 }
 
 @media (max-width: 992px) {
+  .fees-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fees-page-header__actions {
+    align-items: flex-start;
+    text-align: left;
+    width: 100%;
+  }
+
+  .fees-page-header__actions .fees-primary-action {
+    width: 100%;
+    justify-content: center;
+  }
+
   .fees-invoice-toolbar {
     flex-direction: column;
     align-items: stretch;
   }
+
   .fees-invoice-toolbar__left,
   .fees-invoice-toolbar__right {
     width: 100%;
     justify-content: space-between;
   }
+
   .fees-tool-btn {
     width: 100%;
     justify-content: center;
@@ -498,35 +744,53 @@
 }
 
 @media (max-width: 768px) {
+  .fees-hero {
+    padding: 26px 24px;
+    border-radius: 22px;
+  }
+
+  .fees-page-header {
+    padding: 22px;
+    gap: 24px;
+  }
+
   .fees-invoice-card__header {
     padding: 22px;
   }
+
   .fees-invoice-length {
     width: 100%;
     justify-content: space-between;
   }
+
   .fees-invoice-toolbar__right {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
+
   .fees-invoice-search {
     min-width: 0;
   }
+
   .fees-invoice-search input {
     padding: 12px 18px 12px 42px;
   }
+
   .fees-tool-dropdown .dropdown-menu {
     width: 100%;
   }
+
   .fees-invoice-card__body {
     padding: 22px 16px 28px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .fees-invoice-card,
   .fees-tool-btn,
+  .fees-primary-action,
   .fees-invoice-search input,
   .modern-datatable table.modern-table tbody tr:hover td {
     transition: none !important;
@@ -544,7 +808,7 @@ div#table_id_wrapper {
 </style>
 @endpush
 @endif
-<section class="sms-breadcrumb mb-20">
+<section class="sms-breadcrumb mb-20 fees-hero">
   <div class="container-fluid">
     <div class="row justify-content-between">
       <h1>@lang('fees::feesModule.fees_invoice')</h1>
@@ -558,33 +822,36 @@ div#table_id_wrapper {
 </section>
 <section class="admin-visitor-area up_st_admin_visitor">
   <div class="container-fluid p-0">
-    <div class="white-box">
-      @if (isset($role) && $role == 'admin')
-      @if (userPermission('fees.fees-invoice-store'))
-      <div class="row">
-        <div class="col-lg-12 text-left col-md-12">
-          <a href="{{ route('fees.fees-invoice') }}" class="primary-btn small fix-gr-bg">
-            <span class="ti-plus pr-2"></span>
-            @lang('common.add')
+    <div class="white-box fees-page-shell">
+      @php
+      $resolvedRole = $role ?? null;
+      $isStaffView = in_array($resolvedRole, ['admin', 'lms'], true);
+      $canCreateInvoice = $isStaffView && userPermission('fees.fees-invoice-store');
+      @endphp
+
+      @if ($isStaffView)
+      <div class="fees-page-header">
+        <div class="fees-page-header__content">
+          <span class="fees-page-header__eyebrow">{{ __('fees::feesModule.fees_invoice') }}</span>
+          <h2 class="fees-page-header__title">{{ __('Track student billing with confidence') }}</h2>
+          <p class="fees-page-header__subtitle">
+            {{ __('Stay on top of payments, waivers and balances with live updates and exports.') }}</p>
+        </div>
+        <div class="fees-page-header__actions">
+          @if ($canCreateInvoice)
+          <a href="{{ route('fees.fees-invoice') }}" class="fees-primary-action">
+            <span class="fees-primary-action__icon ti-plus"></span>
+            <span class="fees-primary-action__label">{{ __('common.add') }}</span>
           </a>
+          @endif
+          <span
+            class="fees-page-header__hint">{{ __('Use the toolbar to search, refresh, export and customize the invoice list instantly.') }}</span>
         </div>
       </div>
-      @endif
-      @elseif (isset($role) && $role == 'lms')
-      @if (userPermission('fees.fees-invoice-store'))
-      <div class="row">
-        <div class="col-lg-12 text-left col-md-12">
-          <a href="{{ route('fees.fees-invoice') }}" class="primary-btn small fix-gr-bg">
-            <span class="ti-plus pr-2"></span>
-            @lang('common.add')
-          </a>
-        </div>
-      </div>
-      @endif
       @endif
       <div class="row mt-40">
 
-        @if ((isset($role) && $role == 'admin') || $role == 'lms')
+        @if ($isStaffView)
         <div class="col-12">
           <div class="fees-invoice-card">
             <div class="fees-invoice-card__header">
@@ -608,23 +875,28 @@ div#table_id_wrapper {
                 <div class="fees-invoice-toolbar__right">
                   <div class="fees-invoice-search">
                     <span class="ti-search"></span>
-                    <input type="text" id="feesInvoiceSearch" placeholder="{{ __('Search invoices, students or roll') }}">
+                    <input type="text" id="feesInvoiceSearch"
+                      placeholder="{{ __('Search invoices, students or roll') }}">
                   </div>
                   <div class="dropdown fees-tool-dropdown">
-                    <button class="fees-tool-btn dropdown-toggle" type="button" id="feesInvoiceExportToggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button class="fees-tool-btn dropdown-toggle" type="button" id="feesInvoiceExportToggle"
+                      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       <span class="icon ti-download"></span>
                       <span>{{ __('Export') }}</span>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="feesInvoiceExportToggle" id="feesInvoiceExportMenu">
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="feesInvoiceExportToggle"
+                      id="feesInvoiceExportMenu">
                       <span class="dropdown-item text-muted small">{{ __('Loading...') }}</span>
                     </div>
                   </div>
                   <div class="dropdown fees-tool-dropdown">
-                    <button class="fees-tool-btn dropdown-toggle" type="button" id="feesInvoiceColumnToggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button class="fees-tool-btn dropdown-toggle" type="button" id="feesInvoiceColumnToggle"
+                      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       <span class="icon ti-layout"></span>
                       <span>{{ __('Columns') }}</span>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="feesInvoiceColumnToggle" id="feesInvoiceColumnMenu">
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="feesInvoiceColumnToggle"
+                      id="feesInvoiceColumnMenu">
                     </div>
                   </div>
                   <button class="fees-tool-btn" type="button" id="feesInvoiceRefresh">
@@ -648,6 +920,7 @@ div#table_id_wrapper {
                       <col data-name="paid" style="width:120px;">
                       <col data-name="balance" style="width:140px;">
                       <col data-name="status" style="width:120px;">
+                      <col data-name="paid_date" style="width:150px;">
                       <col data-name="date" style="width:140px;">
                       <col data-name="action" style="width:110px;">
                     </colgroup>
@@ -662,6 +935,7 @@ div#table_id_wrapper {
                         <th>@lang('fees.paid')</th>
                         <th>@lang('accounts.balance')</th>
                         <th>@lang('common.status')</th>
+                        <th>@lang('fees.payment_date')</th>
                         <th>@lang('common.date')</th>
                         <th>@lang('common.action')</th>
                       </tr>
@@ -671,6 +945,18 @@ div#table_id_wrapper {
                   </table>
                 </div>
               </x-table>
+            </div>
+            <div class="fees-invoice-card__footer">
+              <div class="fees-invoice-card__footer-info">
+                <span
+                  class="fees-invoice-card__footer-title">{{ __('Share exports or column presets with your finance team in one click.') }}</span>
+                <span
+                  class="fees-invoice-card__footer-subtitle">{{ __('Refresh to pull in the latest transactions before publishing reports.') }}</span>
+              </div>
+              <div class="fees-invoice-card__footer-meta">
+                <i class="ti-info-alt"></i>
+                <span>{{ __('Data updates instantly after each payment confirmation.') }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -868,7 +1154,8 @@ $(document).ready(function() {
     $lengthSelect.val(String(initialLength));
   }
 
-  const noExportsMessage = "<span class=\"dropdown-item text-muted small\">{{ __('No export actions available') }}</span>";
+  const noExportsMessage =
+    "<span class=\"dropdown-item text-muted small\">{{ __('No export actions available') }}</span>";
   const noColumnsMessage = "<span class=\"dropdown-item text-muted small\">{{ __('No columns available') }}</span>";
 
   const currencySymbol = "{{ e(generalSetting()->currency_symbol ?? '') }}";
@@ -879,7 +1166,8 @@ $(document).ready(function() {
     maximumFractionDigits: 2,
   }) : null;
   const rollLabel = "{{ __('student.roll_no') }}";
-  const createdLabel = "{{ __('common.created') }}";
+  const createdLabel = "{{ __('Created') }}";
+  const paidLabel = "{{ __('fees.payment_date') }}";
   const statusLabels = {
     paid: "{{ __('fees.paid') }}",
     partial: "{{ __('fees.partial') }}",
@@ -923,18 +1211,76 @@ $(document).ready(function() {
       data: {},
       pages: "{{ generalSetting()->ss_page_load }}"
     }),
-    columns: [
-      { data: 'DT_RowIndex', name: 'id' },
-      { data: 'student_name', name: 'student_name', orderable: false, searchable: true },
-      { data: 'roll_no', name: 'roll_no', orderable: false, searchable: true },
-      { data: 'amount', name: 'amount', orderable: false, searchable: false },
-      { data: 'weaver', name: 'weaver', orderable: false, searchable: false },
-      { data: 'fine', name: 'fine', orderable: false, searchable: false },
-      { data: 'paid_amount', name: 'paid_amount', orderable: false, searchable: false },
-      { data: 'balance', name: 'balance', orderable: false, searchable: false },
-      { data: 'status', name: 'status', orderable: false, searchable: false },
-      { data: 'create_date', name: 'create_date', orderable: true, searchable: false },
-      { data: 'action', name: 'action', orderable: false, searchable: false },
+    columns: [{
+        data: 'DT_RowIndex',
+        name: 'id'
+      },
+      {
+        data: 'student_name',
+        name: 'student_name',
+        orderable: false,
+        searchable: true
+      },
+      {
+        data: 'roll_no',
+        name: 'roll_no',
+        orderable: false,
+        searchable: true
+      },
+      {
+        data: 'amount',
+        name: 'amount',
+        orderable: false,
+        searchable: false
+      },
+      {
+        data: 'weaver',
+        name: 'weaver',
+        orderable: false,
+        searchable: false
+      },
+      {
+        data: 'fine',
+        name: 'fine',
+        orderable: false,
+        searchable: false
+      },
+      {
+        data: 'paid_amount',
+        name: 'paid_amount',
+        orderable: false,
+        searchable: false
+      },
+      {
+        data: 'balance',
+        name: 'balance',
+        orderable: false,
+        searchable: false
+      },
+      {
+        data: 'status',
+        name: 'status',
+        orderable: false,
+        searchable: false
+      },
+      {
+        data: 'paid_date',
+        name: 'paid_date',
+        orderable: false,
+        searchable: false
+      },
+      {
+        data: 'create_date',
+        name: 'create_date',
+        orderable: true,
+        searchable: false
+      },
+      {
+        data: 'action',
+        name: 'action',
+        orderable: false,
+        searchable: false
+      },
     ],
     bLengthChange: false,
     lengthMenu: [
@@ -1055,8 +1401,11 @@ $(document).ready(function() {
       studentCell.addClass('cell-student-cell');
       const studentWrapper = $('<div/>').html(data.student_name || '');
       const studentLinkHtml = studentWrapper.html() || '--';
-      const studentMeta = data.roll_no ? `<span class="cell-student__meta">${rollLabel}: ${sanitizeHtml(data.roll_no)}</span>` : '';
-      studentCell.html(`<div class="cell-student"><span class="cell-student__name">${studentLinkHtml}</span>${studentMeta}</div>`);
+      const studentMeta = data.roll_no ?
+        `<span class="cell-student__meta">${rollLabel}: ${sanitizeHtml(data.roll_no)}</span>` : '';
+      studentCell.html(
+        `<div class="cell-student"><span class="cell-student__name">${studentLinkHtml}</span>${studentMeta}</div>`
+      );
 
       const rollCell = $cells.eq(2);
       const rollValue = data.roll_no ? `#${sanitizeHtml(data.roll_no)}` : '--';
@@ -1101,13 +1450,28 @@ $(document).ready(function() {
       }
       const statusLabel = statusLabels[statusVariant] || statusVariant;
       const statusIcon = statusIconMap[statusVariant] || 'ti-alert';
-      statusCell.html(`<span class="tag-status ${statusVariant}"><i class="${statusIcon}"></i>${statusLabel}</span>`);
+      statusCell.html(
+        `<span class="tag-status ${statusVariant}"><i class="${statusIcon}"></i>${statusLabel}</span>`);
 
-      const dateCell = $cells.eq(9);
+      const paidDateCell = $cells.eq(9);
+      const paidDateValue = sanitizeHtml(data.paid_date || '');
+      if (paidDateValue) {
+        paidDateCell.html(
+          `<div class="cell-date"><span class="cell-date__main">${paidDateValue}</span><span class="cell-date__sub">${paidLabel}</span></div>`
+        );
+      } else {
+        paidDateCell.html(
+          `<div class="cell-date is-empty"><span class="cell-date__main">--</span><span class="cell-date__sub">${paidLabel}</span></div>`
+        );
+      }
+
+      const dateCell = $cells.eq(10);
       const dateValue = sanitizeHtml(data.create_date || '--');
-      dateCell.html(`<div class="cell-date"><span class="cell-date__main">${dateValue}</span><span class="cell-date__sub">${createdLabel}</span></div>`);
+      dateCell.html(
+        `<div class="cell-date"><span class="cell-date__main">${dateValue}</span><span class="cell-date__sub">${createdLabel}</span></div>`
+      );
 
-      const actionCell = $cells.eq(10);
+      const actionCell = $cells.eq(11);
       actionCell.addClass('cell-actions');
     },
   });
@@ -1192,9 +1556,10 @@ $(document).ready(function() {
     $dtButtons.find('a, button').each(function() {
       const $original = $(this);
       const $item = $('<button type="button" class="dropdown-item d-flex align-items-center"></button>');
-    const $iconHolder = $('<span class="export-icon mr-2"></span>');
-    $iconHolder.html($original.html());
-    const label = $original.attr('title') || $original.data('title') || $original.text().trim() || "{{ __('Export') }}";
+      const $iconHolder = $('<span class="export-icon mr-2"></span>');
+      $iconHolder.html($original.html());
+      const label = $original.attr('title') || $original.data('title') || $original.text().trim() ||
+        "{{ __('Export') }}";
       const $labelSpan = $('<span class="font-weight-semibold"></span>').text(label);
       $item.append($iconHolder).append($labelSpan);
       $item.on('click', function() {

@@ -6,6 +6,7 @@ use App\SmStudent;
 use App\Scopes\AcademicSchoolScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\Fees\Entities\FmFeesTransaction;
 
 class FmFeesInvoice extends Model
 {
@@ -35,6 +36,11 @@ class FmFeesInvoice extends Model
     public function invoiceDetails()
     {
         return $this->hasMany(FmFeesInvoiceChield::class, 'fees_invoice_id');
+    }
+
+    public function latestPayment()
+    {
+        return $this->hasOne(FmFeesTransaction::class, 'fees_invoice_id')->latestOfMany();
     }
 
     // Using the pre-loaded sums for efficiency
