@@ -1077,7 +1077,7 @@
 .fees-ledger__table {
   background: #fff;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid #e2e8f0;
   padding: 12px;
 }
@@ -1085,6 +1085,7 @@
 .fees-ledger__table .table-responsive {
   border-radius: 8px;
   overflow-x: auto;
+  overflow-y: visible;
 }
 
 /* Table Base */
@@ -1111,11 +1112,20 @@
   white-space: nowrap;
 }
 
+.fees-modal-table tbody {
+  overflow: visible;
+}
+
+.fees-modal-table tbody tr {
+  overflow: visible;
+}
+
 .fees-modal-table tbody td {
   padding: 14px;
   border-bottom: 1px solid #f1f5f9;
   color: #475569;
   vertical-align: middle;
+  overflow: visible;
 }
 
 .fees-modal-table tbody tr:last-child td {
@@ -1816,6 +1826,20 @@
   background: #fff;
   border-left: 3px solid #0ea5e9;
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: visible;
+}
+
+.change-method-expanded .nice-select {
+  position: relative;
+  z-index: 100;
+}
+
+.change-method-expanded .nice-select .list {
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  z-index: 101;
 }
 
 /* Form Header */
@@ -1874,12 +1898,15 @@
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 16px;
   margin-bottom: 16px;
+  overflow: visible;
 }
 
 .field-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  overflow: visible;
+  position: relative;
 }
 
 .field-label {
