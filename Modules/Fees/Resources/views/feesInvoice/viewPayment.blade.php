@@ -411,7 +411,7 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
     // Handle note indicator click to show tooltip
     $(document).on('click', '.note-indicator', function(e) {
       e.stopPropagation();
-      const tooltip = $(this).next('.note-tooltip');
+      const tooltip = $(this).closest('.change-method-cell').find('.note-tooltip');
 
       // Close all other tooltips
       $('.note-tooltip').not(tooltip).fadeOut(200);
