@@ -209,66 +209,22 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
                 </span>
               </td>
               <td data-label="@lang('fees::feesModule.change_method')">
-                @if ($canChangeMethod)
-                {{
-                                        html()->form('POST', route('fees.change-method'))->attributes([
-                                            'class' => 'form-horizontal fees-change-method-form',
-                                            'id' => 'feesChangeMethod' . $feesTranscation->id,
-                                        ])->open()
-                                    }}
-                <input type="hidden" name="feesInvoiceId" value="{{ $feesTranscation->id }}">
-                <div class="fees-modal__inline-form">
-                  <div class="row align-items-center">
-                    <div class="col-md-10">
-                      <select
-                        class="primary_select form-control changeMethod {{ $errors->has('change_method') ? ' is-invalid' : '' }}"
-                        name="change_method">
-                        <option data-display="@lang('fees::feesModule.change_method')" value="">
-                          @lang('fees::feesModule.change_method')
-                        </option>
-                        @foreach ($paymentMethods as $paymentMethod)
-                        @if ($paymentMethod->method != $feesTranscation->payment_method)
-                        <option value="{{ $paymentMethod->method }}">
-                          {{ $paymentMethod->method }}</option>
-                        @endif
-                        @endforeach
-                      </select>
-                      @if ($errors->has('change_method'))
-                      <span class="text-danger invalid-select" role="alert">
-                        {{ $errors->first('change_method') }}
-                      </span>
-                      @endif
-                    </div>
-                    <div class="col-md-2 mt-2 mt-md-0 d-flex justify-content-md-end">
-                      <button class="primary-btn icon-only submit fix-gr-bg changeMethodSubmit"
-                        title="@lang('common.submit')">
-                        <span class="ti-check"></span>
-                      </button>
-                    </div>
+                <div class="change-method-cell">
+                  @if ($canChangeMethod)
+                  <button type="button" class="change-method-trigger" data-transaction-id="{{ $feesTranscation->id }}">
+                    <i class="ti-exchange-vertical"></i>
+                    <span>{{ __('Change Method') }}</span>
+                  </button>
+                  @if ($feesTranscation->payment_note)
+                  <div class="payment-note-display">
+                    <i class="ti-notepad"></i>
+                    <span>{{ $feesTranscation->payment_note }}</span>
                   </div>
-                  <div class="bankInfo mt-20 d-none">
-                    <select
-                      class="primary_select form-control bankId {{ $errors->has('bank_id') ? ' is-invalid' : '' }}"
-                      name="bank_id">
-                      <option data-display="@lang('fees::feesModule.select_bank')" value="">
-                        @lang('fees::feesModule.select_bank')
-                      </option>
-                      @foreach ($banks as $bank)
-                      <option value="{{ $bank->id }}" data-id="{{ $feesTranscation->id }}">
-                        {{ $bank->bank_name }} ({{ $bank->account_number }})
-                      </option>
-                      @endforeach
-                    </select>
-                  </div>
-                  <div class="primary_input">
-                    <label class="primary_input_label">@lang('common.note')</label>
-                    <input class="primary_input_field form-control" name="payment_note">
-                  </div>
+                  @endif
+                  @else
+                  <span class="text-muted small">{{ __('N/A') }}</span>
+                  @endif
                 </div>
-                {{ html()->form()->close() }}
-                @else
-                <span class="text-muted">{{ __('Not available for this method') }}</span>
-                @endif
               </td>
               <td data-label="@lang('fees::feesModule.paid_amount')">
                 <div class="table-amount amount-paid">
@@ -305,6 +261,99 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
                 </div>
               </td>
             </tr>
+
+            <!-- Expandable Change Method Form Row -->
+            @if ($canChangeMethod)
+            <tr class="change-method-row" id="changeMethodRow{{ $feesTranscation->id }}" style="display: none;">
+              <td colspan="8">
+                <div class="change-method-expanded">
+                  {{
+                    html()->form('POST', route('fees.change-method'))->attributes([
+                        'class' => 'fees-change-method-form',
+                        'id' => 'feesChangeMethod' . $feesTranscation->id,
+                    ])->open()
+                  }}
+                  <input type="hidden" name="feesInvoiceId" value="{{ $feesTranscation->id }}">
+
+                  <div class="change-method-content">
+                    <div class="change-method-header">
+                      <div class="header-info">
+                        <i class="ti-exchange-vertical"></i>
+                        <span>{{ __('Change Payment Method for Transaction #:id', ['id' => $loop->iteration]) }}</span>
+                      </div>
+                      <button type="button" class="close-change-method"
+                        data-transaction-id="{{ $feesTranscation->id }}">
+                        <i class="ti-close"></i>
+                      </button>
+                    </div>
+
+                    <div class="change-method-fields">
+                      <div class="field-group">
+                        <label class="field-label">
+                          <i class="ti-credit-card"></i>
+                          {{ __('New Payment Method') }}
+                        </label>
+                        <select
+                          class="primary_select form-control changeMethod {{ $errors->has('change_method') ? ' is-invalid' : '' }}"
+                          name="change_method">
+                          <option value="">{{ __('Select payment method') }}</option>
+                          @foreach ($paymentMethods as $paymentMethod)
+                          @if ($paymentMethod->method != $feesTranscation->payment_method)
+                          <option value="{{ $paymentMethod->method }}">{{ $paymentMethod->method }}</option>
+                          @endif
+                          @endforeach
+                        </select>
+                        @if ($errors->has('change_method'))
+                        <span class="text-danger invalid-select"
+                          role="alert">{{ $errors->first('change_method') }}</span>
+                        @endif
+                      </div>
+
+                      <div class="field-group bankInfo" style="display: none;">
+                        <label class="field-label">
+                          <i class="ti-home"></i>
+                          {{ __('Select Bank') }}
+                        </label>
+                        <select
+                          class="primary_select form-control bankId {{ $errors->has('bank_id') ? ' is-invalid' : '' }}"
+                          name="bank_id">
+                          <option value="">{{ __('Select bank account') }}</option>
+                          @foreach ($banks as $bank)
+                          <option value="{{ $bank->id }}" data-id="{{ $feesTranscation->id }}">
+                            {{ $bank->bank_name }} ({{ $bank->account_number }})
+                          </option>
+                          @endforeach
+                        </select>
+                      </div>
+
+                      <div class="field-group">
+                        <label class="field-label">
+                          <i class="ti-notepad"></i>
+                          {{ __('Payment Note') }}
+                          <span class="optional-label">{{ __('(Optional)') }}</span>
+                        </label>
+                        <textarea class="primary_input_field form-control" name="payment_note" rows="2"
+                          placeholder="{{ __('Add any additional notes about this payment...') }}">{{ $feesTranscation->payment_note ?? '' }}</textarea>
+                      </div>
+                    </div>
+
+                    <div class="change-method-actions">
+                      <button type="button" class="btn-cancel" data-transaction-id="{{ $feesTranscation->id }}">
+                        <i class="ti-close"></i>
+                        {{ __('Cancel') }}
+                      </button>
+                      <button type="submit" class="btn-save changeMethodSubmit">
+                        <i class="ti-check"></i>
+                        {{ __('Save Changes') }}
+                      </button>
+                    </div>
+                  </div>
+
+                  {{ html()->form()->close() }}
+                </div>
+              </td>
+            </tr>
+            @endif
             @empty
             <tr>
               <td colspan="8">
@@ -322,26 +371,63 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
   </div>
   </div>
   <script>
+  // Initialize nice select
   if ($('.primary_select').length) {
     $('.primary_select').niceSelect();
   }
 
+  // Toggle change method form
+  $(document).on('click', '.change-method-trigger', function() {
+    const transactionId = $(this).data('transaction-id');
+    const row = $('#changeMethodRow' + transactionId);
+
+    // Close all other open rows
+    $('.change-method-row').not(row).slideUp(300);
+
+    // Toggle current row
+    row.slideToggle(300, function() {
+      if (row.is(':visible')) {
+        // Reinitialize nice select for this row
+        row.find('.primary_select').niceSelect('destroy');
+        row.find('.primary_select').niceSelect();
+      }
+    });
+  });
+
+  // Close change method form
+  $(document).on('click', '.close-change-method, .btn-cancel', function() {
+    const transactionId = $(this).data('transaction-id');
+    $('#changeMethodRow' + transactionId).slideUp(300);
+  });
+
+  // Handle bank selection visibility
   $('.changeMethod').on('change', function() {
+    const bankInfo = $(this).closest('.change-method-fields').find('.bankInfo');
     if ($(this).val() == 'Bank') {
-      $(this).parents('tr').find('.bankInfo').removeClass('d-none');
+      bankInfo.slideDown(200);
+      // Reinitialize nice select for bank dropdown
+      bankInfo.find('.primary_select').niceSelect('destroy');
+      bankInfo.find('.primary_select').niceSelect();
     } else {
-      $(this).parents('tr').find('.bankInfo').addClass('d-none');
-      $(this).parents('tr').find('.bankId').val('');
+      bankInfo.slideUp(200);
+      bankInfo.find('.bankId').val('');
     }
   });
 
+  // Submit form
   $(document).on('click', '.changeMethodSubmit', function(e) {
     e.preventDefault();
-    let feesChangeMethodForm = $(this).parents('form');
+    const button = $(this);
+    const form = button.closest('form');
+    const transactionId = form.find('input[name="feesInvoiceId"]').val();
 
-    const submit_url = feesChangeMethodForm.attr('action');
-    const method = feesChangeMethodForm.attr('method');
-    const formData = new FormData(feesChangeMethodForm[0]);
+    // Disable button and show loading
+    button.prop('disabled', true).html('<i class="ti-reload"></i> {{ __("Saving...") }}');
+
+    const submit_url = form.attr('action');
+    const method = form.attr('method');
+    const formData = new FormData(form[0]);
+
     $.ajax({
       url: submit_url,
       type: method,
@@ -350,12 +436,20 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
       cache: false,
       processData: false,
       dataType: 'JSON',
-      success: function() {
-        toastr.success('Save Successfully', 'Successful', {
+      success: function(response) {
+        toastr.success('{{ __("Payment method changed successfully") }}', '{{ __("Success") }}', {
           timeOut: 5000,
         });
-        location.reload();
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
       },
+      error: function(xhr) {
+        button.prop('disabled', false).html('<i class="ti-check"></i> {{ __("Save Changes") }}');
+        toastr.error('{{ __("Failed to change payment method") }}', '{{ __("Error") }}', {
+          timeOut: 5000,
+        });
+      }
     });
   });
   </script>

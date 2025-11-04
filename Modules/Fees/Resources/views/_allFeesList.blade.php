@@ -1720,6 +1720,261 @@
   font-size: 13px;
 }
 
+/* ========== EXPANDABLE CHANGE METHOD STYLES ========== */
+
+/* Change Method Trigger Button */
+.change-method-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.change-method-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.change-method-trigger:hover {
+  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  border-color: #7dd3fc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(3, 105, 161, 0.15);
+}
+
+.change-method-trigger i {
+  font-size: 12px;
+}
+
+/* Payment Note Display */
+.payment-note-display {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 5px 8px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 4px;
+  font-size: 10px;
+  color: #92400e;
+  line-height: 1.3;
+}
+
+.payment-note-display i {
+  font-size: 11px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.payment-note-display span {
+  flex: 1;
+  word-break: break-word;
+}
+
+/* Expandable Row */
+.change-method-row {
+  background: #fafbfc;
+}
+
+.change-method-row td {
+  padding: 0 !important;
+  border-top: none !important;
+}
+
+.change-method-expanded {
+  padding: 20px;
+  background: #fff;
+  border-left: 3px solid #0ea5e9;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Form Header */
+.change-method-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.header-info i {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+  color: #fff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.close-change-method {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-change-method:hover {
+  background: #fecaca;
+  transform: rotate(90deg);
+}
+
+/* Form Fields */
+.change-method-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 2px;
+}
+
+.field-label i {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.optional-label {
+  font-size: 10px;
+  font-weight: 400;
+  color: #94a3b8;
+  margin-left: 4px;
+}
+
+.change-method-fields .primary_select,
+.change-method-fields .primary_input_field {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.change-method-fields .primary_select:focus,
+.change-method-fields .primary_input_field:focus {
+  border-color: #0ea5e9;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.change-method-fields textarea.primary_input_field {
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.5;
+}
+
+/* Form Actions */
+.change-method-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-cancel,
+.btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-cancel {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.btn-cancel:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.3);
+}
+
+.btn-save:hover {
+  background: linear-gradient(135deg, #0284c7, #0891b2);
+  box-shadow: 0 4px 10px rgba(14, 165, 233, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Bank Info Field Animation */
+.field-group.bankInfo {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ========== RESPONSIVE ========== */
 
 @media (max-width: 991px) {
@@ -1822,10 +2077,44 @@
     grid-template-columns: 1fr;
   }
 
-  .fees-modal__inline-form .col-md-10,
-  .fees-modal__inline-form .col-md-2 {
+  /* Expandable form responsive */
+  .change-method-expanded {
+    padding: 14px;
+  }
+
+  .change-method-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .close-change-method {
+    align-self: flex-end;
+    margin-top: -8px;
+  }
+
+  .change-method-fields {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .change-method-actions {
+    flex-direction: column;
+  }
+
+  .btn-cancel,
+  .btn-save {
     width: 100%;
-    padding: 6px 0;
+    justify-content: center;
+  }
+
+  .change-method-trigger {
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+
+  .payment-note-display {
+    font-size: 9px;
   }
 }
 
