@@ -469,23 +469,51 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
         contentType: false,
         cache: false,
         processData: false,
-        dataType: 'JSON',
         success: function(response) {
-          toastr.success('{{ __("Payment method changed successfully") }}', '{{ __("Success") }}', {
-            timeOut: 5000,
-          });
-          setTimeout(function() {
-            location.reload();
-          }, 1000);
+          // Check if response indicates success
+          let isSuccess = false;
+          
+          if (typeof response === 'object') {
+            isSuccess = response.success === true || response.status === 'success' || response.message;
+          } else if (typeof response === 'string') {
+            isSuccess = true; // If we get a string response, treat it as success
+          }
+
+          if (isSuccess) {
+            toastr.success('{{ __("Payment method changed successfully") }}', '{{ __("Success") }}', {
+              timeOut: 2000,
+            });
+            setTimeout(function() {
+              location.reload();
+            }, 500);
+          } else {
+            button.prop('disabled', false).html('<i class="ti-check"></i> {{ __("Save Changes") }}');
+            toastr.error('{{ __("Failed to change payment method") }}', '{{ __("Error") }}', {
+              timeOut: 5000,
+            });
+          }
         },
         error: function(xhr) {
-          button.prop('disabled', false).html('<i class="ti-check"></i> {{ __("Save Changes") }}');
+          // Check if it's actually a redirect (302/200 with HTML)
+          if (xhr.status === 200 || xhr.status === 302) {
+            toastr.success('{{ __("Payment method changed successfully") }}', '{{ __("Success") }}', {
+              timeOut: 2000,
+            });
+            setTimeout(function() {
+              location.reload();
+            }, 500);
+            return;
+          }
 
+          button.prop('disabled', false).html('<i class="ti-check"></i> {{ __("Save Changes") }}');
+          
           let errorMessage = '{{ __("Failed to change payment method") }}';
           if (xhr.responseJSON && xhr.responseJSON.message) {
             errorMessage = xhr.responseJSON.message;
+          } else if (xhr.responseJSON && xhr.responseJSON.error) {
+            errorMessage = xhr.responseJSON.error;
           }
-
+          
           toastr.error(errorMessage, '{{ __("Error") }}', {
             timeOut: 5000,
           });

@@ -1729,6 +1729,14 @@
   gap: 6px;
 }
 
+/* Change Method Cell Layout */
+.change-method-cell {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .change-method-trigger {
   display: inline-flex;
   align-items: center;
@@ -1758,27 +1766,39 @@
 
 /* Payment Note Display */
 .payment-note-display {
-  display: flex;
-  align-items: flex-start;
-  gap: 5px;
-  padding: 5px 8px;
-  background: #fef3c7;
-  border: 1px solid #fde68a;
-  border-radius: 4px;
-  font-size: 10px;
-  color: #92400e;
-  line-height: 1.3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px solid #fbbf24;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #78350f;
+  line-height: 1.4;
+  margin-left: 8px;
+  max-width: 200px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.15);
 }
 
 .payment-note-display i {
-  font-size: 11px;
-  margin-top: 1px;
+  font-size: 12px;
   flex-shrink: 0;
+  color: #f59e0b;
 }
 
 .payment-note-display span {
   flex: 1;
   word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.payment-note-display:hover span {
+  white-space: normal;
+  overflow: visible;
 }
 
 /* Expandable Row */
@@ -1984,6 +2004,14 @@
   border-radius: 8px;
   max-height: 200px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.change-method-expanded .nice-select-dropup .nice-select-search-box {
+  order: -1;
+  border-bottom: 1px solid #e2e8f0;
+  border-top: none;
 }
 
 .change-method-expanded .nice-select-dropup.open:after {
