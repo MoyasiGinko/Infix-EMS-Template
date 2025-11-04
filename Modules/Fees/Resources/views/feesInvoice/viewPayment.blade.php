@@ -213,7 +213,7 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
                   @if ($canChangeMethod)
                   <button type="button" class="change-method-trigger" data-transaction-id="{{ $feesTranscation->id }}">
                     <i class="ti-exchange-vertical"></i>
-                    <span>{{ __('Change Method') }}</span>
+                    <span>{{ __('Change') }}</span>
                   </button>
                   @if ($feesTranscation->payment_note)
                   <button type="button" class="note-indicator" data-note="{{ $feesTranscation->payment_note }}">
