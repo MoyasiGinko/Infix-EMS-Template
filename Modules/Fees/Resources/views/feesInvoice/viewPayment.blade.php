@@ -211,14 +211,18 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
               <td data-label="@lang('fees::feesModule.change_method')">
                 <div class="change-method-cell">
                   @if ($canChangeMethod)
-                  <button type="button" class="change-method-trigger" data-transaction-id="{{ $feesTranscation->id }}">
-                    <i class="ti-exchange-vertical"></i>
-                    <span>{{ __('Change') }}</span>
-                  </button>
+                  <div class="button-row">
+                    <button type="button" class="change-method-trigger"
+                      data-transaction-id="{{ $feesTranscation->id }}">
+                      <i class="ti-exchange-vertical"></i>
+                    </button>
+                    @if ($feesTranscation->payment_note)
+                    <button type="button" class="note-indicator" data-note="{{ $feesTranscation->payment_note }}">
+                      ✨
+                    </button>
+                    @endif
+                  </div>
                   @if ($feesTranscation->payment_note)
-                  <button type="button" class="note-indicator" data-note="{{ $feesTranscation->payment_note }}">
-                    ✨
-                  </button>
                   <div class="note-tooltip" style="display: none;">
                     <div class="note-tooltip-content">
                       {{ $feesTranscation->payment_note }}

@@ -1748,6 +1748,13 @@
   position: relative;
 }
 
+.button-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+}
+
 .change-method-trigger {
   display: inline-flex;
   align-items: center;
