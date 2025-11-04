@@ -388,16 +388,13 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
       // Toggle current row
       row.slideToggle(300, function() {
         if (row.is(':visible')) {
-          // Reinitialize nice select for this row with dropup
+          // Reinitialize nice select for this row
           row.find('.primary_select').each(function() {
             const $select = $(this);
             if ($select.next('.nice-select').length) {
               $select.niceSelect('destroy');
             }
             $select.niceSelect();
-
-            // Add dropup class to nice-select
-            $select.next('.nice-select').addClass('nice-select-dropup');
           });
         }
       });
@@ -421,7 +418,6 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
             $bankSelect.niceSelect('destroy');
           }
           $bankSelect.niceSelect();
-          $bankSelect.next('.nice-select').addClass('nice-select-dropup');
         });
       } else {
         bankInfo.slideUp(200);
@@ -462,6 +458,12 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
       const method = form.attr('method');
       const formData = new FormData(form[0]);
 
+      // Debug: Log form data
+      console.log('Form data being sent:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key + ': ' + value);
+      }
+
       $.ajax({
         url: submit_url,
         type: method,
@@ -472,7 +474,7 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
         success: function(response) {
           // Check if response indicates success
           let isSuccess = false;
-          
+
           if (typeof response === 'object') {
             isSuccess = response.success === true || response.status === 'success' || response.message;
           } else if (typeof response === 'string') {
@@ -506,14 +508,14 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
           }
 
           button.prop('disabled', false).html('<i class="ti-check"></i> {{ __("Save Changes") }}');
-          
+
           let errorMessage = '{{ __("Failed to change payment method") }}';
           if (xhr.responseJSON && xhr.responseJSON.message) {
             errorMessage = xhr.responseJSON.message;
           } else if (xhr.responseJSON && xhr.responseJSON.error) {
             errorMessage = xhr.responseJSON.error;
           }
-          
+
           toastr.error(errorMessage, '{{ __("Error") }}', {
             timeOut: 5000,
           });

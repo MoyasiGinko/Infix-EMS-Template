@@ -1995,30 +1995,6 @@
   }
 }
 
-/* Dropup Styles for Nice Select in Change Method */
-.change-method-expanded .nice-select-dropup .list {
-  bottom: 100% !important;
-  top: auto !important;
-  margin-bottom: 4px;
-  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.12) !important;
-  border-radius: 8px;
-  max-height: 200px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column-reverse;
-}
-
-.change-method-expanded .nice-select-dropup .nice-select-search-box {
-  order: -1;
-  border-bottom: 1px solid #e2e8f0;
-  border-top: none;
-}
-
-.change-method-expanded .nice-select-dropup.open:after {
-  transform: rotate(-135deg);
-  border-color: #0ea5e9;
-}
-
 /* ========== RESPONSIVE ========== */
 
 @media (max-width: 991px) {

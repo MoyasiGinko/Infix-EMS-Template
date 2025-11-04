@@ -141,6 +141,17 @@ class AjaxController extends Controller
         try {
             $transcation = FmFeesTransaction::find($request->feesInvoiceId);
             $transcation->payment_method = $request->change_method;
+
+            // Save payment note if provided
+            if ($request->has('payment_note')) {
+                $transcation->payment_note = $request->payment_note;
+            }
+
+            // Save bank_id if Bank method is selected
+            if ($request->change_method === 'Bank' && $request->has('bank_id')) {
+                $transcation->bank_id = $request->bank_id;
+            }
+
             $transcation->update();
 
             $payment_method = SmPaymentMethhod::where('method', $request->change_method)->first();
@@ -150,12 +161,18 @@ class AjaxController extends Controller
             foreach ($incomes as $income) {
                 $updateIncome = SmAddIncome::find($income->id);
                 $updateIncome->payment_method = $payment_method->id;
+
+                // Update bank_id in income record as well if applicable
+                if ($request->change_method === 'Bank' && $request->has('bank_id')) {
+                    $updateIncome->bank_id = $request->bank_id;
+                }
+
                 $updateIncome->update();
             }
 
-            return response()->json(['sucess']);
+            return response()->json(['success' => true, 'message' => 'Payment method changed successfully']);
         } catch (Exception $exception) {
-            return response()->json('Error', $exception->getMessage());
+            return response()->json(['success' => false, 'message' => $exception->getMessage()], 500);
         }
     }
 
