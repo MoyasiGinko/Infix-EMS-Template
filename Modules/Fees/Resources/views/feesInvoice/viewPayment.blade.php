@@ -371,85 +371,126 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
   </div>
   </div>
   <script>
-  // Initialize nice select
-  if ($('.primary_select').length) {
-    $('.primary_select').niceSelect();
-  }
+  $(document).ready(function() {
+    // Initialize nice select with dropup option
+    if ($('.primary_select').length) {
+      $('.primary_select').niceSelect();
+    }
 
-  // Toggle change method form
-  $(document).on('click', '.change-method-trigger', function() {
-    const transactionId = $(this).data('transaction-id');
-    const row = $('#changeMethodRow' + transactionId);
+    // Toggle change method form
+    $(document).on('click', '.change-method-trigger', function() {
+      const transactionId = $(this).data('transaction-id');
+      const row = $('#changeMethodRow' + transactionId);
 
-    // Close all other open rows
-    $('.change-method-row').not(row).slideUp(300);
+      // Close all other open rows
+      $('.change-method-row').not(row).slideUp(300);
 
-    // Toggle current row
-    row.slideToggle(300, function() {
-      if (row.is(':visible')) {
-        // Reinitialize nice select for this row
-        row.find('.primary_select').niceSelect('destroy');
-        row.find('.primary_select').niceSelect();
+      // Toggle current row
+      row.slideToggle(300, function() {
+        if (row.is(':visible')) {
+          // Reinitialize nice select for this row with dropup
+          row.find('.primary_select').each(function() {
+            const $select = $(this);
+            if ($select.next('.nice-select').length) {
+              $select.niceSelect('destroy');
+            }
+            $select.niceSelect();
+
+            // Add dropup class to nice-select
+            $select.next('.nice-select').addClass('nice-select-dropup');
+          });
+        }
+      });
+    });
+
+    // Close change method form
+    $(document).on('click', '.close-change-method, .btn-cancel', function(e) {
+      e.preventDefault();
+      const transactionId = $(this).data('transaction-id');
+      $('#changeMethodRow' + transactionId).slideUp(300);
+    });
+
+    // Handle bank selection visibility (using event delegation)
+    $(document).on('change', '.changeMethod', function() {
+      const bankInfo = $(this).closest('.change-method-fields').find('.bankInfo');
+      if ($(this).val() == 'Bank') {
+        bankInfo.slideDown(200, function() {
+          // Reinitialize nice select for bank dropdown
+          const $bankSelect = bankInfo.find('.primary_select');
+          if ($bankSelect.next('.nice-select').length) {
+            $bankSelect.niceSelect('destroy');
+          }
+          $bankSelect.niceSelect();
+          $bankSelect.next('.nice-select').addClass('nice-select-dropup');
+        });
+      } else {
+        bankInfo.slideUp(200);
+        bankInfo.find('.bankId').val('');
       }
     });
-  });
 
-  // Close change method form
-  $(document).on('click', '.close-change-method, .btn-cancel', function() {
-    const transactionId = $(this).data('transaction-id');
-    $('#changeMethodRow' + transactionId).slideUp(300);
-  });
+    // Submit form
+    $(document).on('click', '.changeMethodSubmit', function(e) {
+      e.preventDefault();
+      const button = $(this);
+      const form = button.closest('form');
 
-  // Handle bank selection visibility
-  $('.changeMethod').on('change', function() {
-    const bankInfo = $(this).closest('.change-method-fields').find('.bankInfo');
-    if ($(this).val() == 'Bank') {
-      bankInfo.slideDown(200);
-      // Reinitialize nice select for bank dropdown
-      bankInfo.find('.primary_select').niceSelect('destroy');
-      bankInfo.find('.primary_select').niceSelect();
-    } else {
-      bankInfo.slideUp(200);
-      bankInfo.find('.bankId').val('');
-    }
-  });
-
-  // Submit form
-  $(document).on('click', '.changeMethodSubmit', function(e) {
-    e.preventDefault();
-    const button = $(this);
-    const form = button.closest('form');
-    const transactionId = form.find('input[name="feesInvoiceId"]').val();
-
-    // Disable button and show loading
-    button.prop('disabled', true).html('<i class="ti-reload"></i> {{ __("Saving...") }}');
-
-    const submit_url = form.attr('action');
-    const method = form.attr('method');
-    const formData = new FormData(form[0]);
-
-    $.ajax({
-      url: submit_url,
-      type: method,
-      data: formData,
-      contentType: false,
-      cache: false,
-      processData: false,
-      dataType: 'JSON',
-      success: function(response) {
-        toastr.success('{{ __("Payment method changed successfully") }}', '{{ __("Success") }}', {
-          timeOut: 5000,
+      // Validate form
+      const changeMethod = form.find('select[name="change_method"]').val();
+      if (!changeMethod) {
+        toastr.error('{{ __("Please select a payment method") }}', '{{ __("Validation Error") }}', {
+          timeOut: 3000,
         });
-        setTimeout(function() {
-          location.reload();
-        }, 1000);
-      },
-      error: function(xhr) {
-        button.prop('disabled', false).html('<i class="ti-check"></i> {{ __("Save Changes") }}');
-        toastr.error('{{ __("Failed to change payment method") }}', '{{ __("Error") }}', {
-          timeOut: 5000,
-        });
+        return;
       }
+
+      // Check if Bank is selected and bank_id is required
+      if (changeMethod === 'Bank') {
+        const bankId = form.find('select[name="bank_id"]').val();
+        if (!bankId) {
+          toastr.error('{{ __("Please select a bank account") }}', '{{ __("Validation Error") }}', {
+            timeOut: 3000,
+          });
+          return;
+        }
+      }
+
+      // Disable button and show loading
+      button.prop('disabled', true).html('<i class="ti-reload"></i> {{ __("Saving...") }}');
+
+      const submit_url = form.attr('action');
+      const method = form.attr('method');
+      const formData = new FormData(form[0]);
+
+      $.ajax({
+        url: submit_url,
+        type: method,
+        data: formData,
+        contentType: false,
+        cache: false,
+        processData: false,
+        dataType: 'JSON',
+        success: function(response) {
+          toastr.success('{{ __("Payment method changed successfully") }}', '{{ __("Success") }}', {
+            timeOut: 5000,
+          });
+          setTimeout(function() {
+            location.reload();
+          }, 1000);
+        },
+        error: function(xhr) {
+          button.prop('disabled', false).html('<i class="ti-check"></i> {{ __("Save Changes") }}');
+
+          let errorMessage = '{{ __("Failed to change payment method") }}';
+          if (xhr.responseJSON && xhr.responseJSON.message) {
+            errorMessage = xhr.responseJSON.message;
+          }
+
+          toastr.error(errorMessage, '{{ __("Error") }}', {
+            timeOut: 5000,
+          });
+        }
+      });
     });
   });
   </script>

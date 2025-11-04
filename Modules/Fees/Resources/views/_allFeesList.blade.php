@@ -941,7 +941,7 @@
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  min-width: 180px;
+  min-width: 240px;
   text-align: right;
   backdrop-filter: blur(10px);
 }
@@ -1973,6 +1973,22 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Dropup Styles for Nice Select in Change Method */
+.change-method-expanded .nice-select-dropup .list {
+  bottom: 100% !important;
+  top: auto !important;
+  margin-bottom: 4px;
+  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.12) !important;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.change-method-expanded .nice-select-dropup.open:after {
+  transform: rotate(-135deg);
+  border-color: #0ea5e9;
 }
 
 /* ========== RESPONSIVE ========== */
