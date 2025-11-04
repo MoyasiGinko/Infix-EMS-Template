@@ -551,6 +551,7 @@
     "comments" => "Comments",
     "tags" => "Tags",
     "news_comments" => "News Comments",
+    "total" => "Total",
     "total_reply" => "Total Reply",
     "reply" => "Reply",
     "reply_comment" => "Reply Comment",

@@ -397,6 +397,7 @@ return [
     'Percentage' => 'Percentage',
     'Flat' => 'Flat',
 
+
     'exit_time' => 'Exit time',
 
     'VIEW_AS_PARENT' => 'View As Parent',

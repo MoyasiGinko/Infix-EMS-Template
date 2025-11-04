@@ -284,6 +284,7 @@ return [
     'break' => 'বিরতি',
     'disable' => 'নিষ্ক্রিয়',
     'select_module' => 'মডিউল সিলেক্ট করুন',
+    'total' => 'মোট',
 
     'are_you_sure_to_detete_this_item' => 'আপনি কি এই আইটেম মুছে ফেলতে নিশ্চিত',
     'welcome' => 'স্বাগতম',
