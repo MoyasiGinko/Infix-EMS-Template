@@ -1745,6 +1745,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+  position: relative;
 }
 
 .change-method-trigger {
@@ -1774,41 +1775,95 @@
   font-size: 12px;
 }
 
-/* Payment Note Display */
-.payment-note-display {
+/* Note Indicator Button (Sparkle) */
+.note-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 8px;
   background: linear-gradient(135deg, #fef3c7, #fde68a);
   border: 1px solid #fbbf24;
-  border-radius: 6px;
-  font-size: 11px;
-  color: #78350f;
-  line-height: 1.4;
-  margin-left: 8px;
-  max-width: 200px;
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.15);
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2);
+  position: relative;
 }
 
-.payment-note-display i {
+.note-indicator:hover {
+  background: linear-gradient(135deg, #fde68a, #fcd34d);
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 4px 10px rgba(251, 191, 36, 0.35);
+}
+
+.note-indicator:active {
+  transform: scale(0.95);
+}
+
+/* Note Tooltip */
+.note-tooltip {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  z-index: 1000;
+  min-width: 200px;
+  max-width: 300px;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-90%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-100%);
+  }
+}
+
+.note-tooltip-content {
+  background: #ffffff;
+  border: 2px solid #fbbf24;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   font-size: 12px;
-  flex-shrink: 0;
-  color: #f59e0b;
-}
-
-.payment-note-display span {
-  flex: 1;
+  color: #78350f;
+  line-height: 1.5;
   word-break: break-word;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  position: relative;
 }
 
-.payment-note-display:hover span {
-  white-space: normal;
-  overflow: visible;
+.note-tooltip-content::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #fbbf24;
+}
+
+.note-tooltip-content::before {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #ffffff;
+  z-index: 1;
 }
 
 /* Expandable Row */
@@ -2160,8 +2215,20 @@
     padding: 5px 10px;
   }
 
-  .payment-note-display {
-    font-size: 9px;
+  .note-indicator {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .note-tooltip {
+    min-width: 180px;
+    max-width: 250px;
+  }
+
+  .note-tooltip-content {
+    font-size: 11px;
+    padding: 10px 12px;
   }
 }
 
@@ -2174,6 +2241,22 @@
   .fees-ledger__status {
     min-width: 0;
     padding: 12px;
+  }
+
+  .note-indicator {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+
+  .note-tooltip {
+    min-width: 150px;
+    max-width: 200px;
+  }
+
+  .note-tooltip-content {
+    font-size: 10px;
+    padding: 8px 10px;
   }
 }
 

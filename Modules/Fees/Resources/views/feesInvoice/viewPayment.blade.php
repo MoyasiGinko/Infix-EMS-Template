@@ -216,9 +216,13 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
                     <span>{{ __('Change Method') }}</span>
                   </button>
                   @if ($feesTranscation->payment_note)
-                  <div class="payment-note-display">
-                    <i class="ti-notepad"></i>
-                    <span>{{ $feesTranscation->payment_note }}</span>
+                  <button type="button" class="note-indicator" data-note="{{ $feesTranscation->payment_note }}">
+                    ✨
+                  </button>
+                  <div class="note-tooltip" style="display: none;">
+                    <div class="note-tooltip-content">
+                      {{ $feesTranscation->payment_note }}
+                    </div>
                   </div>
                   @endif
                   @else
@@ -398,6 +402,25 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
           });
         }
       });
+    });
+
+    // Handle note indicator click to show tooltip
+    $(document).on('click', '.note-indicator', function(e) {
+      e.stopPropagation();
+      const tooltip = $(this).next('.note-tooltip');
+
+      // Close all other tooltips
+      $('.note-tooltip').not(tooltip).fadeOut(200);
+
+      // Toggle current tooltip
+      tooltip.fadeToggle(200);
+    });
+
+    // Close tooltip when clicking outside
+    $(document).on('click', function(e) {
+      if (!$(e.target).closest('.note-indicator, .note-tooltip').length) {
+        $('.note-tooltip').fadeOut(200);
+      }
     });
 
     // Close change method form
