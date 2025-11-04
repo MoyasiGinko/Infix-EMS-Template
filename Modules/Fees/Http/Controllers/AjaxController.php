@@ -160,11 +160,11 @@ class AjaxController extends Controller
 
             foreach ($incomes as $income) {
                 $updateIncome = SmAddIncome::find($income->id);
-                $updateIncome->payment_method = $payment_method->id;
+                $updateIncome->payment_method_id = $payment_method->id;
 
-                // Update bank_id in income record as well if applicable
+                // Update account_id (bank_id) in income record as well if applicable
                 if ($request->change_method === 'Bank' && $request->has('bank_id')) {
-                    $updateIncome->bank_id = $request->bank_id;
+                    $updateIncome->account_id = $request->bank_id;
                 }
 
                 $updateIncome->update();
