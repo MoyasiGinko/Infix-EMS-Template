@@ -1223,6 +1223,503 @@
   gap: 4px;
 }
 
+/* ========== ENHANCED MODAL CONTENT STYLES ========== */
+
+/* Invoice Badge in Title */
+.invoice-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Enhanced Status Badge with Icon */
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.fees-ledger__status--paid .status-icon {
+  background: rgba(16, 185, 129, 0.25);
+  color: #10b981;
+}
+
+.fees-ledger__status--partial .status-icon {
+  background: rgba(245, 158, 11, 0.25);
+  color: #f59e0b;
+}
+
+.fees-ledger__status--due .status-icon {
+  background: rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+}
+
+.status-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.status-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+  font-weight: 600;
+}
+
+.status-value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.status-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.status-detail-item i {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Invoice Snapshot Section */
+.invoice-snapshot {
+  background: #fff;
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.snapshot-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.snapshot-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.snapshot-info {
+  flex: 1;
+}
+
+.snapshot-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 2px 0;
+}
+
+.snapshot-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Enhanced Summary Cards with Icons */
+.card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.fees-ledger__summary-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fees-ledger__summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: #cbd5e1;
+  transition: width 0.2s;
+}
+
+.fees-ledger__summary-card:hover::before {
+  width: 5px;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.card-primary .card-icon {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+}
+
+.card-primary::before { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+
+.card-success .card-icon {
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+  color: #fff;
+}
+
+.card-success::before { background: linear-gradient(135deg, #10b981, #14b8a6); }
+
+.card-warning .card-icon {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #fff;
+}
+
+.card-warning::before { background: linear-gradient(135deg, #f59e0b, #f97316); }
+
+.card-info .card-icon {
+  background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+  color: #fff;
+}
+
+.card-info::before { background: linear-gradient(135deg, #06b6d4, #0ea5e9); }
+
+.card-balance .card-icon {
+  background: linear-gradient(135deg, #64748b, #475569);
+  color: #fff;
+}
+
+.card-balance::before { background: linear-gradient(135deg, #64748b, #475569); }
+
+.card-balance.balance-negative {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.card-balance.balance-negative .card-icon {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.card-balance.balance-negative::before {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.card-balance.balance-negative .fees-ledger__summary-value {
+  color: #dc2626;
+}
+
+.card-balance.balance-settled {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.card-balance.balance-settled .card-icon {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.card-balance.balance-settled::before {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.card-balance.balance-settled .fees-ledger__summary-value {
+  color: #059669;
+}
+
+/* Payment Ledger Section */
+.payment-ledger {
+  background: #fff;
+  border-radius: 10px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.ledger-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.ledger-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ledger-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.ledger-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 2px 0;
+}
+
+.ledger-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+.ledger-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Enhanced Table Styles */
+.fees-modal-table thead th i {
+  margin-right: 5px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.table-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+}
+
+.table-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #475569;
+}
+
+.table-date i {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.payment-method-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.payment-method-badge i {
+  font-size: 12px;
+}
+
+.method-cash {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+.method-bank {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #93c5fd;
+}
+
+.method-cheque {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #a5b4fc;
+}
+
+.method-wallet {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.table-amount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.table-amount i {
+  font-size: 12px;
+}
+
+.amount-paid {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.amount-paid i {
+  color: #10b981;
+}
+
+.amount-waiver {
+  color: #64748b;
+}
+
+.amount-waiver i {
+  color: #14b8a6;
+}
+
+.amount-fine {
+  color: #64748b;
+}
+
+.amount-fine i {
+  color: #f59e0b;
+}
+
+/* Enhanced Action Buttons */
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  border: 1px solid;
+  text-decoration: none;
+}
+
+.action-view {
+  background: #eff6ff;
+  color: #1e40af;
+  border-color: #bfdbfe;
+}
+
+.action-view:hover {
+  background: #dbeafe;
+  color: #1e3a8a;
+  transform: translateY(-1px);
+}
+
+.action-delete {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.action-delete:hover {
+  background: #fecaca;
+  color: #7f1d1d;
+  transform: translateY(-1px);
+}
+
+/* Enhanced Empty State */
+.fees-modal__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.fees-modal__empty i {
+  font-size: 32px;
+  color: #cbd5e1;
+}
+
+.fees-modal__empty p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
 /* ========== RESPONSIVE ========== */
 
 @media (max-width: 991px) {
@@ -1232,11 +1729,28 @@
 
   .fees-ledger__status {
     width: 100%;
-    text-align: left;
+  }
+
+  .status-badge {
+    justify-content: flex-start;
   }
 
   .fees-ledger__summary {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ledger-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ledger-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .stat-item {
+    align-items: flex-start;
   }
 }
 
@@ -1248,6 +1762,22 @@
 
   .fees-modal__body {
     max-height: calc(100vh - 160px);
+  }
+
+  .invoice-snapshot,
+  .payment-ledger {
+    padding: 14px;
+  }
+
+  .snapshot-header,
+  .ledger-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ledger-stats {
+    flex-direction: column;
+    gap: 8px;
   }
 
   .fees-modal-table thead {
@@ -1265,6 +1795,7 @@
   .fees-modal-table tbody td {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 10px 12px;
     border-bottom: 1px solid #f1f5f9;
   }
@@ -1284,7 +1815,7 @@
 
   .fees-modal__table-actions {
     justify-content: flex-end;
-    width: 100%;
+    width: auto;
   }
 
   .fees-ledger__summary {

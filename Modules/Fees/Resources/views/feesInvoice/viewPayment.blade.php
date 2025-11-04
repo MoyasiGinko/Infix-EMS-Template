@@ -32,18 +32,21 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
     <div class="fees-ledger__header">
       <div class="fees-ledger__header-info">
         <span class="fees-modal__eyebrow">@lang('fees::feesModule.fees_details')</span>
-        <h4 class="fees-modal__title" id="viewFeesPaymentLabel">@lang('fees::feesModule.view_payment_of') -
-          ({{ $feesinvoice->invoice_id }})</h4>
-        @if ($studentName)
-        <p class="fees-modal__subtitle">{{ $studentName }}</p>
-        @endif
+        <h4 class="fees-modal__title" id="viewFeesPaymentLabel">
+          <span class="invoice-badge">#{{ $feesinvoice->invoice_id }}</span>
+          @if ($studentName)
+          {{ $studentName }}
+          @else
+          @lang('fees::feesModule.view_payment')
+          @endif
+        </h4>
         <div class="fees-modal__meta">
           @if ($className || $sectionName)
-          <span><i class="ti-layers"></i>
-            {{ trim($className . ($sectionName ? ' - ' . $sectionName : '')) }}</span>
+          <span><i class="ti-bookmark"></i>
+            {{ trim($className . ($sectionName ? ' • ' . $sectionName : '')) }}</span>
           @endif
           @if ($shiftName)
-          <span><i class="ti-timer"></i> {{ $shiftName }}</span>
+          <span><i class="ti-time"></i> {{ $shiftName }}</span>
           @endif
           @if ($invoiceDate)
           <span><i class="ti-calendar"></i> {{ dateConvert($invoiceDate) }}</span>
@@ -51,10 +54,25 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
         </div>
       </div>
       <div class="fees-ledger__status {{ $statusVariant }}">
-        <span class="fees-ledger__status-label">@lang('common.status')</span>
-        <span class="fees-ledger__status-value">{{ $statusLabel }}</span>
-        <span class="fees-ledger__status-meta">{{ $statusMeta }}</span>
-        <span class="fees-ledger__status-count">{{ $statusCountText }}</span>
+        <div class="status-badge">
+          <i class="status-icon {{ $isSettled ? 'ti-check-box' : ($paidAmount > 0 ? 'ti-info-alt' : 'ti-alert') }}"></i>
+          <div class="status-content">
+            <span class="status-label">{{ $statusLabel }}</span>
+            <span class="status-value">{{ $currencySymbol }}{{ number_format($displayBalance, 2) }}</span>
+          </div>
+        </div>
+        <div class="status-details">
+          <div class="status-detail-item">
+            <i class="ti-receipt"></i>
+            <span>{{ $transactions->count() }} {{ __('payments') }}</span>
+          </div>
+          @if ($lastPaymentDate)
+          <div class="status-detail-item">
+            <i class="ti-calendar"></i>
+            <span>{{ dateConvert($lastPaymentDate) }}</span>
+          </div>
+          @endif
+        </div>
       </div>
     </div>
     <button type="button" class="fees-modal__close" data-dismiss="modal" aria-label="@lang('common.close')">
@@ -62,53 +80,110 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
     </button>
   </div>
   <div class="fees-modal__body">
-    <span class="fees-ledger__section-heading">{{ __('Invoice snapshot') }}</span>
-    <div class="fees-ledger__summary">
-      <div class="fees-ledger__summary-card">
-        <span class="fees-ledger__summary-label">@lang('accounts.amount')</span>
-        <span
-          class="fees-ledger__summary-value"><span>{{ $currencySymbol }}</span>{{ number_format($assignedAmount, 2) }}</span>
+    <!-- Invoice Snapshot with Enhanced Visual Design -->
+    <div class="invoice-snapshot">
+      <div class="snapshot-header">
+        <div class="snapshot-icon">
+          <i class="ti-file"></i>
+        </div>
+        <div class="snapshot-info">
+          <h5 class="snapshot-title">{{ __('Invoice Summary') }}</h5>
+          <p class="snapshot-subtitle">{{ __('Financial overview of this invoice') }}</p>
+        </div>
       </div>
-      <div class="fees-ledger__summary-card">
-        <span class="fees-ledger__summary-label">@lang('fees::feesModule.waiver')</span>
-        <span
-          class="fees-ledger__summary-value"><span>{{ $currencySymbol }}</span>{{ number_format($waiverAmount, 2) }}</span>
-      </div>
-      <div class="fees-ledger__summary-card">
-        <span class="fees-ledger__summary-label">@lang('fees.fine')</span>
-        <span
-          class="fees-ledger__summary-value"><span>{{ $currencySymbol }}</span>{{ number_format($fineAmount, 2) }}</span>
-      </div>
-      <div class="fees-ledger__summary-card">
-        <span class="fees-ledger__summary-label">@lang('fees.paid')</span>
-        <span
-          class="fees-ledger__summary-value"><span>{{ $currencySymbol }}</span>{{ number_format($paidAmount, 2) }}</span>
-      </div>
-      <div class="fees-ledger__summary-card {{ $displayBalance > 0.01 ? 'balance-negative' : '' }}">
-        <span class="fees-ledger__summary-label">@lang('accounts.balance')</span>
-        <span
-          class="fees-ledger__summary-value"><span>{{ $currencySymbol }}</span>{{ number_format($displayBalance, 2) }}</span>
+
+      <div class="fees-ledger__summary">
+        <div class="fees-ledger__summary-card card-primary">
+          <div class="card-icon">
+            <i class="ti-money"></i>
+          </div>
+          <div class="card-content">
+            <span class="fees-ledger__summary-label">@lang('accounts.amount')</span>
+            <span class="fees-ledger__summary-value">{{ $currencySymbol }}{{ number_format($assignedAmount, 2) }}</span>
+          </div>
+        </div>
+
+        <div class="fees-ledger__summary-card card-success">
+          <div class="card-icon">
+            <i class="ti-gift"></i>
+          </div>
+          <div class="card-content">
+            <span class="fees-ledger__summary-label">@lang('fees::feesModule.waiver')</span>
+            <span class="fees-ledger__summary-value">{{ $currencySymbol }}{{ number_format($waiverAmount, 2) }}</span>
+          </div>
+        </div>
+
+        <div class="fees-ledger__summary-card card-warning">
+          <div class="card-icon">
+            <i class="ti-alert"></i>
+          </div>
+          <div class="card-content">
+            <span class="fees-ledger__summary-label">@lang('fees.fine')</span>
+            <span class="fees-ledger__summary-value">{{ $currencySymbol }}{{ number_format($fineAmount, 2) }}</span>
+          </div>
+        </div>
+
+        <div class="fees-ledger__summary-card card-info">
+          <div class="card-icon">
+            <i class="ti-check"></i>
+          </div>
+          <div class="card-content">
+            <span class="fees-ledger__summary-label">@lang('fees.paid')</span>
+            <span class="fees-ledger__summary-value">{{ $currencySymbol }}{{ number_format($paidAmount, 2) }}</span>
+          </div>
+        </div>
+
+        <div
+          class="fees-ledger__summary-card card-balance {{ $displayBalance > 0.01 ? 'balance-negative' : 'balance-settled' }}">
+          <div class="card-icon">
+            <i class="{{ $displayBalance > 0.01 ? 'ti-wallet' : 'ti-check-box' }}"></i>
+          </div>
+          <div class="card-content">
+            <span class="fees-ledger__summary-label">@lang('accounts.balance')</span>
+            <span class="fees-ledger__summary-value">{{ $currencySymbol }}{{ number_format($displayBalance, 2) }}</span>
+          </div>
+        </div>
       </div>
     </div>
-    <span class="fees-ledger__section-heading">{{ __('Payment ledger') }}</span>
-    <div class="fees-ledger__table">
-      <div class="fees-modal__table-caption">
-        <span>{{ __('Payment records') }}</span>
-        <span>@lang('common.total'): {{ $transactions->count() }}@if ($lastPaymentDate) |
-          {{ __('Last payment: :date', ['date' => dateConvert($lastPaymentDate)]) }}@endif</span>
+
+    <!-- Payment Ledger with Modern Table Design -->
+    <div class="payment-ledger">
+      <div class="ledger-header">
+        <div class="ledger-title-group">
+          <div class="ledger-icon">
+            <i class="ti-receipt"></i>
+          </div>
+          <div>
+            <h5 class="ledger-title">{{ __('Payment History') }}</h5>
+            <p class="ledger-subtitle">{{ __('Complete transaction records') }}</p>
+          </div>
+        </div>
+        <div class="ledger-stats">
+          <div class="stat-item">
+            <span class="stat-label">@lang('common.total')</span>
+            <span class="stat-value">{{ $transactions->count() }}</span>
+          </div>
+          @if ($lastPaymentDate)
+          <div class="stat-item">
+            <span class="stat-label">{{ __('Latest') }}</span>
+            <span class="stat-value">{{ dateConvert($lastPaymentDate) }}</span>
+          </div>
+          @endif
+        </div>
       </div>
-      <div class="table-responsive">
+
+      <div class="fees-ledger__table">
         <table class="table fees-modal-table" cellspacing="0" width="100%">
           <thead>
             <tr>
-              <th>@lang('common.sl')</th>
-              <th>@lang('common.date')</th>
-              <th>@lang('fees::feesModule.payment_method')</th>
-              <th>@lang('fees::feesModule.change_method')</th>
-              <th>@lang('fees::feesModule.paid_amount')</th>
-              <th>@lang('fees::feesModule.waiver')</th>
-              <th>@lang('fees.fine')</th>
-              <th>@lang('common.action')</th>
+              <th><i class="ti-hash"></i> @lang('common.sl')</th>
+              <th><i class="ti-calendar"></i> @lang('common.date')</th>
+              <th><i class="ti-credit-card"></i> @lang('fees::feesModule.payment_method')</th>
+              <th><i class="ti-exchange-vertical"></i> @lang('fees::feesModule.change_method')</th>
+              <th><i class="ti-wallet"></i> @lang('fees::feesModule.paid_amount')</th>
+              <th><i class="ti-gift"></i> @lang('fees::feesModule.waiver')</th>
+              <th><i class="ti-alert"></i> @lang('fees.fine')</th>
+              <th><i class="ti-settings"></i> @lang('common.action')</th>
             </tr>
           </thead>
           <tbody>
@@ -118,13 +193,20 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
             $canDelete = $canChangeMethod || $feesTranscation->payment_method === 'Wallet';
             @endphp
             <tr>
-              <td data-label="@lang('common.sl')">{{ $loop->iteration }}</td>
-              <td data-label="@lang('common.date')">{{ dateConvert($feesTranscation->created_at) }}</td>
-              <td data-label="@lang('fees::feesModule.payment_method')">
-                <div class="fees-modal__cell-stack">
-                  <span class="fees-modal__tag"><i class="ti-credit-card"></i>
-                    {{ $feesTranscation->payment_method }}</span>
+              <td data-label="@lang('common.sl')">
+                <span class="table-badge badge-primary">{{ $loop->iteration }}</span>
+              </td>
+              <td data-label="@lang('common.date')">
+                <div class="table-date">
+                  <i class="ti-time"></i>
+                  <span>{{ dateConvert($feesTranscation->created_at) }}</span>
                 </div>
+              </td>
+              <td data-label="@lang('fees::feesModule.payment_method')">
+                <span class="payment-method-badge method-{{ strtolower($feesTranscation->payment_method) }}">
+                  <i class="ti-credit-card"></i>
+                  {{ $feesTranscation->payment_method }}
+                </span>
               </td>
               <td data-label="@lang('fees::feesModule.change_method')">
                 @if ($canChangeMethod)
@@ -189,26 +271,35 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
                 @endif
               </td>
               <td data-label="@lang('fees::feesModule.paid_amount')">
-                <strong>{{ $currencySymbol }}{{ number_format($feesTranscation->paid_amount, 2) }}</strong>
+                <div class="table-amount amount-paid">
+                  <i class="ti-check"></i>
+                  <strong>{{ $currencySymbol }}{{ number_format($feesTranscation->paid_amount, 2) }}</strong>
+                </div>
               </td>
               <td data-label="@lang('fees::feesModule.waiver')">
-                {{ $currencySymbol }}{{ number_format($feesTranscation->weaver, 2) }}
+                <div class="table-amount amount-waiver">
+                  <i class="ti-gift"></i>
+                  <span>{{ $currencySymbol }}{{ number_format($feesTranscation->weaver, 2) }}</span>
+                </div>
               </td>
               <td data-label="@lang('fees.fine')">
-                {{ $currencySymbol }}{{ number_format($feesTranscation->fine, 2) }}
+                <div class="table-amount amount-fine">
+                  <i class="ti-alert"></i>
+                  <span>{{ $currencySymbol }}{{ number_format($feesTranscation->fine, 2) }}</span>
+                </div>
               </td>
               <td data-label="@lang('common.action')">
                 <div class="fees-modal__table-actions">
-                  <a class="primary-btn icon-only fix-gr-bg" type="button"
+                  <a class="action-btn action-view" type="button"
                     href="{{ route('fees.single-payment-view', ['id' => $feesTranscation->id, 'type' => 'view']) }}"
                     title="@lang('common.view')">
-                    <span class="ti-eye"></span>
+                    <i class="ti-eye"></i>
                   </a>
                   @if ($canDelete)
-                  <a class="primary-btn icon-only fix-gr-bg" type="button"
+                  <a class="action-btn action-delete" type="button"
                     href="{{ route('fees.delete-single-fees-transcation', $feesTranscation->id) }}"
                     data-tooltip="tooltip" title="@lang('common.delete')">
-                    <span class="ti-trash"></span>
+                    <i class="ti-trash"></i>
                   </a>
                   @endif
                 </div>
@@ -217,7 +308,10 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
             @empty
             <tr>
               <td colspan="8">
-                <div class="fees-modal__empty">{{ __('common.no_data_available') }}</div>
+                <div class="fees-modal__empty">
+                  <i class="ti-info-alt"></i>
+                  <p>{{ __('common.no_data_available') }}</p>
+                </div>
               </td>
             </tr>
             @endforelse
@@ -225,6 +319,7 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
         </table>
       </div>
     </div>
+  </div>
   </div>
   <script>
   if ($('.primary_select').length) {
