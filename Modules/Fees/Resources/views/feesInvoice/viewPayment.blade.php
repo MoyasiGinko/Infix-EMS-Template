@@ -32,8 +32,8 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
     <div class="fees-ledger__header">
       <div class="fees-ledger__header-info">
         <span class="fees-modal__eyebrow">@lang('fees.fees_details')</span>
-        <h4 class="fees-modal__title" id="viewFeesPaymentLabel">
-          <span class="invoice-badge d-block">#{{ $feesinvoice->invoice_id }}</span>
+        <h4 class="fees-modal__title" id="viewFeesPaymentLabel"
+          style="display:inline-flex;flex-direction:column;align-items:flex-start;width:auto;">
           <span class="fees-modal__title-student">
             @if ($studentName)
             {{ $studentName }}
@@ -41,6 +41,7 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
             @lang('fees.feesModule.view_payment')
             @endif
           </span>
+          <span class="invoice-badge d-block mt-1">#{{ $feesinvoice->invoice_id }}</span>
         </h4>
         <div class="fees-modal__meta">
           @if ($className || $sectionName)
