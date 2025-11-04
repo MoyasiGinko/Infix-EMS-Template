@@ -461,22 +461,27 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
       const button = $(this);
       const form = button.closest('form');
 
-      // Validate form
+      // Validate form - payment method is required
       const changeMethod = form.find('select[name="change_method"]').val();
-      if (!changeMethod) {
-        toastr.error('{{ __("Please select a payment method") }}', '{{ __("Validation Error") }}', {
-          timeOut: 3000,
-        });
+      if (!changeMethod || changeMethod === '') {
+        toastr.error('{{ __("Please select a payment method to save changes") }}',
+          '{{ __("Validation Error") }}', {
+            timeOut: 3000,
+          });
+        // Highlight the select field
+        form.find('select[name="change_method"]').focus();
         return;
       }
 
       // Check if Bank is selected and bank_id is required
       if (changeMethod === 'Bank') {
         const bankId = form.find('select[name="bank_id"]').val();
-        if (!bankId) {
+        if (!bankId || bankId === '') {
           toastr.error('{{ __("Please select a bank account") }}', '{{ __("Validation Error") }}', {
             timeOut: 3000,
           });
+          // Highlight the bank select field
+          form.find('select[name="bank_id"]').focus();
           return;
         }
       }
