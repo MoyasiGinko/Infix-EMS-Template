@@ -1079,6 +1079,7 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid #e2e8f0;
+  padding: 12px;
 }
 
 .fees-ledger__table .table-responsive {
