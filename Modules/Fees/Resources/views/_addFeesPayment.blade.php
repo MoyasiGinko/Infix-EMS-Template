@@ -93,6 +93,19 @@
                 <div class="value">{{ $invoiceInfo?->recordDetail?->shift?->name }}</div>
               </div>
             </div>
+            @else
+            <div class="row mt-25">
+              <div class="col-lg-12">
+                <div class="primary_input">
+                  <label class="primary_input_label" for="student_payment_date">@lang('fees.payment_date')</label>
+                  <input class="primary_input_field form-control" id="student_payment_date" type="date"
+                    name="payment_date" value="{{ old('payment_date', date('Y-m-d')) }}">
+                  @if ($errors->has('payment_date'))
+                  <span class="text-danger" role="alert">{{ $errors->first('payment_date') }}</span>
+                  @endif
+                </div>
+              </div>
+            </div>
             @endif
             @if (isset($role) && $role == 'admin')
             <div class="single-meta">
@@ -180,6 +193,37 @@
                 </div>
               </div>
             </div>
+
+            @if (isset($role) && $role == 'admin')
+            <div class="row mt-25">
+              <div class="col-lg-12">
+                <div class="primary_input">
+                  <label class="primary_input_label" for="payment_date">@lang('fees.payment_date')</label>
+                  <div class="primary_datepicker_input">
+                    <div class="no-gutters input-right-icon">
+                      <div class="col">
+                        <div class="">
+                          <input class="primary_input_field  primary_input_field date form-control"
+                            id="payment_date" type="text" name="payment_date"
+                            value="{{ old('payment_date', date('m/d/Y')) }}">
+                        </div>
+                      </div>
+                      <button class="btn-date" data-id="#payment_date" type="button">
+                        <label for="payment_date">
+                          <i class="ti-calendar"></i>
+                        </label>
+                      </button>
+                    </div>
+                  </div>
+                  @if ($errors->has('payment_date'))
+                  <span class="text-danger invalid-select" role="alert">
+                    {{ $errors->first('payment_date') }}
+                  </span>
+                  @endif
+                </div>
+              </div>
+            </div>
+            @endif
 
             <div class="row chequeBank d-none">
               <div class="col-lg-12">

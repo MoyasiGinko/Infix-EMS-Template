@@ -23,7 +23,14 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
   }
   $statusMeta = __('accounts.balance') . ': ' . $currencySymbol . number_format($displayBalance, 2);
   $statusCountText = __('Total payments: :count', ['count' => $transactions->count()]);
-  $lastPaymentDate = optional($transactions->sortByDesc('created_at')->first())->created_at ?? null;
+  $lastPaymentRecord = $transactions->sortByDesc(function ($txn) {
+  $date = $txn->payment_date ?? $txn->created_at;
+  if ($date instanceof \Carbon\Carbon) {
+  return $date->timestamp;
+  }
+  return $date ? strtotime($date) : 0;
+  })->first();
+  $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->payment_date ?? $lastPaymentRecord->created_at) : null;
   if ($lastPaymentDate) {
   $statusCountText .= ' | ' . __('Last payment: :date', ['date' => dateConvert($lastPaymentDate)]);
   }
@@ -202,7 +209,7 @@ if ($displayBalance < 0) { $displayBalance=0; } $isSettled=$rawBalance <=0.01; $
               <td data-label="@lang('common.date')">
                 <div class="table-date">
                   <i class="ti-time"></i>
-                  <span>{{ dateConvert($feesTranscation->created_at) }}</span>
+                  <span>{{ dateConvert($feesTranscation->payment_date ?? $feesTranscation->created_at) }}</span>
                 </div>
               </td>
               <td data-label="@lang('fees::feesModule.payment_method')">

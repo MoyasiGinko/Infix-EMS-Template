@@ -12,6 +12,7 @@ class StudentAddFeesPaymentRequest extends FormRequest
             'payment_method' => 'required',
             'bank' => 'required_if:payment_method,Bank',
             'total_paid_amount' => 'required|numeric|min:0.01',
+            'payment_date' => 'nullable|date',
             'paid_amount' => 'required|array',
             'paid_amount.*' => 'nullable|numeric|min:0',
             'weaver' => 'array',

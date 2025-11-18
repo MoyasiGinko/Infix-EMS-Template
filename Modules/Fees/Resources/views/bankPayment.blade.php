@@ -200,7 +200,7 @@
                                                             </div>
 
                                                         </td>
-                                                        <td>{{ dateConvert($bank_payment->created_at) }}</td>
+                                                        <td>{{ dateConvert($bank_payment->payment_date ?? $bank_payment->created_at) }}</td>
                                                         <td>{{ $paid_amount + $bank_payment->add_wallet_money }}</td>
                                                         <td>
                                                             @if ($bank_payment->payment_note)

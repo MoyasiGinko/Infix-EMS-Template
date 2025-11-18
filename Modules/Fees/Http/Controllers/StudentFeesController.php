@@ -10,7 +10,7 @@ use App\SmStudent;
 use App\SmAddIncome;
 use App\SmBankAccount;
 use App\SmPaymentMethhod;
-use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Models\StudentRecord;
 use App\SmPaymentGatewaySetting;
 use App\Traits\NotificationSend;
@@ -26,6 +26,7 @@ use Modules\Fees\Entities\FmFeesTransaction;
 use Modules\Fees\Entities\FmFeesInvoiceChield;
 use Modules\Wallet\Entities\WalletTransaction;
 use Modules\Fees\Entities\FmFeesTransactionChield;
+use Modules\Fees\Http\Requests\StudentAddFeesPaymentRequest;
 use Modules\CcAveune\Http\Controllers\CcAveuneController;
 use Modules\ToyyibPay\Http\Controllers\ToyyibPayController;
 
@@ -130,8 +131,11 @@ class StudentFeesController extends Controller
 
     }
 
-    public function studentFeesPaymentStore(Request $request)
+    public function studentFeesPaymentStore(StudentAddFeesPaymentRequest $request)
     {
+        $paymentDate = $request->payment_date ? Carbon::parse($request->payment_date) : now();
+        $paymentDateString = $paymentDate->toDateString();
+
         // Normalize numeric arrays & prevent negative injections
         $request->merge([
             'total_paid_amount' => $request->total_paid_amount !== null ? (float) $request->total_paid_amount : null,
@@ -233,6 +237,7 @@ class StudentFeesController extends Controller
                 $storeTransaction->file = $file;
                 $storeTransaction->paid_status = 'approve';
                 $storeTransaction->school_id = Auth::user()->school_id;
+                $storeTransaction->payment_date = $paymentDate;
                 if (moduleStatusCheck('University')) {
                     $storeTransaction->un_academic_id = getAcademicId();
                 } else {
@@ -284,7 +289,7 @@ class StudentFeesController extends Controller
                     $school = SmSchool::find($user->school_id);
                     $compact['full_name'] = $user->full_name;
                     $compact['method'] = $request->payment_method;
-                    $compact['create_date'] = date('Y-m-d');
+                    $compact['create_date'] = $paymentDateString;
                     $compact['school_name'] = $school->school_name;
                     $compact['current_balance'] = $user->wallet_balance;
                     $compact['add_balance'] = $request->add_wallet;
@@ -300,7 +305,7 @@ class StudentFeesController extends Controller
 
                 $smAddIncome = new SmAddIncome();
                 $smAddIncome->name = 'Fees Collect';
-                $smAddIncome->date = date('Y-m-d');
+                $smAddIncome->date = $paymentDateString;
                 $smAddIncome->amount = $request->total_paid_amount;
                 $smAddIncome->fees_collection_id = $storeTransaction->id;
                 $smAddIncome->active_status = 1;
@@ -323,6 +328,7 @@ class StudentFeesController extends Controller
                 $storeTransaction->file = $file;
                 $storeTransaction->paid_status = 'pending';
                 $storeTransaction->school_id = Auth::user()->school_id;
+                $storeTransaction->payment_date = $paymentDate;
                 if (moduleStatusCheck('University')) {
                     $storeTransaction->un_academic_id = getAcademicId();
                 } else {
@@ -368,6 +374,7 @@ class StudentFeesController extends Controller
                 $storeTransaction->user_id = Auth::user()->id;
                 $storeTransaction->paid_status = 'pending';
                 $storeTransaction->school_id = Auth::user()->school_id;
+                $storeTransaction->payment_date = $paymentDate;
                 if (moduleStatusCheck('University')) {
                     $storeTransaction->un_academic_id = getAcademicId();
                 } else {

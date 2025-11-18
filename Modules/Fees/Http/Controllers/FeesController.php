@@ -15,7 +15,9 @@ use App\SmBankStatement;
 use App\SmPaymentMethhod;
 use App\SmGeneralSettings;
 use Illuminate\Http\Request;
+use Modules\Fees\Http\Requests\AdminAddFeesPaymentRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use App\Models\StudentRecord;
 use Illuminate\Validation\Rule;
 use App\SmPaymentGatewaySetting;
@@ -988,15 +990,19 @@ class FeesController extends Controller
             ->where('school_id', Auth::user()->school_id)
             ->where('academic_id', getAcademicId())
             ->get();
+        $feesTranscations = FmFeesTransaction::where('fees_invoice_id', $invoiceInfo->id)
+            ->where('school_id', Auth::user()->school_id)
+            ->where('academic_id', getAcademicId())
+            ->get();
         $banks = SmBankAccount::where('active_status', '=', 1)
             ->where('school_id', Auth::user()->school_id)
             ->get();
 
         if ($state == 'view') {
-            return view('fees::feesInvoice.feesInvoiceView', ['generalSetting' => $generalSetting, 'invoiceInfo' => $invoiceInfo, 'invoiceDetails' => $invoiceDetails, 'banks' => $banks]);
+            return view('fees::feesInvoice.feesInvoiceView', ['generalSetting' => $generalSetting, 'invoiceInfo' => $invoiceInfo, 'invoiceDetails' => $invoiceDetails, 'banks' => $banks, 'feesTranscations' => $feesTranscations]);
         }
 
-        return view('fees::feesInvoice.feesInvoicePrint', ['invoiceInfo' => $invoiceInfo, 'invoiceDetails' => $invoiceDetails, 'banks' => $banks]);
+        return view('fees::feesInvoice.feesInvoicePrint', ['invoiceInfo' => $invoiceInfo, 'invoiceDetails' => $invoiceDetails, 'banks' => $banks, 'feesTranscations' => $feesTranscations]);
 
     }
 
@@ -1065,7 +1071,7 @@ class FeesController extends Controller
 
     }
 
-    public function feesPaymentStore(Request $request)
+    public function feesPaymentStore(AdminAddFeesPaymentRequest $request)
     {
 
         if ($request->total_paid_amount == null) {
@@ -1073,14 +1079,8 @@ class FeesController extends Controller
             return redirect()->back();
         }
 
-        $validator = Validator::make($request->all(), [
-            'payment_method' => 'required',
-            'bank' => 'required_if:payment_method,Bank',
-            'file' => 'mimes:jpg,jpeg,png,pdf',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        $paymentDate = $request->payment_date ? Carbon::parse($request->payment_date) : now();
+        $paymentDateString = $paymentDate->toDateString();
         try {
             $destination = 'public/uploads/student/document/';
             $file = fileUpload($request->file('file'), $destination);
@@ -1105,7 +1105,7 @@ class FeesController extends Controller
                 $compact['user_email'] = $user->email;
                 $compact['full_name'] = $user->full_name;
                 $compact['method'] = $request->payment_method;
-                $compact['create_date'] = date('Y-m-d');
+                $compact['create_date'] = $paymentDateString;
                 $compact['school_name'] = $school->school_name;
                 $compact['current_balance'] = $user->wallet_balance;
                 $compact['add_balance'] = $request->total_paid_amount;
@@ -1125,6 +1125,7 @@ class FeesController extends Controller
             $fmFeesTransaction->user_id = Auth::user()->id;
             $fmFeesTransaction->file = $file;
             $fmFeesTransaction->paid_status = 'approve';
+            $fmFeesTransaction->payment_date = $paymentDate;
             $fmFeesTransaction->school_id = Auth::user()->school_id;
             $fmFeesTransaction->academic_id = getAcademicId();
             $fmFeesTransaction->save();
@@ -1163,7 +1164,7 @@ class FeesController extends Controller
                 $income_head = generalSetting();
                 $add_income = new SmAddIncome();
                 $add_income->name = 'Fees Collect';
-                $add_income->date = date('Y-m-d');
+                $add_income->date = $paymentDateString;
                 $add_income->amount = $request->paid_amount[$key];
                 $add_income->fees_collection_id = $fmFeesTransaction->id;
                 $add_income->active_status = 1;
@@ -1192,7 +1193,7 @@ class FeesController extends Controller
                     $bank_statement->type = 1;
                     $bank_statement->details = 'Fees Payment';
                     $bank_statement->item_sell_id = $fmFeesTransaction->id;
-                    $bank_statement->payment_date = date('Y-m-d');
+                    $bank_statement->payment_date = $paymentDateString;
                     $bank_statement->bank_id = $request->bank;
                     $bank_statement->school_id = Auth::user()->school_id;
                     $bank_statement->payment_method = $payment_method->id;
@@ -1330,8 +1331,7 @@ class FeesController extends Controller
                     });
                 })
                 ->when($bankFeesPayment->payment_date, function ($query) use ($date_from, $date_to): void {
-                    $query->whereDate('created_at', '>=', $date_from)
-                        ->whereDate('created_at', '<=', $date_to);
+                    $query->whereBetween(DB::raw('COALESCE(payment_date, created_at)'), [$date_from, $date_to]);
                 })
                 ->whereIn('student_id', $student_ids)
                 ->whereIn('payment_method', ['Bank', 'Cheque'])
@@ -1516,10 +1516,21 @@ class FeesController extends Controller
         $invoiceInfo = FmFeesInvoice::find($transcationInfo->fees_invoice_id);
 
         if ($type == 'view') {
-            return view('fees::feesInvoice.feesInvoiceSingleView', ['generalSetting' => $generalSetting, 'invoiceInfo' => $invoiceInfo, 'transcationDetails' => $transcationDetails, 'id' => $id]);
+            return view('fees::feesInvoice.feesInvoiceSingleView', [
+                'generalSetting' => $generalSetting,
+                'invoiceInfo' => $invoiceInfo,
+                'transcationDetails' => $transcationDetails,
+                'transcationInfo' => $transcationInfo,
+                'id' => $id,
+            ]);
         }
 
-        return view('fees::feesInvoice.feesInvoiceSinglePrint', ['generalSetting' => $generalSetting, 'invoiceInfo' => $invoiceInfo, 'transcationDetails' => $transcationDetails]);
+        return view('fees::feesInvoice.feesInvoiceSinglePrint', [
+            'generalSetting' => $generalSetting,
+            'invoiceInfo' => $invoiceInfo,
+            'transcationDetails' => $transcationDetails,
+            'transcationInfo' => $transcationInfo,
+        ]);
 
     }
 
@@ -1531,8 +1542,8 @@ class FeesController extends Controller
         $fees_type = $previous_route == 'lms.fees-invoice' ? 'lms' : 'fees';
 
         $latestPayments = FmFeesTransaction::select([
-                'fees_invoice_id',
-                DB::raw('MAX(created_at) as latest_paid_at'),
+            'fees_invoice_id',
+            DB::raw('MAX(COALESCE(payment_date, created_at)) as latest_paid_at'),
             ])
             ->where('school_id', Auth::user()->school_id)
             ->where('academic_id', getAcademicId())

@@ -13,6 +13,7 @@ use App\SmStudent;
 use App\User;
 use Exception;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Modules\Fees\Entities\FmFeesGroup;
@@ -149,6 +150,9 @@ class StudentFeesController extends Controller
             throw ValidationException::withMessages(['paid_amount_error' => 'Paid Amount Can Not Be Blank']);
         }
 
+        $paymentDate = $studentAddFeesPaymentRequest->payment_date ? Carbon::parse($studentAddFeesPaymentRequest->payment_date) : now();
+        $paymentDateString = $paymentDate->toDateString();
+
         $destination = 'public/uploads/student/document/';
         $file = fileUpload($studentAddFeesPaymentRequest->file('file'), $destination);
 
@@ -197,6 +201,7 @@ class StudentFeesController extends Controller
             $storeTransaction->file = $file;
             $storeTransaction->paid_status = 'approve';
             $storeTransaction->school_id = Auth::user()->school_id;
+            $storeTransaction->payment_date = $paymentDate;
             $storeTransaction->academic_id = getAcademicId();
             $storeTransaction->save();
 
@@ -238,7 +243,7 @@ class StudentFeesController extends Controller
                 $school = SmSchool::find($user->school_id);
                 $compact['full_name'] = $user->full_name;
                 $compact['method'] = $studentAddFeesPaymentRequest->payment_method;
-                $compact['create_date'] = date('Y-m-d');
+                $compact['create_date'] = $paymentDateString;
                 $compact['school_name'] = $school->school_name;
                 $compact['current_balance'] = $user->wallet_balance;
                 $compact['add_balance'] = $studentAddFeesPaymentRequest->add_wallet;
@@ -254,7 +259,7 @@ class StudentFeesController extends Controller
 
             $smAddIncome = new SmAddIncome();
             $smAddIncome->name = 'Fees Collect';
-            $smAddIncome->date = date('Y-m-d');
+            $smAddIncome->date = $paymentDateString;
             $smAddIncome->amount = $studentAddFeesPaymentRequest->total_paid_amount;
             $smAddIncome->fees_collection_id = $storeTransaction->id;
             $smAddIncome->active_status = 1;
@@ -277,6 +282,7 @@ class StudentFeesController extends Controller
             $storeTransaction->file = $file;
             $storeTransaction->paid_status = 'pending';
             $storeTransaction->school_id = Auth::user()->school_id;
+            $storeTransaction->payment_date = $paymentDate;
             $storeTransaction->academic_id = getAcademicId();
             $storeTransaction->save();
 
@@ -303,6 +309,7 @@ class StudentFeesController extends Controller
             $storeTransaction->user_id = Auth::user()->id;
             $storeTransaction->paid_status = 'pending';
             $storeTransaction->school_id = Auth::user()->school_id;
+            $storeTransaction->payment_date = $paymentDate;
             $storeTransaction->academic_id = getAcademicId();
             $storeTransaction->save();
 

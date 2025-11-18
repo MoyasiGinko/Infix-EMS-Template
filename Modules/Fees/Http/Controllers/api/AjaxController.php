@@ -28,7 +28,7 @@ class AjaxController extends Controller
             ->where('school_id', Auth::user()->school_id)
             ->get()->map(function ($value): array {
                 return [
-                    'date' => dateConvert($value->created_at),
+                    'date' => dateConvert($value->payment_date ?? $value->created_at),
                     'payment_method' => $value->payment_method,
                     'change_method' => $value->payment_method,
                     'paid_amount' => $value->paid_amount,

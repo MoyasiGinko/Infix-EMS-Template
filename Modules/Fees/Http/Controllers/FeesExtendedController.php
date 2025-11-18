@@ -10,6 +10,7 @@ use App\SmBankAccount;
 use App\SmBankStatement;
 use App\SmPaymentMethhod;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -24,6 +25,8 @@ class FeesExtendedController extends Controller
 {
     public function invStore($request)
     {
+        $paymentDate = $request->payment_date ? Carbon::parse($request->payment_date) : now();
+        $paymentDateString = $paymentDate->toDateString();
 
 
         $fmFeesInvoice = new FmFeesInvoice();
@@ -60,6 +63,7 @@ class FeesExtendedController extends Controller
             $fmFeesTransaction->paid_status = 'approve';
             $fmFeesTransaction->school_id = Auth::user()->school_id;
             $fmFeesTransaction->academic_id = getAcademicId();
+            $fmFeesTransaction->payment_date = $paymentDate;
             $fmFeesTransaction->save();
         }
 
@@ -118,7 +122,7 @@ class FeesExtendedController extends Controller
                     $bank_statement->type = 1;
                     $bank_statement->details = 'Fees Payment';
                     $bank_statement->item_sell_id = $fmFeesTransaction->id;
-                    $bank_statement->payment_date = date('Y-m-d');
+                    $bank_statement->payment_date = $paymentDateString;
                     $bank_statement->bank_id = $request->bank;
                     $bank_statement->school_id = Auth::user()->school_id;
                     $bank_statement->payment_method = $payment_method->id;
@@ -149,7 +153,8 @@ class FeesExtendedController extends Controller
         $allTranscations = FmFeesTransactionChield::where('fees_transaction_id', $transcation->id)->get();
 
         foreach ($allTranscations as $allTranscation) {
-            $transcationId = FmFeesTransaction::find($allTranscation->fees_transaction_id);
+        $paymentDate = $transcation && $transcation->payment_date ? Carbon::parse($transcation->payment_date) : now();
+        $paymentDateString = $paymentDate->toDateString();
             $fesInvoiceId = FmFeesInvoiceChield::where('fees_invoice_id', $transcationId->fees_invoice_id)
                 ->where('fees_type', $allTranscation->fees_type)
                 ->first();
@@ -166,7 +171,7 @@ class FeesExtendedController extends Controller
 
             $add_income = new SmAddIncome();
             $add_income->name = 'Fees Collect';
-            $add_income->date = date('Y-m-d');
+            $add_income->date = $paymentDateString;
             $add_income->amount = $allTranscation->paid_amount;
             $add_income->fees_collection_id = $transcation->fees_invoice_id;
             $add_income->active_status = 1;
@@ -193,7 +198,7 @@ class FeesExtendedController extends Controller
                 $bank_statement->after_balance = $after_balance;
                 $bank_statement->type = 1;
                 $bank_statement->details = 'Fees Payment';
-                $bank_statement->payment_date = date('Y-m-d');
+                $bank_statement->payment_date = $paymentDateString;
                 $bank_statement->item_sell_id = $transcation->id;
                 $bank_statement->bank_id = $transcation->bank_id;
                 $bank_statement->school_id = Auth::user()->school_id;
@@ -243,7 +248,7 @@ class FeesExtendedController extends Controller
             $school = SmSchool::find($user->school_id);
             $compact['full_name'] = $user->full_name;
             $compact['method'] = $transcation->payment_method;
-            $compact['create_date'] = date('Y-m-d');
+            $compact['create_date'] = $paymentDateString;
             $compact['school_name'] = $school->school_name;
             $compact['current_balance'] = $user->wallet_balance;
             $compact['add_balance'] = $transcation->add_wallet_money;

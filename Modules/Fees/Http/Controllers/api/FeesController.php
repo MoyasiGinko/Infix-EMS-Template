@@ -16,7 +16,9 @@ use App\SmStudent;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Modules\Fees\Entities\FmFeesGroup;
 use Modules\Fees\Entities\FmFeesInvoice;
 use Modules\Fees\Entities\FmFeesInvoiceChield;
@@ -675,6 +677,8 @@ class FeesController extends Controller
         // }
 
         try {
+            $paymentDate = $feesPaymentRequest->payment_date ? Carbon::parse($feesPaymentRequest->payment_date) : now();
+            $paymentDateString = $paymentDate->toDateString();
             $destination = 'public/uploads/student/document/';
             $file = fileUpload($feesPaymentRequest->file('file'), $destination);
 
@@ -704,7 +708,7 @@ class FeesController extends Controller
                 $compact['user_email'] = $user->email;
                 $compact['full_name'] = $user->full_name;
                 $compact['method'] = $feesPaymentRequest->payment_method;
-                $compact['create_date'] = date('Y-m-d');
+                $compact['create_date'] = $paymentDateString;
                 $compact['school_name'] = $school->school_name;
                 $compact['current_balance'] = $user->wallet_balance;
                 $compact['add_balance'] = $feesPaymentRequest->total_paid_amount;
@@ -726,6 +730,7 @@ class FeesController extends Controller
             $fmFeesTransaction->file = $file;
             $fmFeesTransaction->paid_status = 'approve';
             $fmFeesTransaction->school_id = auth()->user()->school_id;
+            $fmFeesTransaction->payment_date = $paymentDate;
             $fmFeesTransaction->academic_id = getAcademicId();
             $fmFeesTransaction->save();
 
@@ -767,7 +772,7 @@ class FeesController extends Controller
 
                 $add_income = new SmAddIncome();
                 $add_income->name = 'Fees Collect';
-                $add_income->date = date('Y-m-d');
+                $add_income->date = $paymentDateString;
                 $add_income->amount = $feesPaymentRequest->paid_amount[$key];
                 $add_income->fees_collection_id = $fmFeesTransaction->id;
                 $add_income->active_status = 1;
@@ -792,7 +797,7 @@ class FeesController extends Controller
                     $bank_statement->type = 1;
                     $bank_statement->details = 'Fees Payment';
                     $bank_statement->item_sell_id = $fmFeesTransaction->id;
-                    $bank_statement->payment_date = date('Y-m-d');
+                    $bank_statement->payment_date = $paymentDateString;
                     $bank_statement->bank_id = $feesPaymentRequest->bank;
                     $bank_statement->school_id = auth()->user()->school_id;
                     $bank_statement->payment_method = $payment_method->id;
@@ -941,8 +946,7 @@ class FeesController extends Controller
                     });
                 })
                 ->when($bankFeesPayment->payment_date, function ($query) use ($date_from, $date_to): void {
-                    $query->whereDate('created_at', '>=', $date_from)
-                        ->whereDate('created_at', '<=', $date_to);
+                    $query->whereBetween(DB::raw('COALESCE(payment_date, created_at)'), [$date_from, $date_to]);
                 })
                 ->whereIn('student_id', $student_ids)
                 ->whereIn('payment_method', ['Bank', 'Cheque'])
@@ -1032,6 +1036,8 @@ class FeesController extends Controller
     public function addFeesAmount($transcation_id, $total_paid_amount): void
     {
         $transcation = FmFeesTransaction::find($transcation_id);
+        $paymentDate = $transcation && $transcation->payment_date ? Carbon::parse($transcation->payment_date) : now();
+        $paymentDateString = $paymentDate->toDateString();
         $allTranscations = FmFeesTransactionChield::where('fees_transaction_id', $transcation->id)->get();
         foreach ($allTranscations as $allTranscation) {
             $transcationId = FmFeesTransaction::find($allTranscation->fees_transaction_id);
@@ -1051,7 +1057,7 @@ class FeesController extends Controller
 
             $add_income = new SmAddIncome();
             $add_income->name = 'Fees Collect';
-            $add_income->date = date('Y-m-d');
+            $add_income->date = $paymentDateString;
             $add_income->amount = $allTranscation->paid_amount;
             $add_income->fees_collection_id = $transcation->fees_invoice_id;
             $add_income->active_status = 1;
@@ -1078,7 +1084,7 @@ class FeesController extends Controller
                 $bank_statement->after_balance = $after_balance;
                 $bank_statement->type = 1;
                 $bank_statement->details = 'Fees Payment';
-                $bank_statement->payment_date = date('Y-m-d');
+                $bank_statement->payment_date = $paymentDateString;
                 $bank_statement->item_sell_id = $transcation->id;
                 $bank_statement->bank_id = $transcation->bank_id;
                 $bank_statement->school_id = auth()->user()->school_id;
@@ -1115,7 +1121,7 @@ class FeesController extends Controller
             $school = SmSchool::find($user->school_id);
             $compact['full_name'] = $user->full_name;
             $compact['method'] = $transcation->payment_method;
-            $compact['create_date'] = date('Y-m-d');
+            $compact['create_date'] = $paymentDateString;
             $compact['school_name'] = $school->school_name;
             $compact['current_balance'] = $user->wallet_balance;
             $compact['add_balance'] = $transcation->add_wallet_money;
@@ -1129,6 +1135,8 @@ class FeesController extends Controller
 
     private function invStore($request): void
     {
+        $paymentDate = $request->payment_date ? Carbon::parse($request->payment_date) : now();
+        $paymentDateString = $paymentDate->toDateString();
         $fmFeesInvoice = new FmFeesInvoice();
         $fmFeesInvoice->class_id = $request->class;
         $fmFeesInvoice->create_date = date('Y-m-d', strtotime($request->create_date));
@@ -1155,6 +1163,7 @@ class FeesController extends Controller
             $fmFeesTransaction->paid_status = 'approve';
             $fmFeesTransaction->school_id = auth()->user()->school_id;
             $fmFeesTransaction->academic_id = getAcademicId();
+            $fmFeesTransaction->payment_date = $paymentDate;
             $fmFeesTransaction->save();
         }
 
@@ -1205,7 +1214,7 @@ class FeesController extends Controller
                     $bank_statement->type = 1;
                     $bank_statement->details = 'Fees Payment';
                     $bank_statement->item_sell_id = $fmFeesTransaction->id;
-                    $bank_statement->payment_date = date('Y-m-d');
+                    $bank_statement->payment_date = $paymentDateString;
                     $bank_statement->bank_id = $request->bank;
                     $bank_statement->school_id = auth()->user()->school_id;
                     $bank_statement->payment_method = $payment_method->id;
