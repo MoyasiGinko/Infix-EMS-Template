@@ -190,9 +190,8 @@
                     <div class="no-gutters input-right-icon">
                       <div class="col">
                         <div class="">
-                          <input class="primary_input_field primary_input_field date form-control"
-                            id="payment_date" type="text" name="payment_date"
-                            value="{{ old('payment_date', date('m/d/Y')) }}">
+                          <input class="primary_input_field primary_input_field date form-control" id="payment_date"
+                            type="text" name="payment_date" value="{{ old('payment_date', date('m/d/Y')) }}">
                         </div>
                       </div>
                       <button class="btn-date" data-id="#payment_date" type="button">
@@ -515,6 +514,28 @@
 @if (moduleStatusCheck('RazorPay'))
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 @endif
+<script>
+(function($) {
+  'use strict';
+
+  function initPaymentDatePicker() {
+    var $field = $('#payment_date');
+    if (!$field.length || typeof $.fn.datepicker !== 'function') {
+      return;
+    }
+    if (!$field.data('datepicker-initialized')) {
+      $field.datepicker({
+        autoclose: true,
+        todayHighlight: true,
+        format: 'mm/dd/yyyy'
+      });
+      $field.data('datepicker-initialized', true);
+    }
+  }
+  $(document).ready(initPaymentDatePicker);
+  $(document).on('shown.bs.modal', initPaymentDatePicker);
+})(jQuery);
+</script>
 <script type="text/javascript">
 window.paymentValue = $('#paymentMethodAddFees').val();
 $(function() {
