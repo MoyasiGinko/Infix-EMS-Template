@@ -14,6 +14,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Modules\Fees\Entities\FmFeesInvoice;
 use Modules\Fees\Entities\FmFeesTransaction;
 use Modules\Fees\Entities\FmFeesType;
@@ -25,10 +26,10 @@ class AjaxController extends Controller
         $feesinvoice = FmFeesInvoice::find($request->invoiceId);
         $feesTranscations = FmFeesTransaction::where('fees_invoice_id', $request->invoiceId)
             ->where('paid_status', 'approve')
-            ->where('school_id', auth()->user()->school_id)
+            ->where('school_id', Auth::user()->school_id)
             ->get();
         $paymentMethods = SmPaymentMethhod::whereIn('method', ['Cash', 'Cheque', 'Bank'])->get();
-        $banks = SmBankAccount::where('school_id', auth()->user()->school_id)->get();
+        $banks = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
 
         return view('fees::feesInvoice.viewPayment', ['feesinvoice' => $feesinvoice, 'feesTranscations' => $feesTranscations, 'paymentMethods' => $paymentMethods, 'banks' => $banks]);
     }
@@ -38,7 +39,12 @@ class AjaxController extends Controller
         try {
             $allStudents = StudentRecord::with('studentDetail', 'section')
                 ->where('class_id', $request->classId)
-                ->where('school_id', auth()->user()->school_id)
+                ->when($request->student_type, function ($query) use ($request) {
+                    $query->whereHas('studentDetail', function ($studentQuery) use ($request) {
+                        $studentQuery->where('student_category_id', $request->student_type);
+                    });
+                })
+                ->where('school_id', Auth::user()->school_id)
                 ->where('academic_id', getAcademicId())
                 ->get();
 
@@ -79,15 +85,15 @@ class AjaxController extends Controller
         try {
             if (teacherAccess()) {
                 $sectionIds = SmAssignSubject::where('class_id', '=', $request->class_id)
-                    ->where('teacher_id', auth()->user()->staff->id)
-                    ->where('school_id', auth()->user()->school_id)
+                    ->where('teacher_id', Auth::user()->staff->id)
+                    ->where('school_id', Auth::user()->school_id)
                     ->where('academic_id', getAcademicId())
                     ->distinct(['class_id', 'section_id'])
                     ->withoutGlobalScope(StatusAcademicSchoolScope::class)
                     ->get();
             } else {
                 $sectionIds = SmClassSection::where('class_id', '=', $request->class_id)
-                    ->where('school_id', auth()->user()->school_id)
+                    ->where('school_id', Auth::user()->school_id)
                     ->withoutGlobalScope(StatusAcademicSchoolScope::class)
                     ->get();
             }
@@ -111,7 +117,7 @@ class AjaxController extends Controller
             $allStudents = StudentRecord::with('studentDetail', 'section')
                 ->where('class_id', $request->class_id)
                 ->where('section_id', $request->section_id)
-                ->where('school_id', auth()->user()->school_id)
+                ->where('school_id', Auth::user()->school_id)
                 ->where('academic_id', getAcademicId())
                 ->get();
 
@@ -126,7 +132,7 @@ class AjaxController extends Controller
         try {
             $allStudents = StudentRecord::with('studentDetail', 'section')
                 ->where('class_id', $request->class_id)
-                ->where('school_id', auth()->user()->school_id)
+                ->where('school_id', Auth::user()->school_id)
                 ->where('academic_id', getAcademicId())
                 ->get();
 

@@ -7,6 +7,7 @@ use Yajra\DataTables\Facades\DataTables;
 use App\SmClass;
 use App\SmSchool;
 use App\SmStudent;
+use App\SmStudentCategory;
 use App\Models\User;
 use App\SmAddIncome;
 use App\SmBankAccount;
@@ -368,6 +369,12 @@ class FeesController extends Controller
             $bankAccounts = SmBankAccount::where('school_id', Auth::user()->school_id)
                 ->get();
 
+            $studentCategories = SmStudentCategory::where('school_id', Auth::user()->school_id)
+                ->get();
+
+            $studentCategories = SmStudentCategory::where('school_id', Auth::user()->school_id)
+                ->get();
+
             $invoiceSettings = FmFeesInvoiceSettings::where('school_id', Auth::user()->school_id)->first();
 
             if (! $invoiceSettings) {
@@ -383,7 +390,15 @@ class FeesController extends Controller
                 $invoiceSettings->save();
             }
 
-            return view('fees::feesInvoice.feesInvoice', ['classes' => $classes, 'feesGroups' => $feesGroups, 'feesTypes' => $feesTypes, 'paymentMethods' => $paymentMethods, 'bankAccounts' => $bankAccounts, 'invoiceSettings' => $invoiceSettings]);
+            return view('fees::feesInvoice.feesInvoice', [
+                'classes' => $classes,
+                'feesGroups' => $feesGroups,
+                'feesTypes' => $feesTypes,
+                'paymentMethods' => $paymentMethods,
+                'bankAccounts' => $bankAccounts,
+                'invoiceSettings' => $invoiceSettings,
+                'studentCategories' => $studentCategories,
+            ]);
 
         } catch (Exception $exception) {
             Toastr::error('Operation Failed', 'Failed');
@@ -829,6 +844,9 @@ class FeesController extends Controller
 
             $bankAccounts = SmBankAccount::where('school_id', Auth::user()->school_id)
                 ->get();
+
+            $studentCategories = SmStudentCategory::where('school_id', Auth::user()->school_id)
+                ->get();
             // View End
 
             $invoiceSettings = FmFeesInvoiceSettings::where('school_id', Auth::user()->school_id)->first();
@@ -848,7 +866,18 @@ class FeesController extends Controller
                     ->where('academic_id', getAcademicId())
                     ->get();
 
-            return view('fees::feesInvoice.feesInvoice', ['classes' => $classes, 'feesGroups' => $feesGroups, 'feesTypes' => $feesTypes, 'paymentMethods' => $paymentMethods, 'bankAccounts' => $bankAccounts, 'invoiceSettings' => $invoiceSettings, 'invoiceInfo' => $invoiceInfo, 'invoiceDetails' => $invoiceDetails, 'students' => $students]);
+            return view('fees::feesInvoice.feesInvoice', [
+                'classes' => $classes,
+                'feesGroups' => $feesGroups,
+                'feesTypes' => $feesTypes,
+                'paymentMethods' => $paymentMethods,
+                'bankAccounts' => $bankAccounts,
+                'invoiceSettings' => $invoiceSettings,
+                'invoiceInfo' => $invoiceInfo,
+                'invoiceDetails' => $invoiceDetails,
+                'students' => $students,
+                'studentCategories' => $studentCategories,
+            ]);
 
         } catch (Exception $exception) {
             Toastr::error('Operation Failed', 'Failed');
