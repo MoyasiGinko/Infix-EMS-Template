@@ -1541,7 +1541,18 @@ class FeesController extends Controller
 
         $fees_type = $previous_route == 'lms.fees-invoice' ? 'lms' : 'fees';
 
+        $latestPayments = FmFeesTransaction::select([
+            'fees_invoice_id',
+            DB::raw('MAX(COALESCE(payment_date, created_at)) as latest_payment_at'),
+        ])
+            ->where('school_id', Auth::user()->school_id)
+            ->where('academic_id', getAcademicId())
+            ->groupBy('fees_invoice_id');
+
         $studentInvoices = FmFeesInvoice::where('type', $fees_type)
+            ->leftJoinSub($latestPayments, 'latest_payments', function ($join): void {
+                $join->on('latest_payments.fees_invoice_id', '=', 'fm_fees_invoices.id');
+            })
             ->with([
                 'studentInfo' => function ($query): void {
                     $query->select(['id', 'admission_no', 'first_name', 'last_name', 'full_name', 'roll_no']);
@@ -1554,6 +1565,7 @@ class FeesController extends Controller
                 },
             ])
             ->select('fm_fees_invoices.*')
+            ->addSelect(DB::raw('latest_payments.latest_payment_at as latest_payment_at'))
             ->where('school_id', Auth::user()->school_id)
             ->where('academic_id', getAcademicId())
             ->withInvoiceDetailsSums();
@@ -1593,6 +1605,19 @@ class FeesController extends Controller
                     return $row->Tpaidamount;
                 })
                 ->addColumn('paid_date', function ($row) {
+                    $timestamp = $row->latest_payment_at;
+
+                    if (! $timestamp) {
+                        return '';
+                    }
+
+                    if (is_object($timestamp) && method_exists($timestamp, 'toDateString')) {
+                        $timestamp = $timestamp->toDateString();
+                    }
+
+                    return dateConvert($timestamp);
+                })
+                ->addColumn('updated_at_human', function ($row) {
                     $timestamp = $row->updated_at;
 
                     if (! $timestamp) {
