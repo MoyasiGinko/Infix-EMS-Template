@@ -93,19 +93,6 @@
                 <div class="value">{{ $invoiceInfo?->recordDetail?->shift?->name }}</div>
               </div>
             </div>
-            @else
-            <div class="row mt-25">
-              <div class="col-lg-12">
-                <div class="primary_input">
-                  <label class="primary_input_label" for="student_payment_date">@lang('fees.payment_date')</label>
-                  <input class="primary_input_field form-control" id="student_payment_date" type="date"
-                    name="payment_date" value="{{ old('payment_date', date('Y-m-d')) }}">
-                  @if ($errors->has('payment_date'))
-                  <span class="text-danger" role="alert">{{ $errors->first('payment_date') }}</span>
-                  @endif
-                </div>
-              </div>
-            </div>
             @endif
             @if (isset($role) && $role == 'admin')
             <div class="single-meta">
