@@ -190,9 +190,9 @@
                     <div class="no-gutters input-right-icon">
                       <div class="col">
                         <div class="">
-                          <input class="primary_input_field  primary_input_field date form-control"
-                            id="payment_date" type="text" name="payment_date"
-                            value="{{ old('payment_date', date('m/d/Y')) }}">
+                          <input class="primary_input_field form-control"
+                            id="payment_date" type="date" name="payment_date"
+                            value="{{ old('payment_date', date('Y-m-d')) }}">
                         </div>
                       </div>
                       <button class="btn-date" data-id="#payment_date" type="button">
