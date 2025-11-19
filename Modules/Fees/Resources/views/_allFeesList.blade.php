@@ -2694,9 +2694,7 @@ $(document).ready(function() {
     maximumFractionDigits: 2,
   }) : null;
   const rollLabel = "{{ __('student.roll_no') }}";
-  const createdLabel = "{{ __('Created') }}";
   const updatedLabel = "{{ __('Updated') }}";
-  const paidLabel = "{{ __('fees.payment_date') }}";
   const statusLabels = {
     paid: "{{ __('fees.paid') }}",
     partial: "{{ __('fees.partial') }}",
@@ -2999,10 +2997,14 @@ $(document).ready(function() {
       }
 
       const dateCell = $cells.eq(10);
-      const dateValue = sanitizeHtml(data.create_date || '--');
-      let dateMeta = `<span class="cell-date__sub">${createdLabel}</span>`;
+      const rawDateValue = data.create_date || '';
+      const rawMonthValue = data.create_month_name || '';
+      const hasCreateDate = rawDateValue !== '';
+      const dateMonthDisplay = sanitizeHtml(rawMonthValue || '--');
+      const dateFullDisplay = sanitizeHtml(hasCreateDate ? rawDateValue : '--');
+      const dateWrapperClass = hasCreateDate ? 'cell-date' : 'cell-date is-empty';
       dateCell.html(
-        `<div class="cell-date"><span class="cell-date__main">${dateValue}</span>${dateMeta}</div>`
+        `<div class="${dateWrapperClass}"><span class="cell-date__main">${dateMonthDisplay}</span><span class="cell-date__sub">${dateFullDisplay}</span></div>`
       );
 
       const actionCell = $cells.eq(11);

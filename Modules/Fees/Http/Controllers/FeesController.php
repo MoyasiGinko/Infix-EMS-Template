@@ -1727,6 +1727,13 @@ class FeesController extends Controller
                 ->addColumn('create_date', function ($row) {
                     return dateConvert($row->create_date);
                 })
+                ->addColumn('create_month_name', function ($row) {
+                    if (! $row->create_date) {
+                        return '';
+                    }
+
+                    return Carbon::parse($row->create_date)->translatedFormat('F');
+                })
                 ->filterColumn('create_date', function ($query, $keyword): void {
                     $date = date('Y-m-d', strtotime($keyword));
 
