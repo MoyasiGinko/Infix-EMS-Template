@@ -1420,35 +1420,45 @@
   color: #fff;
 }
 
-.card-primary::before { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+.card-primary::before {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
 
 .card-success .card-icon {
   background: linear-gradient(135deg, #10b981, #14b8a6);
   color: #fff;
 }
 
-.card-success::before { background: linear-gradient(135deg, #10b981, #14b8a6); }
+.card-success::before {
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+}
 
 .card-warning .card-icon {
   background: linear-gradient(135deg, #f59e0b, #f97316);
   color: #fff;
 }
 
-.card-warning::before { background: linear-gradient(135deg, #f59e0b, #f97316); }
+.card-warning::before {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+}
 
 .card-info .card-icon {
   background: linear-gradient(135deg, #06b6d4, #0ea5e9);
   color: #fff;
 }
 
-.card-info::before { background: linear-gradient(135deg, #06b6d4, #0ea5e9); }
+.card-info::before {
+  background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+}
 
 .card-balance .card-icon {
   background: linear-gradient(135deg, #64748b, #475569);
   color: #fff;
 }
 
-.card-balance::before { background: linear-gradient(135deg, #64748b, #475569); }
+.card-balance::before {
+  background: linear-gradient(135deg, #64748b, #475569);
+}
 
 .card-balance.balance-negative {
   background: #fef2f2;
@@ -1827,6 +1837,7 @@
     opacity: 0;
     transform: translateX(-50%) translateY(-90%);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(-100%);
@@ -2078,6 +2089,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -2963,8 +2975,14 @@ $(document).ready(function() {
       }
       const statusLabel = statusLabels[statusVariant] || statusVariant;
       const statusIcon = statusIconMap[statusVariant] || 'ti-alert';
+      const updatedValue = sanitizeHtml(data.updated_at_human || '');
+      let statusMeta = '';
+      if (updatedValue) {
+        statusMeta = `<span class="cell-status__meta">${updatedLabel}: ${updatedValue}</span>`;
+      }
       statusCell.html(
-        `<span class="tag-status ${statusVariant}"><i class="${statusIcon}"></i>${statusLabel}</span>`);
+        `<div class="cell-status"><span class="tag-status ${statusVariant}"><i class="${statusIcon}"></i>${statusLabel}</span>${statusMeta}</div>`
+        );
 
       const paidDateCell = $cells.eq(9);
       const paidDateValue = sanitizeHtml(data.paid_date || '');
@@ -2980,11 +2998,7 @@ $(document).ready(function() {
 
       const dateCell = $cells.eq(10);
       const dateValue = sanitizeHtml(data.create_date || '--');
-      const updatedValue = sanitizeHtml(data.updated_at_human || '');
       let dateMeta = `<span class="cell-date__sub">${createdLabel}</span>`;
-      if (updatedValue) {
-        dateMeta += `<span class="cell-date__sub">${updatedLabel}: ${updatedValue}</span>`;
-      }
       dateCell.html(
         `<div class="cell-date"><span class="cell-date__main">${dateValue}</span>${dateMeta}</div>`
       );
