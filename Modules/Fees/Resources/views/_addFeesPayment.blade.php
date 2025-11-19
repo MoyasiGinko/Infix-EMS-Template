@@ -484,7 +484,7 @@
                   </tbody>
                   <tfoot>
                     <tr class="bg-light">
-                      <td>@lang('common.result')</td>
+                      <td>@lang('common.total')</td>
                       <td></td>
                       <td id="totalColAmount">0.00</td>
                       <td id="totalColDue">0.00</td>

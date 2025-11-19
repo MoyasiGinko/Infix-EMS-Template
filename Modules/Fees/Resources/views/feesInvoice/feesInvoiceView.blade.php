@@ -146,7 +146,7 @@ html[dir="rtl"] .total_count {
                               @endphp
                               <p><span><strong>@lang('fees.invoice_number')</strong></span><span>:
                                   {{$invoiceInfo->invoice_id}}</span></p>
-                              <p><span>@lang('fees.month')</span><span>:
+                              <p><span>@lang('common.month')</span><span>:
                                   {{ \Carbon::parse($invoiceInfo->create_date)->translatedFormat('F') }}</span>
                               </p>
                               <p><span>@lang('fees.create_date')</span><span>:
