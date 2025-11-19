@@ -2691,7 +2691,7 @@ $(document).ready(function() {
   }) : null;
   const rollLabel = "{{ __('student.roll_no') }}";
   const createdLabel = "{{ __('Created') }}";
-  const updatedLabel = "{{ __('Last Updated') }}";
+  const updatedLabel = "{{ __('Updated') }}";
   const paidLabel = "{{ __('fees.payment_date') }}";
   const statusLabels = {
     paid: "{{ __('fees.paid') }}",
