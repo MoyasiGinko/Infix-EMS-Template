@@ -2978,11 +2978,12 @@ $(document).ready(function() {
       const updatedValue = sanitizeHtml(data.updated_at_human || '');
       let statusMeta = '';
       if (updatedValue) {
-        statusMeta = `<span class="cell-status__meta">${updatedLabel}: ${updatedValue}</span>`;
+        statusMeta =
+          `<span class="cell-status__meta text-muted small">${updatedLabel}: ${updatedValue}</span>`;
       }
       statusCell.html(
         `<div class="cell-status"><span class="tag-status ${statusVariant}"><i class="${statusIcon}"></i>${statusLabel}</span>${statusMeta}</div>`
-        );
+      );
 
       const paidDateCell = $cells.eq(9);
       const paidDateValue = sanitizeHtml(data.paid_date || '');
