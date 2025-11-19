@@ -132,18 +132,23 @@ html[dir="rtl"] .total_count {
                               } else {
                               $resolvedStatus = 'unpaid';
                               }
-                              $transactions = collect($feesTranscations ?? [])->whereNotNull('payment_method')->values();
+                              $transactions = collect($feesTranscations ??
+                              [])->whereNotNull('payment_method')->values();
                               $lastPaymentRecord = $transactions->sortByDesc(function($txn){
-                                $date = $txn->payment_date ?? $txn->created_at;
-                                if($date instanceof \Carbon\Carbon){
-                                  return $date->timestamp;
-                                }
-                                return $date ? strtotime($date) : 0;
+                              $date = $txn->payment_date ?? $txn->created_at;
+                              if($date instanceof \Carbon\Carbon){
+                              return $date->timestamp;
+                              }
+                              return $date ? strtotime($date) : 0;
                               })->first();
-                              $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->payment_date ?? $lastPaymentRecord->created_at) : null;
+                              $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->payment_date ??
+                              $lastPaymentRecord->created_at) : null;
                               @endphp
                               <p><span><strong>@lang('fees.invoice_number')</strong></span><span>:
                                   {{$invoiceInfo->invoice_id}}</span></p>
+                              <p><span>@lang('fees.month')</span><span>:
+                                  {{ \Carbon::parse($invoiceInfo->create_date)->translatedFormat('F') }}</span>
+                              </p>
                               <p><span>@lang('fees.create_date')</span><span>:
                                   {{ dateConvert($invoiceInfo->create_date) }}</span></p>
                               <p><span>@lang('fees.due_date')</span><span>:
