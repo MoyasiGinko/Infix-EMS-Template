@@ -786,6 +786,7 @@ return [
     'quantity' => 'Quantité',
     'amount' => 'Montant',
     'related' => 'Lié',
-    'my' => 'Mon'
+    'my' => 'Mon',
+    'reset' => 'Réinitialiser',
 
 ];

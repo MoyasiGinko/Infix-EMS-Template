@@ -421,5 +421,6 @@ return [
     'quantity' => 'Quantitat',
     'amount' => 'Quantitat',
     'related' => 'Relatiu',
-    'my' => 'El meu'
+    'my' => 'El meu',
+    'reset' => 'Reiniciar',
 ];
