@@ -376,12 +376,102 @@
                             </tr>
                           </thead>
                           <tbody>
-                            @foreach($incomesForDate as $row)
                             @php
-                            // Correct head resolution: primary A/C chart head, else legacy income head name
+                            $invoiceRowBuckets = [];
+                            $incomeDisplayRows = [];
+                            foreach ($incomesForDate as $row) {
                             $headName = optional($row->ACHead)->head
                             ?? optional($row->incomeHeads)->name
                             ?? '';
+                            $invoiceMeta = $row->invoice_meta ?? null;
+
+                            if ($invoiceMeta) {
+                            $bucketKey = $dateKey . '_' . ($invoiceMeta['invoice_db_id'] ?? $row->fees_collection_id ??
+                            $row->id);
+
+                            if (! isset($invoiceRowBuckets[$bucketKey])) {
+                            $invoiceRowBuckets[$bucketKey] = [
+                            'meta' => $invoiceMeta,
+                            'total_amount' => 0,
+                            'head_names' => [],
+                            'payment_methods' => [],
+                            'entries' => 0,
+                            ];
+                            $incomeDisplayRows[] = ['type' => 'invoice', 'key' => $bucketKey];
+                            }
+
+                            $invoiceRowBuckets[$bucketKey]['total_amount'] += $row->amount;
+
+                            if (! empty($headName)) {
+                            $invoiceRowBuckets[$bucketKey]['head_names'][$headName] = true;
+                            }
+
+                            $methodLabel = optional($row->paymentMethod)->method;
+                            if (! empty($methodLabel)) {
+                            $invoiceRowBuckets[$bucketKey]['payment_methods'][$methodLabel] = true;
+                            }
+
+                            $invoiceRowBuckets[$bucketKey]['entries']++;
+                            } else {
+                            $incomeDisplayRows[] = ['type' => 'manual', 'row' => $row, 'head_name' => $headName];
+                            }
+                            }
+                            @endphp
+
+                            @foreach($incomeDisplayRows as $displayRow)
+                            @if($displayRow['type'] === 'invoice')
+                            @php
+                            $group = $invoiceRowBuckets[$displayRow['key']];
+                            $meta = $group['meta'];
+                            $methodNames = array_keys($group['payment_methods']);
+                            $headLabels = array_keys($group['head_names']);
+                            @endphp
+                            <tr class="invoice-group-row">
+                              <td class="text-center">
+                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] }}</span>
+                              </td>
+                              <td class="font-weight-500">
+                                <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
+                                @if(!empty($meta['student_identifier']))
+                                <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
+                                @endif
+                                <div class="text-muted small">@lang('fees.invoice_number'):
+                                  <span class="font-weight-600">#{{ $meta['invoice_number'] }}</span>
+                                </div>
+                              </td>
+                              <td>
+                                @if(count($methodNames))
+                                <span class="badge badge-outline-info mr-1">{{ $methodNames[0] }}</span>
+                                @if(count($methodNames) > 1)
+                                <span class="badge badge-light text-muted">+{{ count($methodNames) - 1 }} more</span>
+                                @endif
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                              </td>
+                              <td class="text-muted">
+                                @if(count($headLabels))
+                                {{ implode(', ', $headLabels) }}
+                                @else
+                                @lang('fees.fees_invoice')
+                                @endif
+                              </td>
+                              <td class="text-right font-weight-600">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'],2) }}
+                              </td>
+                              <td class="text-right">
+                                @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
+                                <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
+                                  target="_blank">@lang('common.view')</a>
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                              </td>
+                            </tr>
+                            @else
+                            @php
+                            $row = $displayRow['row'];
+                            $headName = $displayRow['head_name'];
                             @endphp
                             <tr>
                               <td class="text-center">{{ $loop->iteration }}</td>
@@ -399,12 +489,15 @@
                                   </button>
                                   <div class="inline-action-buttons d-none">
                                     @if (userPermission('add_income_edit'))
-                                    <a class="btn btn-sm btn-outline-primary action-btn-edit" href="{{ route('add_income_edit', $row->id) }}" title="Edit">
+                                    <a class="btn btn-sm btn-outline-primary action-btn-edit"
+                                      href="{{ route('add_income_edit', $row->id) }}" title="Edit">
                                       <i class="ti-pencil-alt"></i>
                                     </a>
                                     @endif
                                     @if (userPermission('add_income_delete'))
-                                    <button class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger" type="button" data-income-id="{{ $row->id }}" title="Delete">
+                                    <button
+                                      class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger"
+                                      type="button" data-income-id="{{ $row->id }}" title="Delete">
                                       <i class="ti-trash"></i>
                                     </button>
                                     @endif
@@ -412,6 +505,7 @@
                                 </div>
                               </td>
                             </tr>
+                            @endif
                             @endforeach
                           </tbody>
                         </table>
@@ -440,7 +534,8 @@
                 $totalForName = $incomesForName->sum('amount');
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
-                  <div class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
+                  <div
+                    class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $incNameCollapseId }}" aria-expanded="false"
                     data-total="{{ $totalForName }}">
                     <div class="d-flex align-items-center">
@@ -453,7 +548,8 @@
                     <div class="text-right">
                       <div class="amount-display">
                         <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
-                        <span class="amount-value font-weight-bold text-primary">{{ number_format($totalForName,2) }}</span>
+                        <span
+                          class="amount-value font-weight-bold text-primary">{{ number_format($totalForName,2) }}</span>
                       </div>
                       <span class="badge badge-primary badge-pill">{{ $incomesForName->count() }}</span>
                     </div>
@@ -482,9 +578,12 @@
                             <tr>
                               <td class="text-center">{{ $loop->iteration }}</td>
                               <td class="font-weight-500">{{ $row->name }}</td>
-                              <td><span class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span></td>
+                              <td><span
+                                  class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span>
+                              </td>
                               <td class="text-muted">{{ $headName }}</td>
-                              <td class="text-right font-weight-600">{{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
+                              <td class="text-right font-weight-600">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
                               <td class="text-right">
                                 <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
                                   <button class="btn btn-dots-trigger" type="button">
@@ -492,12 +591,15 @@
                                   </button>
                                   <div class="inline-action-buttons d-none">
                                     @if (userPermission('add_income_edit'))
-                                    <a class="btn btn-sm btn-outline-primary action-btn-edit" href="{{ route('add_income_edit', $row->id) }}" title="Edit">
+                                    <a class="btn btn-sm btn-outline-primary action-btn-edit"
+                                      href="{{ route('add_income_edit', $row->id) }}" title="Edit">
                                       <i class="ti-pencil-alt"></i>
                                     </a>
                                     @endif
                                     @if (userPermission('add_income_delete'))
-                                    <button class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger" type="button" data-income-id="{{ $row->id }}" title="Delete">
+                                    <button
+                                      class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger"
+                                      type="button" data-income-id="{{ $row->id }}" title="Delete">
                                       <i class="ti-trash"></i>
                                     </button>
                                     @endif
@@ -532,7 +634,8 @@
                 $totalForMethod = $incomesForMethod->sum('amount');
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
-                  <div class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
+                  <div
+                    class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
                     data-toggle="collapse" data-target="#{{ $incMethodCollapseId }}" aria-expanded="false"
                     data-total="{{ $totalForMethod }}">
                     <div class="d-flex align-items-center">
@@ -545,7 +648,8 @@
                     <div class="text-right">
                       <div class="amount-display">
                         <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
-                        <span class="amount-value font-weight-bold text-primary">{{ number_format($totalForMethod,2) }}</span>
+                        <span
+                          class="amount-value font-weight-bold text-primary">{{ number_format($totalForMethod,2) }}</span>
                       </div>
                       <span class="badge badge-primary badge-pill">{{ $incomesForMethod->count() }}</span>
                     </div>
@@ -574,9 +678,12 @@
                             <tr>
                               <td class="text-center">{{ $loop->iteration }}</td>
                               <td class="font-weight-500">{{ $row->name }}</td>
-                              <td><span class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span></td>
+                              <td><span
+                                  class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span>
+                              </td>
                               <td class="text-muted">{{ $headName }}</td>
-                              <td class="text-right font-weight-600">{{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
+                              <td class="text-right font-weight-600">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
                               <td class="text-right">
                                 <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
                                   <button class="btn btn-dots-trigger" type="button">
@@ -584,12 +691,15 @@
                                   </button>
                                   <div class="inline-action-buttons d-none">
                                     @if (userPermission('add_income_edit'))
-                                    <a class="btn btn-sm btn-outline-primary action-btn-edit" href="{{ route('add_income_edit', $row->id) }}" title="Edit">
+                                    <a class="btn btn-sm btn-outline-primary action-btn-edit"
+                                      href="{{ route('add_income_edit', $row->id) }}" title="Edit">
                                       <i class="ti-pencil-alt"></i>
                                     </a>
                                     @endif
                                     @if (userPermission('add_income_delete'))
-                                    <button class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger" type="button" data-income-id="{{ $row->id }}" title="Delete">
+                                    <button
+                                      class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger"
+                                      type="button" data-income-id="{{ $row->id }}" title="Delete">
                                       <i class="ti-trash"></i>
                                     </button>
                                     @endif
@@ -1213,17 +1323,31 @@ $(function() {
   transform: scale(1.001);
 }
 
+.invoice-group-row {
+  background: linear-gradient(135deg, #f9fff9 0%, #f0fff4 100%);
+  border-left: 4px solid #28a745;
+}
+
+.invoice-group-row td {
+  vertical-align: middle;
+}
+
+.invoice-group-row .badge-light {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
 /* Card Styling */
 .group-accordion .card {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
 }
 
 .group-accordion .card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
 
@@ -1258,7 +1382,7 @@ $(function() {
 /* Dropdown Styling */
 .dropdown-menu {
   border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 6px;
   z-index: 1050 !important;
   position: absolute !important;
@@ -1334,6 +1458,7 @@ $(function() {
     opacity: 0;
     transform: translateX(10px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1366,12 +1491,12 @@ $(function() {
   border-color: #007bff;
   color: #007bff;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0,123,255,0.15);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
 }
 
 .btn-custom-action:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
 }
 
 .custom-dropdown-menu {
@@ -1386,7 +1511,7 @@ $(function() {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   opacity: 0;
   transform: translateY(-5px) scale(0.95);
   transition: all 0.2s ease;
@@ -1412,13 +1537,13 @@ $(function() {
 
 .custom-dropdown-item:hover {
   color: #007bff;
-  background-color: rgba(0,123,255,0.08);
+  background-color: rgba(0, 123, 255, 0.08);
   text-decoration: none;
 }
 
 .custom-dropdown-item.text-danger:hover {
   color: #dc3545 !important;
-  background-color: rgba(220,53,69,0.08);
+  background-color: rgba(220, 53, 69, 0.08);
 }
 
 .custom-dropdown-item i {
@@ -1460,7 +1585,7 @@ $(function() {
   background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
   border: 1px solid #cbd5e0;
   border-radius: 8px;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 /* Pagination */
@@ -1496,7 +1621,7 @@ $(function() {
 
 .primary-btn.small:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Responsive Design */
