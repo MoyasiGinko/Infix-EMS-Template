@@ -345,6 +345,10 @@
   padding: 28px 28px 34px;
 }
 
+.fees-invoice-card__body .dataTables_wrapper {
+  padding-bottom: 60px;
+}
+
 .fees-tool-btn {
   border: 1px solid rgba(255, 255, 255, 0.26);
   background: rgba(255, 255, 255, 0.16);
@@ -2979,7 +2983,7 @@ $(document).ready(function() {
       let statusMeta = '';
       if (updatedValue) {
         statusMeta =
-          `<span class="cell-status__meta text-muted small">${updatedLabel}: ${updatedValue}</span>`;
+          `<span class="cell-status__meta cell-date__sub">${updatedLabel}: ${updatedValue}</span>`;
       }
       statusCell.html(
         `<div class="cell-status"><span class="tag-status ${statusVariant}"><i class="${statusIcon}"></i>${statusLabel}</span>${statusMeta}</div>`
