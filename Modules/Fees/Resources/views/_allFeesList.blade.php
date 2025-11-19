@@ -2980,24 +2980,21 @@ $(document).ready(function() {
       const statusLabel = statusLabels[statusVariant] || statusVariant;
       const statusIcon = statusIconMap[statusVariant] || 'ti-alert';
       const updatedValue = sanitizeHtml(data.updated_at_human || '');
-      let statusMeta = '';
-      if (updatedValue) {
-        statusMeta =
-          `<span class="cell-status__meta cell-date__sub">${updatedLabel}: ${updatedValue}</span>`;
-      }
       statusCell.html(
-        `<div class="cell-status"><span class="tag-status ${statusVariant}"><i class="${statusIcon}"></i>${statusLabel}</span>${statusMeta}</div>`
+        `<div class="cell-status"><span class="tag-status ${statusVariant}"><i class="${statusIcon}"></i>${statusLabel}</span></div>`
       );
 
       const paidDateCell = $cells.eq(9);
       const paidDateValue = sanitizeHtml(data.paid_date || '');
+      const paidDateMeta = updatedValue ?
+        `<span class="cell-date__sub">${updatedLabel}: ${updatedValue}</span>` : '';
       if (paidDateValue) {
         paidDateCell.html(
-          `<div class="cell-date"><span class="cell-date__main">${paidDateValue}</span><span class="cell-date__sub">${paidLabel}</span></div>`
+          `<div class="cell-date"><span class="cell-date__main">${paidDateValue}</span>${paidDateMeta}</div>`
         );
       } else {
         paidDateCell.html(
-          `<div class="cell-date is-empty"><span class="cell-date__main">--</span><span class="cell-date__sub">${paidLabel}</span></div>`
+          `<div class="cell-date is-empty"><span class="cell-date__main">--</span>${paidDateMeta}</div>`
         );
       }
 
