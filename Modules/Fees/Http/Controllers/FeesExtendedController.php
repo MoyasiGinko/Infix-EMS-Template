@@ -52,7 +52,24 @@ class FeesExtendedController extends Controller
         $fmFeesInvoice->invoice_id = feesInvoiceNumber($fmFeesInvoice);
         $fmFeesInvoice->save();
 
-        if ($request->paid_amount > 0) {
+        $linePaidAmounts = $request->paid_amount ?? [];
+        $totalPaidAmount = 0;
+        if (is_array($linePaidAmounts)) {
+            foreach ($linePaidAmounts as $linePaid) {
+                $linePaidValue = (float) ($linePaid ?? 0);
+                if ($linePaidValue > 0) {
+                    $totalPaidAmount += $linePaidValue;
+                }
+            }
+        } elseif ($linePaidAmounts !== null && $linePaidAmounts !== '') {
+            $singlePaidValue = (float) $linePaidAmounts;
+            if ($singlePaidValue > 0) {
+                $totalPaidAmount = $singlePaidValue;
+            }
+        }
+
+        $fmFeesTransaction = null;
+        if ($totalPaidAmount > 0) {
             $fmFeesTransaction = new FmFeesTransaction();
             $fmFeesTransaction->fees_invoice_id = $fmFeesInvoice->id;
             $fmFeesTransaction->payment_method = $request->payment_method;
@@ -64,6 +81,7 @@ class FeesExtendedController extends Controller
             $fmFeesTransaction->school_id = Auth::user()->school_id;
             $fmFeesTransaction->academic_id = getAcademicId();
             $fmFeesTransaction->payment_date = $paymentDate;
+            $fmFeesTransaction->total_paid_amount = $totalPaidAmount;
             $fmFeesTransaction->save();
         }
 
@@ -155,7 +173,7 @@ class FeesExtendedController extends Controller
         foreach ($allTranscations as $allTranscation) {
         $paymentDate = $transcation && $transcation->payment_date ? Carbon::parse($transcation->payment_date) : now();
         $paymentDateString = $paymentDate->toDateString();
-            $fesInvoiceId = FmFeesInvoiceChield::where('fees_invoice_id', $transcationId->fees_invoice_id)
+            $fesInvoiceId = FmFeesInvoiceChield::where('fees_invoice_id', $transcation->fees_invoice_id)
                 ->where('fees_type', $allTranscation->fees_type)
                 ->first();
 
