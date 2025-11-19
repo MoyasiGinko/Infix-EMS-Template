@@ -349,6 +349,68 @@
   padding-bottom: 60px;
 }
 
+.fees-advanced-filters {
+  margin-top: 18px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.fees-advanced-filters__group {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  flex: 1 1 200px;
+}
+
+.fees-advanced-filters__label {
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.fees-advanced-filters__control {
+  width: 100%;
+  border-radius: 999px;
+  border: none;
+  padding: 9px 14px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1f2937;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
+}
+
+.fees-advanced-filters__actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.fees-filters__reset {
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.fees-filters__reset:hover,
+.fees-filters__reset:focus {
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
 .fees-tool-btn {
   border: 1px solid rgba(255, 255, 255, 0.26);
   background: rgba(255, 255, 255, 0.16);
@@ -2315,6 +2377,10 @@ div#table_id_wrapper {
 $resolvedRole = $role ?? null;
 $isStaffView = in_array($resolvedRole, ['admin', 'lms'], true);
 $canCreateInvoice = $isStaffView && userPermission('fees.fees-invoice-store');
+$filterClasses = collect($classes ?? [])->filter();
+$filterStudentCategories = collect($studentCategories ?? [])->filter();
+$filterStatusOptions = $statusOptions ?? [];
+$filterMonthOptions = collect($monthOptions ?? [])->filter();
 @endphp
 <section class="sms-breadcrumb mb-20 fees-hero">
   <div class="container-fluid p-0">
@@ -2398,6 +2464,52 @@ $canCreateInvoice = $isStaffView && userPermission('fees.fees-invoice-store');
                     <span class="icon ti-reload"></span>
                     <span>{{ __('Refresh') }}</span>
                   </button>
+                </div>
+              </div>
+              <div class="fees-advanced-filters" id="feesInvoiceFilters">
+                <div class="fees-advanced-filters__group">
+                  <label class="fees-advanced-filters__label" for="feesFilterClass">{{ __('common.class') }}</label>
+                  <select id="feesFilterClass" class="fees-advanced-filters__control fees-filter-control"
+                    data-filter-key="class_id">
+                    <option value="">{{ __('common.all') }}</option>
+                    @foreach ($filterClasses as $class)
+                    <option value="{{ $class->id }}">{{ $class->class_name }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="fees-advanced-filters__group">
+                  <label class="fees-advanced-filters__label" for="feesFilterStudentCategory">{{ __('student.student_category') }}</label>
+                  <select id="feesFilterStudentCategory"
+                    class="fees-advanced-filters__control fees-filter-control"
+                    data-filter-key="student_category_id">
+                    <option value="">{{ __('common.all') }}</option>
+                    @foreach ($filterStudentCategories as $category)
+                    <option value="{{ $category->id }}">{{ $category->category_name }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="fees-advanced-filters__group">
+                  <label class="fees-advanced-filters__label" for="feesFilterStatus">{{ __('fees.payment_status') }}</label>
+                  <select id="feesFilterStatus" class="fees-advanced-filters__control fees-filter-control"
+                    data-filter-key="payment_status">
+                    <option value="">{{ __('common.all') }}</option>
+                    @foreach ($filterStatusOptions as $statusKey => $statusLabel)
+                    <option value="{{ $statusKey }}">{{ $statusLabel }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="fees-advanced-filters__group">
+                  <label class="fees-advanced-filters__label" for="feesFilterMonth">{{ __('common.month') }}</label>
+                  <select id="feesFilterMonth" class="fees-advanced-filters__control fees-filter-control"
+                    data-filter-key="month">
+                    <option value="">{{ __('common.all') }}</option>
+                    @foreach ($filterMonthOptions as $monthOption)
+                    <option value="{{ $monthOption['value'] }}">{{ $monthOption['label'] }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="fees-advanced-filters__actions">
+                  <button type="button" class="fees-filters__reset" id="feesFilterReset">{{ __('common.reset') }}</button>
                 </div>
               </div>
             </div>
@@ -2677,6 +2789,9 @@ $(document).ready(function() {
   const $refreshBtn = $('#feesInvoiceRefresh');
   const $columnMenu = $('#feesInvoiceColumnMenu');
   const $exportMenu = $('#feesInvoiceExportMenu');
+  const $filterContainer = $('#feesInvoiceFilters');
+  const $filterControls = $filterContainer.find('.fees-filter-control');
+  const $filterReset = $('#feesFilterReset');
 
   if ($lengthSelect.length && !isNaN(initialLength)) {
     $lengthSelect.val(String(initialLength));
@@ -2730,12 +2845,97 @@ $(document).ready(function() {
     unpaid: 'ti-alert',
   };
 
+  const filterKeys = [];
+  if ($filterControls.length) {
+    $filterControls.each(function() {
+      const key = $(this).data('filter-key');
+      if (key && !filterKeys.includes(key)) {
+        filterKeys.push(key);
+      }
+    });
+  }
+
+  const getRawFilterValues = () => {
+    const values = {};
+    if (!$filterControls.length) {
+      return values;
+    }
+    $filterControls.each(function() {
+      const key = $(this).data('filter-key');
+      if (!key) {
+        return;
+      }
+      values[key] = $(this).val() ?? '';
+    });
+    return values;
+  };
+
+  const getActiveFilters = () => {
+    const raw = getRawFilterValues();
+    const active = {};
+    Object.keys(raw).forEach((key) => {
+      const value = raw[key];
+      if (value !== null && value !== '') {
+        active[key] = value;
+      }
+    });
+    return active;
+  };
+
+  const syncFiltersFromUrl = () => {
+    if (!$filterControls.length) {
+      return;
+    }
+    filterKeys.forEach((key) => {
+      const paramValue = urlParams.get(`filters[${key}]`);
+      if (paramValue !== null) {
+        $filterControls.filter(`[data-filter-key="${key}"]`).val(paramValue);
+      }
+    });
+  };
+
+  const updateFiltersInUrl = (rawFilters) => {
+    const params = new URLSearchParams(window.location.search);
+    filterKeys.forEach((key) => {
+      const paramKey = `filters[${key}]`;
+      const value = rawFilters[key] ?? '';
+      if (value) {
+        params.set(paramKey, value);
+      } else {
+        params.delete(paramKey);
+      }
+    });
+    const queryString = params.toString();
+    const newUrl = window.location.pathname + (queryString ? '?' + queryString : '');
+    window.history.replaceState({}, '', newUrl);
+  };
+
+  const applyFilters = () => {
+    if (!$filterControls.length) {
+      return;
+    }
+    const rawFilters = getRawFilterValues();
+    updateFiltersInUrl(rawFilters);
+    if (typeof dt !== 'undefined') {
+      if (typeof dt.clearPipeline === 'function') {
+        dt.clearPipeline();
+      }
+      dt.ajax.reload(null, true);
+    }
+  };
+
+  syncFiltersFromUrl();
+
   const dt = $dataTable.DataTable({
     processing: true,
     serverSide: true,
     ajax: $.fn.dataTable.pipeline({
       url: "{{ url('fees/fees-invoice-datatable') }}",
-      data: {},
+      data: function() {
+        return {
+          filters: getActiveFilters(),
+        };
+      },
       pages: "{{ generalSetting()->ss_page_load }}"
     }),
     columns: [{
@@ -3018,6 +3218,24 @@ $(document).ready(function() {
       data.length = maxLen;
     }
   });
+
+  if ($filterControls.length) {
+    $filterControls.on('change', function() {
+      applyFilters();
+    });
+  }
+
+  if ($filterReset.length) {
+    $filterReset.on('click', function() {
+      if (!$filterControls.length) {
+        return;
+      }
+      $filterControls.each(function() {
+        $(this).val('');
+      });
+      applyFilters();
+    });
+  }
 
   if (urlLen && urlLen !== dt.page.len()) {
     dt.page.len(urlLen).draw(false);

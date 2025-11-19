@@ -5,9 +5,9 @@ namespace Modules\Fees\Http\Controllers;
 use Exception;
 use Yajra\DataTables\Facades\DataTables;
 use App\SmClass;
+use App\SmStudentCategory;
 use App\SmSchool;
 use App\SmStudent;
-use App\SmStudentCategory;
 use App\Models\User;
 use App\SmAddIncome;
 use App\SmBankAccount;
@@ -345,7 +345,31 @@ class FeesController extends Controller
 
     public function feesInvoiceList()
     {
-        return view('fees::feesInvoice.feesInvoiceList');
+        $classes = SmClass::where('school_id', Auth::user()->school_id)
+            ->where('academic_id', getAcademicId())
+            ->select('id', 'class_name')
+            ->orderBy('class_name')
+            ->get();
+
+        $studentCategories = SmStudentCategory::where('school_id', Auth::user()->school_id)
+            ->select('id', 'category_name')
+            ->orderBy('category_name')
+            ->get();
+
+        $statusOptions = [
+            'paid' => __('fees.paid'),
+            'partial' => __('fees.partial'),
+            'unpaid' => __('fees.unpaid'),
+        ];
+
+        $monthOptions = collect(range(1, 12))->map(function ($monthNumber) {
+            return [
+                'value' => $monthNumber,
+                'label' => Carbon::create(null, $monthNumber, 1)->translatedFormat('F'),
+            ];
+        });
+
+        return view('fees::feesInvoice.feesInvoiceList', compact('classes', 'studentCategories', 'statusOptions', 'monthOptions'));
     }
 
     public function feesInvoice()
@@ -1549,16 +1573,31 @@ class FeesController extends Controller
             ->where('academic_id', getAcademicId())
             ->groupBy('fees_invoice_id');
 
+        $invoiceTotals = DB::table('fm_fees_invoice_chields')
+            ->select('fees_invoice_id')
+            ->selectRaw('COALESCE(SUM(amount), 0) as total_amount')
+            ->selectRaw('COALESCE(SUM(weaver), 0) as total_weaver')
+            ->selectRaw('COALESCE(SUM(fine), 0) as total_fine')
+            ->selectRaw('COALESCE(SUM(paid_amount), 0) as total_paid_amount')
+            ->selectRaw('COALESCE(SUM(sub_total), 0) as total_sub_total')
+            ->groupBy('fees_invoice_id');
+
+        $filters = request()->input('filters', []);
+        $classFilter = isset($filters['class_id']) && $filters['class_id'] !== '' ? (int) $filters['class_id'] : null;
+        $studentCategoryFilter = isset($filters['student_category_id']) && $filters['student_category_id'] !== '' ? (int) $filters['student_category_id'] : null;
+        $statusFilter = isset($filters['payment_status']) && $filters['payment_status'] !== '' ? $filters['payment_status'] : null;
+        $monthFilter = isset($filters['month']) && $filters['month'] !== '' ? (int) $filters['month'] : null;
+
         $studentInvoices = FmFeesInvoice::where('type', $fees_type)
             ->leftJoinSub($latestPayments, 'latest_payments', function ($join): void {
                 $join->on('latest_payments.fees_invoice_id', '=', 'fm_fees_invoices.id');
             })
+            ->leftJoinSub($invoiceTotals, 'invoice_totals', function ($join): void {
+                $join->on('invoice_totals.fees_invoice_id', '=', 'fm_fees_invoices.id');
+            })
             ->with([
                 'studentInfo' => function ($query): void {
-                    $query->select(['id', 'admission_no', 'first_name', 'last_name', 'full_name', 'roll_no']);
-                },
-                'invoiceDetails' => function ($query): void {
-                    $query->select(['amount', 'weaver', 'fine', 'paid_amount', 'sub_total', 'id']);
+                    $query->select(['id', 'admission_no', 'first_name', 'last_name', 'full_name', 'roll_no', 'student_category_id']);
                 },
                 'recordDetail' => function ($query): void {
                     $query->select(['id', 'roll_no']);
@@ -1566,9 +1605,43 @@ class FeesController extends Controller
             ])
             ->select('fm_fees_invoices.*')
             ->addSelect(DB::raw('latest_payments.latest_payment_at as latest_payment_at'))
-            ->where('school_id', Auth::user()->school_id)
-            ->where('academic_id', getAcademicId())
-            ->withInvoiceDetailsSums();
+            ->addSelect([
+                DB::raw('COALESCE(invoice_totals.total_amount, 0) as total_amount'),
+                DB::raw('COALESCE(invoice_totals.total_weaver, 0) as total_weaver'),
+                DB::raw('COALESCE(invoice_totals.total_fine, 0) as total_fine'),
+                DB::raw('COALESCE(invoice_totals.total_paid_amount, 0) as total_paid_amount'),
+                DB::raw('COALESCE(invoice_totals.total_sub_total, 0) as total_sub_total'),
+            ])
+            ->where('fm_fees_invoices.school_id', Auth::user()->school_id)
+            ->where('fm_fees_invoices.academic_id', getAcademicId());
+
+        if ($classFilter) {
+            $studentInvoices->where('fm_fees_invoices.class_id', $classFilter);
+        }
+
+        if ($studentCategoryFilter) {
+            $studentInvoices->whereHas('studentInfo', function ($query) use ($studentCategoryFilter): void {
+                $query->where('student_category_id', $studentCategoryFilter);
+            });
+        }
+
+        if ($monthFilter && $monthFilter >= 1 && $monthFilter <= 12) {
+            $studentInvoices->whereMonth('fm_fees_invoices.create_date', $monthFilter);
+        }
+
+        if ($statusFilter && in_array($statusFilter, ['paid', 'partial', 'unpaid'], true)) {
+            $amountExpr = '(COALESCE(invoice_totals.total_amount, 0) + COALESCE(invoice_totals.total_fine, 0))';
+            $paidExpr = '(COALESCE(invoice_totals.total_paid_amount, 0) + COALESCE(invoice_totals.total_weaver, 0))';
+            $studentInvoices->where(function ($query) use ($statusFilter, $amountExpr, $paidExpr): void {
+                if ($statusFilter === 'paid') {
+                    $query->whereRaw("$amountExpr <= $paidExpr");
+                } elseif ($statusFilter === 'partial') {
+                    $query->whereRaw("$amountExpr > $paidExpr AND $paidExpr > 0");
+                } elseif ($statusFilter === 'unpaid') {
+                    $query->whereRaw("$paidExpr = 0 AND $amountExpr > 0");
+                }
+            });
+        }
 
         if (isset($studentInvoices)) {
 
@@ -1593,16 +1666,16 @@ class FeesController extends Controller
                     return optional($row->recordDetail)->roll_no;
                 })
                 ->addColumn('amount', function ($row) {
-                    return $row->Tamount;
+                    return $row->total_amount;
                 })
                 ->addColumn('weaver', function ($row) {
-                    return $row->Tweaver;
+                    return $row->total_weaver;
                 })
                 ->addColumn('fine', function ($row) {
-                    return $row->Tfine;
+                    return $row->total_fine;
                 })
                 ->addColumn('paid_amount', function ($row) {
-                    return $row->Tpaidamount;
+                    return $row->total_paid_amount;
                 })
                 ->addColumn('paid_date', function ($row) {
                     $timestamp = $row->latest_payment_at;
@@ -1631,18 +1704,18 @@ class FeesController extends Controller
                     return dateConvert($timestamp);
                 })
                 ->addColumn('balance', function ($row) {
-                    $amount = $row->Tamount;
-                    $weaver = $row->Tweaver;
-                    $fine = $row->Tfine;
-                    $paid_amount = $row->Tpaidamount;
+                    $amount = (float) $row->total_amount;
+                    $weaver = (float) $row->total_weaver;
+                    $fine = (float) $row->total_fine;
+                    $paid_amount = (float) $row->total_paid_amount;
 
                     return $amount + $fine - ($paid_amount + $weaver);
                 })
                 ->addColumn('status', function ($row): string {
-                    $amount = $row->Tamount;
-                    $weaver = $row->Tweaver;
-                    $fine = $row->Tfine;
-                    $paid_amount = $row->Tpaidamount;
+                    $amount = (float) $row->total_amount;
+                    $weaver = (float) $row->total_weaver;
+                    $fine = (float) $row->total_fine;
+                    $paid_amount = (float) $row->total_paid_amount;
 
 
                     $balance = $amount + $fine - ($paid_amount + $weaver);
