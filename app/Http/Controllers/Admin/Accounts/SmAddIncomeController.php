@@ -8,6 +8,7 @@ use App\SmAddIncome;
 use App\SmBankAccount;
 use App\SmBankStatement;
 use App\SmChartOfAccount;
+use App\SmFeesPayment;
 use App\SmPaymentMethhod;
 use Brian2694\Toastr\Facades\Toastr;
 use Exception;
@@ -25,9 +26,7 @@ class SmAddIncomeController extends Controller
         /*
         try {
         */
-            $add_incomes = SmAddIncome::with(['paymentMethod:method,id', 'ACHead:head,type,id', 'incomeHeads:name,id'])
-                ->select(['name', 'id', 'date', 'payment_method_id', 'income_head_id', 'amount', 'fees_collection_id'])
-                ->get();
+            $add_incomes = $this->buildIncomeQuery()->get();
 
             $this->attachInvoiceMeta($add_incomes);
             $income_heads = SmChartOfAccount::where('type', 'I')->select(['head', 'type', 'id'])->get();
@@ -111,7 +110,8 @@ class SmAddIncomeController extends Controller
         try {
         */
             $add_income = SmAddIncome::find($id);
-            $add_incomes = SmAddIncome::get();
+            $add_incomes = $this->buildIncomeQuery()->get();
+            $this->attachInvoiceMeta($add_incomes);
             $income_heads = SmChartOfAccount::get();
             $bank_accounts = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
             $payment_methods = SmPaymentMethhod::get();
@@ -229,49 +229,65 @@ class SmAddIncomeController extends Controller
         */
     }
 
+    private function buildIncomeQuery()
+    {
+        return SmAddIncome::with([
+            'paymentMethod:id,method',
+            'ACHead:id,head,type',
+            'incomeHeads:id,name',
+        ])->select(['name', 'id', 'date', 'payment_method_id', 'income_head_id', 'amount', 'fees_collection_id']);
+    }
+
     private function attachInvoiceMeta(Collection $incomes): void
     {
         if ($incomes->isEmpty()) {
             return;
         }
 
-        $collectionIds = $incomes->pluck('fees_collection_id')->filter()->unique();
+        $collectionIds = $incomes->pluck('fees_collection_id')->filter()->unique()->values();
 
         if ($collectionIds->isEmpty()) {
             return;
         }
 
-        $directInvoices = FmFeesInvoice::with('studentInfo')
-            ->whereIn('id', $collectionIds)
-            ->get()
-            ->keyBy('id');
+        $metaIndex = [];
+        $directInvoices = FmFeesInvoice::with([
+            'studentInfo',
+            'invoiceDetails.feesType',
+        ])->whereIn('id', $collectionIds)->get()->keyBy('id');
 
-        $missingIds = $collectionIds->diff($directInvoices->keys());
-
-        $transactionsById = [];
-
-        if ($missingIds->isNotEmpty()) {
-            $transactionsById = FmFeesTransaction::with(['feesInvoiceInfo.studentInfo'])
-                ->whereIn('id', $missingIds)
-                ->get()
-                ->mapWithKeys(function (FmFeesTransaction $transaction) {
-                    return $transaction->feesInvoiceInfo
-                        ? [$transaction->id => $transaction->feesInvoiceInfo]
-                        : [];
-                })
-                ->all();
+        foreach ($directInvoices as $invoice) {
+            $metaIndex[$invoice->id] = $this->formatInvoiceMeta($invoice);
         }
 
-        $metaIndex = [];
+        $pendingIds = $collectionIds->filter(function ($id) use ($metaIndex) {
+            return ! isset($metaIndex[$id]);
+        });
 
-        foreach ($collectionIds as $collectionId) {
-            if ($directInvoices->has($collectionId)) {
-                $metaIndex[$collectionId] = $this->formatInvoiceMeta($directInvoices->get($collectionId));
-                continue;
+        if ($pendingIds->isNotEmpty()) {
+            $transactions = FmFeesTransaction::with(['feesInvoiceInfo.studentInfo', 'feesInvoiceInfo.invoiceDetails.feesType'])
+                ->whereIn('id', $pendingIds)
+                ->get();
+
+            foreach ($transactions as $transaction) {
+                if ($transaction->feesInvoiceInfo) {
+                    $metaIndex[$transaction->id] = $this->formatInvoiceMeta($transaction->feesInvoiceInfo);
+                }
             }
 
-            if (isset($transactionsById[$collectionId])) {
-                $metaIndex[$collectionId] = $this->formatInvoiceMeta($transactionsById[$collectionId]);
+            $pendingIds = $pendingIds->filter(function ($id) use ($metaIndex) {
+                return ! isset($metaIndex[$id]);
+            });
+        }
+
+        if ($pendingIds->isNotEmpty()) {
+            $legacyPayments = SmFeesPayment::with('studentInfo')
+                ->whereIn('id', $pendingIds)
+                ->get()
+                ->keyBy('id');
+
+            foreach ($legacyPayments as $payment) {
+                $metaIndex[$payment->id] = $this->formatLegacyPaymentMeta($payment);
             }
         }
 
@@ -302,12 +318,54 @@ class SmAddIncomeController extends Controller
             ?? optional(optional($student)->user)->username
             ?? null;
 
+        $feeHeads = [];
+        if ($invoice->relationLoaded('invoiceDetails')) {
+            $feeHeads = $invoice->invoiceDetails
+                ->map(function ($detail) {
+                    return optional($detail->feesType)->name;
+                })
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+        }
+
         return [
             'invoice_db_id' => $invoice->id,
             'invoice_number' => $invoice->invoice_id,
             'student_name' => $studentName ?: __('common.unknown'),
             'student_identifier' => $identifier,
+            'fee_heads' => $feeHeads,
             'view_url' => route('fees.fees-invoice-view', ['id' => $invoice->id, 'state' => 'view']),
+        ];
+    }
+
+    private function formatLegacyPaymentMeta(SmFeesPayment $payment): array
+    {
+        $student = $payment->studentInfo;
+        $studentName = optional($student)->full_name;
+
+        if (empty($studentName) && $student) {
+            $studentName = trim(implode(' ', array_filter([
+                $student->first_name ?? null,
+                $student->last_name ?? null,
+            ])));
+        }
+
+        $identifier = optional($student)->admission_no
+            ?? optional($student)->student_id
+            ?? optional(optional($student)->user)->username
+            ?? null;
+
+        $legacyInvoiceNumber = __('fees.payment_id').' #'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
+
+        return [
+            'invoice_db_id' => $payment->id,
+            'invoice_number' => $legacyInvoiceNumber,
+            'student_name' => $studentName ?: __('common.unknown'),
+            'student_identifier' => $identifier,
+            'fee_heads' => [],
+            'view_url' => null,
         ];
     }
 }

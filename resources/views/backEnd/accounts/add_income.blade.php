@@ -332,12 +332,71 @@
                 $grouped_incomes = collect();
                 }
                 }
+                $buildIncomeDisplayRows = $buildIncomeDisplayRows ?? function ($entries, $scopeKey) {
+                $entries = $entries instanceof \Illuminate\Support\Collection ? $entries : collect($entries);
+                $invoiceRowBuckets = [];
+                $displayRows = [];
+                $manualCounter = 1;
+
+                foreach ($entries as $row) {
+                $headName = optional($row->ACHead)->head
+                ?? optional($row->incomeHeads)->name
+                ?? '';
+                $invoiceMeta = $row->invoice_meta ?? null;
+
+                if ($invoiceMeta) {
+                $bucketKey = $scopeKey.'_' . ($invoiceMeta['invoice_db_id'] ?? $row->fees_collection_id ?? $row->id);
+
+                if (! isset($invoiceRowBuckets[$bucketKey])) {
+                $invoiceRowBuckets[$bucketKey] = [
+                'meta' => $invoiceMeta,
+                'total_amount' => 0,
+                'head_names' => [],
+                'payment_methods' => [],
+                'entries' => 0,
+                ];
+                $displayRows[] = ['type' => 'invoice', 'bucketKey' => $bucketKey];
+                }
+
+                $invoiceRowBuckets[$bucketKey]['total_amount'] += (float) $row->amount;
+
+                if ($headName !== '') {
+                $invoiceRowBuckets[$bucketKey]['head_names'][$headName] = true;
+                }
+
+                $methodLabel = optional($row->paymentMethod)->method;
+                if (! empty($methodLabel)) {
+                $invoiceRowBuckets[$bucketKey]['payment_methods'][$methodLabel] = true;
+                }
+
+                $invoiceRowBuckets[$bucketKey]['entries']++;
+                continue;
+                }
+
+                $displayRows[] = [
+                'type' => 'manual',
+                'row' => $row,
+                'head_name' => $headName,
+                'row_number' => $manualCounter++,
+                ];
+                }
+
+                foreach ($displayRows as $index => $entry) {
+                if (($entry['type'] ?? null) === 'invoice') {
+                $displayRows[$index]['bucket'] = $invoiceRowBuckets[$entry['bucketKey']] ?? [];
+                unset($displayRows[$index]['bucketKey']);
+                }
+                }
+
+                return $displayRows;
+                };
                 @endphp
                 @forelse($grouped_incomes as $dateKey => $incomesForDate)
                 @php
                 $incCollapseId = 'incDate_' . md5($dateKey);
                 $displayDate = date('M d, Y', strtotime($dateKey));
                 $totalForDate = $incomesForDate->sum('amount');
+                $incomeDisplayRows = $buildIncomeDisplayRows($incomesForDate, 'date_'.$dateKey);
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
                   <div
@@ -376,59 +435,18 @@
                             </tr>
                           </thead>
                           <tbody>
-                            @php
-                            $invoiceRowBuckets = [];
-                            $incomeDisplayRows = [];
-                            foreach ($incomesForDate as $row) {
-                            $headName = optional($row->ACHead)->head
-                            ?? optional($row->incomeHeads)->name
-                            ?? '';
-                            $invoiceMeta = $row->invoice_meta ?? null;
-
-                            if ($invoiceMeta) {
-                            $bucketKey = $dateKey . '_' . ($invoiceMeta['invoice_db_id'] ?? $row->fees_collection_id ??
-                            $row->id);
-
-                            if (! isset($invoiceRowBuckets[$bucketKey])) {
-                            $invoiceRowBuckets[$bucketKey] = [
-                            'meta' => $invoiceMeta,
-                            'total_amount' => 0,
-                            'head_names' => [],
-                            'payment_methods' => [],
-                            'entries' => 0,
-                            ];
-                            $incomeDisplayRows[] = ['type' => 'invoice', 'key' => $bucketKey];
-                            }
-
-                            $invoiceRowBuckets[$bucketKey]['total_amount'] += $row->amount;
-
-                            if (! empty($headName)) {
-                            $invoiceRowBuckets[$bucketKey]['head_names'][$headName] = true;
-                            }
-
-                            $methodLabel = optional($row->paymentMethod)->method;
-                            if (! empty($methodLabel)) {
-                            $invoiceRowBuckets[$bucketKey]['payment_methods'][$methodLabel] = true;
-                            }
-
-                            $invoiceRowBuckets[$bucketKey]['entries']++;
-                            } else {
-                            $incomeDisplayRows[] = ['type' => 'manual', 'row' => $row, 'head_name' => $headName];
-                            }
-                            }
-                            @endphp
-
                             @foreach($incomeDisplayRows as $displayRow)
-                            @if($displayRow['type'] === 'invoice')
+                            @if(($displayRow['type'] ?? null) === 'invoice')
                             @php
-                            $group = $invoiceRowBuckets[$displayRow['key']];
-                            $meta = $group['meta'];
-                            $methodNames = array_keys($group['payment_methods']);
-                            $headLabels = array_keys($group['head_names']);
+                            $group = $displayRow['bucket'];
+                            $meta = $group['meta'] ?? [];
+                            $methodNames = array_keys($group['payment_methods'] ?? []);
+                            $headLabels = !empty($meta['fee_heads']) ? $meta['fee_heads'] :
+                            array_keys($group['head_names'] ?? []);
                             @endphp
                             <tr class="invoice-group-row">
                               <td class="text-center">
-                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] }}</span>
+                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
                               </td>
                               <td class="font-weight-500">
                                 <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
@@ -436,7 +454,7 @@
                                 <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
                                 @endif
                                 <div class="text-muted small">@lang('fees.invoice_number'):
-                                  <span class="font-weight-600">#{{ $meta['invoice_number'] }}</span>
+                                  <span class="font-weight-600">{{ $meta['invoice_number'] ?? __('common.na') }}</span>
                                 </div>
                               </td>
                               <td>
@@ -457,7 +475,7 @@
                                 @endif
                               </td>
                               <td class="text-right font-weight-600">
-                                {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'],2) }}
+                                {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'] ?? 0,2) }}
                               </td>
                               <td class="text-right">
                                 @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
@@ -474,7 +492,7 @@
                             $headName = $displayRow['head_name'];
                             @endphp
                             <tr>
-                              <td class="text-center">{{ $loop->iteration }}</td>
+                              <td class="text-center">{{ $displayRow['row_number'] ?? $loop->iteration }}</td>
                               <td class="font-weight-500">{{ $row->name }}</td>
                               <td><span
                                   class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span>
@@ -532,6 +550,7 @@
                 $incNameCollapseId = 'incName_' . md5($nameKey);
                 $displayName = $nameKey ?: __('common.unknown');
                 $totalForName = $incomesForName->sum('amount');
+                $incomeDisplayRows = $buildIncomeDisplayRows($incomesForName, 'name_'.$nameKey);
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
                   <div
@@ -569,14 +588,64 @@
                             </tr>
                           </thead>
                           <tbody>
-                            @foreach($incomesForName as $row)
+                            @foreach($incomeDisplayRows as $displayRow)
+                            @if(($displayRow['type'] ?? null) === 'invoice')
                             @php
-                            $headName = optional($row->ACHead)->head
-                            ?? optional($row->incomeHeads)->name
-                            ?? '';
+                            $group = $displayRow['bucket'];
+                            $meta = $group['meta'] ?? [];
+                            $methodNames = array_keys($group['payment_methods'] ?? []);
+                            $headLabels = !empty($meta['fee_heads']) ? $meta['fee_heads'] :
+                            array_keys($group['head_names'] ?? []);
+                            @endphp
+                            <tr class="invoice-group-row">
+                              <td class="text-center">
+                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
+                              </td>
+                              <td class="font-weight-500">
+                                <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
+                                @if(!empty($meta['student_identifier']))
+                                <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
+                                @endif
+                                <div class="text-muted small">@lang('fees.invoice_number'):
+                                  <span class="font-weight-600">{{ $meta['invoice_number'] ?? __('common.na') }}</span>
+                                </div>
+                              </td>
+                              <td>
+                                @if(count($methodNames))
+                                <span class="badge badge-outline-info mr-1">{{ $methodNames[0] }}</span>
+                                @if(count($methodNames) > 1)
+                                <span class="badge badge-light text-muted">+{{ count($methodNames) - 1 }} more</span>
+                                @endif
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                              </td>
+                              <td class="text-muted">
+                                @if(count($headLabels))
+                                {{ implode(', ', $headLabels) }}
+                                @else
+                                @lang('fees.fees_invoice')
+                                @endif
+                              </td>
+                              <td class="text-right font-weight-600">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'] ?? 0,2) }}
+                              </td>
+                              <td class="text-right">
+                                @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
+                                <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
+                                  target="_blank">@lang('common.view')</a>
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                              </td>
+                            </tr>
+                            @else
+                            @php
+                            $row = $displayRow['row'];
+                            $headName = $displayRow['head_name'];
                             @endphp
                             <tr>
-                              <td class="text-center">{{ $loop->iteration }}</td>
+                              <td class="text-center">{{ $displayRow['row_number'] ?? $loop->iteration }}</td>
                               <td class="font-weight-500">{{ $row->name }}</td>
                               <td><span
                                   class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span>
@@ -607,6 +676,7 @@
                                 </div>
                               </td>
                             </tr>
+                            @endif
                             @endforeach
                           </tbody>
                         </table>
@@ -632,6 +702,7 @@
                 $incMethodCollapseId = 'incMethod_' . md5($methodKey);
                 $displayMethod = $methodKey ?: __('common.unknown');
                 $totalForMethod = $incomesForMethod->sum('amount');
+                $incomeDisplayRows = $buildIncomeDisplayRows($incomesForMethod, 'method_'.$methodKey);
                 @endphp
                 <div class="card mb-2 border-0 shadow-sm">
                   <div
@@ -669,17 +740,66 @@
                             </tr>
                           </thead>
                           <tbody>
-                            @foreach($incomesForMethod as $row)
+                            @foreach($incomeDisplayRows as $displayRow)
+                            @if(($displayRow['type'] ?? null) === 'invoice')
                             @php
-                            $headName = optional($row->ACHead)->head
-                            ?? optional($row->incomeHeads)->name
-                            ?? '';
+                            $group = $displayRow['bucket'];
+                            $meta = $group['meta'] ?? [];
+                            $headLabels = !empty($meta['fee_heads']) ? $meta['fee_heads'] :
+                            array_keys($group['head_names'] ?? []);
+                            @endphp
+                            <tr class="invoice-group-row">
+                              <td class="text-center">
+                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
+                              </td>
+                              <td>{{ dateConvert(optional($group['rows']->first())->date) }}</td>
+                              <td class="font-weight-500">
+                                <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
+                                @if(!empty($meta['student_identifier']))
+                                <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
+                                @endif
+                              </td>
+                              <td>
+                                @if(!empty($meta['invoice_number']))
+                                <span class="badge badge-outline-info">{{ $meta['invoice_number'] }}</span>
+                                @else
+                                <span class="text-muted">@lang('common.na')</span>
+                                @endif
+                              </td>
+                              <td class="text-muted">
+                                @if(count($headLabels))
+                                {{ implode(', ', $headLabels) }}
+                                @else
+                                @lang('fees.fees_invoice')
+                                @endif
+                              </td>
+                              <td class="text-right font-weight-600">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'] ?? 0,2) }}
+                              </td>
+                              <td class="text-right">
+                                @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
+                                <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
+                                  target="_blank">@lang('common.view')</a>
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                              </td>
+                            </tr>
+                            @else
+                            @php
+                            $row = $displayRow['row'];
+                            $headName = $displayRow['head_name'];
                             @endphp
                             <tr>
-                              <td class="text-center">{{ $loop->iteration }}</td>
+                              <td class="text-center">{{ $displayRow['row_number'] ?? $loop->iteration }}</td>
+                              <td>{{ dateConvert($row->date) }}</td>
                               <td class="font-weight-500">{{ $row->name }}</td>
-                              <td><span
-                                  class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span>
+                              <td>
+                                @if(!empty($row->invoiceInfo->invoice_number))
+                                <span class="badge badge-outline-info">{{ $row->invoiceInfo->invoice_number }}</span>
+                                @else
+                                <span class="text-muted">@lang('common.na')</span>
+                                @endif
                               </td>
                               <td class="text-muted">{{ $headName }}</td>
                               <td class="text-right font-weight-600">
@@ -707,6 +827,7 @@
                                 </div>
                               </td>
                             </tr>
+                            @endif
                             @endforeach
                           </tbody>
                         </table>
