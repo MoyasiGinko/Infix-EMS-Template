@@ -286,6 +286,7 @@ class SmAddIncomeController extends Controller
         $metaIndex = [];
         $directInvoiceQuery = FmFeesInvoice::with([
             'studentInfo',
+            'recordDetail',
             'invoiceDetails.feesType',
         ]);
 
@@ -318,6 +319,7 @@ class SmAddIncomeController extends Controller
         if ($pendingIds->isNotEmpty()) {
             $transactionQuery = FmFeesTransaction::with([
                 'feesInvoiceInfo.studentInfo',
+                'feesInvoiceInfo.recordDetail',
                 'feesInvoiceInfo.invoiceDetails.feesType',
             ]);
 
@@ -365,7 +367,7 @@ class SmAddIncomeController extends Controller
             })->values();
 
             $legacyPayments = $legacyNumericIds->isNotEmpty()
-                ? SmFeesPayment::with('studentInfo')->whereIn('id', $legacyNumericIds)->get()->keyBy('id')
+                ? SmFeesPayment::with(['studentInfo', 'recordDetail'])->whereIn('id', $legacyNumericIds)->get()->keyBy('id')
                 : collect();
 
             foreach ($legacyPayments as $payment) {
@@ -400,6 +402,10 @@ class SmAddIncomeController extends Controller
             ?? optional(optional($student)->user)->username
             ?? null;
 
+        $rollNumber = optional($invoice->recordDetail)->roll_no
+            ?? optional($student)->roll_no
+            ?? null;
+
         $feeHeads = [];
         if ($invoice->relationLoaded('invoiceDetails')) {
             $feeHeads = $invoice->invoiceDetails
@@ -422,6 +428,7 @@ class SmAddIncomeController extends Controller
             'invoice_number' => $invoice->invoice_id,
             'student_name' => $studentName ?: __('common.unknown'),
             'student_identifier' => $identifier,
+            'student_roll' => $rollNumber,
             'fee_heads' => $feeHeads,
             'invoice_date' => $invoiceDate,
             'view_url' => route('fees.fees-invoice-view', ['id' => $invoice->id, 'state' => 'view']),
@@ -445,6 +452,10 @@ class SmAddIncomeController extends Controller
             ?? optional(optional($student)->user)->username
             ?? null;
 
+        $rollNumber = optional($payment->recordDetail)->roll_no
+            ?? optional($student)->roll_no
+            ?? null;
+
         $legacyInvoiceNumber = __('fees.payment_id').' #'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
 
         $paymentDate = $this->normalizeDateValue($payment->payment_date ?? null)
@@ -456,6 +467,7 @@ class SmAddIncomeController extends Controller
             'invoice_number' => $legacyInvoiceNumber,
             'student_name' => $studentName ?: __('common.unknown'),
             'student_identifier' => $identifier,
+            'student_roll' => $rollNumber,
             'fee_heads' => [],
             'invoice_date' => $paymentDate,
             'view_url' => null,

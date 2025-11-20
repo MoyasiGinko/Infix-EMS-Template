@@ -338,7 +338,7 @@ $__incomeCollection = $__incomeCollection ?? collect();
                 ? $invoiceKey
                 : __('fees.invoice').' #'.str_pad((string) $invoiceKey, 6, '0', STR_PAD_LEFT),
                 'student_name' => $row->name ?? __('common.unknown'),
-                'student_identifier' => '',
+                'student_roll' => '',
                 'fee_heads' => [],
                 'invoice_date' => $row->date,
                 'view_url' => null,
@@ -453,7 +453,7 @@ $__incomeCollection = $__incomeCollection ?? collect();
                             $invoiceExportPayload = [
                             'date' => $firstPaymentDate ? dateConvert($firstPaymentDate) : '',
                             'name' => $meta['student_name'] ?? __('common.unknown'),
-                            'identifier' => $meta['student_identifier'] ?? '',
+                            'identifier' => $meta['student_roll'] ?? '',
                             'payment_method' => count($methodNames) ? implode(', ', $methodNames) : '',
                             'details' => count($headLabels) ? implode(', ', $headLabels) : __('fees.fees_invoice'),
                             'invoice' => $meta['invoice_number'] ?? '',
@@ -472,8 +472,8 @@ $__incomeCollection = $__incomeCollection ?? collect();
                               </td>
                               <td class="font-weight-500">
                                 <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
-                                @if(!empty($meta['student_identifier']))
-                                <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
+                                @if(!empty($meta['student_roll']))
+                                <div class="text-muted small">@lang('student.roll'): {{ $meta['student_roll'] }}</div>
                                 @endif
                                 <div class="text-muted small">@lang('fees.invoice_number'):
                                   <span class="font-weight-600">{{ $meta['invoice_number'] ?? __('common.na') }}</span>
@@ -637,7 +637,7 @@ $__incomeCollection = $__incomeCollection ?? collect();
                             $invoiceExportPayload = [
                             'date' => $firstPaymentDate ? dateConvert($firstPaymentDate) : '',
                             'name' => $meta['student_name'] ?? __('common.unknown'),
-                            'identifier' => $meta['student_identifier'] ?? '',
+                            'identifier' => $meta['student_roll'] ?? '',
                             'payment_method' => count($methodNames) ? implode(', ', $methodNames) : '',
                             'details' => count($headLabels) ? implode(', ', $headLabels) : __('fees.fees_invoice'),
                             'invoice' => $meta['invoice_number'] ?? '',
@@ -656,8 +656,8 @@ $__incomeCollection = $__incomeCollection ?? collect();
                               </td>
                               <td class="font-weight-500">
                                 <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
-                                @if(!empty($meta['student_identifier']))
-                                <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
+                                @if(!empty($meta['student_roll']))
+                                <div class="text-muted small">@lang('student.roll'): {{ $meta['student_roll'] }}</div>
                                 @endif
                                 <div class="text-muted small">@lang('fees.invoice_number'):
                                   <span class="font-weight-600">{{ $meta['invoice_number'] ?? __('common.na') }}</span>
@@ -820,7 +820,7 @@ $__incomeCollection = $__incomeCollection ?? collect();
                             $invoiceExportPayload = [
                             'date' => $firstPaymentDate ? dateConvert($firstPaymentDate) : '',
                             'name' => $meta['student_name'] ?? __('common.unknown'),
-                            'identifier' => $meta['student_identifier'] ?? '',
+                            'identifier' => $meta['student_roll'] ?? '',
                             'payment_method' => count($methodNames) ? implode(', ', $methodNames) : $displayMethod,
                             'details' => count($headLabels) ? implode(', ', $headLabels) : __('fees.fees_invoice'),
                             'invoice' => $meta['invoice_number'] ?? '',
@@ -840,8 +840,8 @@ $__incomeCollection = $__incomeCollection ?? collect();
                               <td>{{ dateConvert(optional($group['rows']->first())->date) }}</td>
                               <td class="font-weight-500">
                                 <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
-                                @if(!empty($meta['student_identifier']))
-                                <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
+                                @if(!empty($meta['student_roll']))
+                                <div class="text-muted small">@lang('student.roll'): {{ $meta['student_roll'] }}</div>
                                 @endif
                               </td>
                               <td>
