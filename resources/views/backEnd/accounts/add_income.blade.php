@@ -37,905 +37,902 @@
           <div class="col-lg-12">
             @if (isset($add_income))
             {{ html()->form('POST', route('add_income_update'))->attributes([
-                                        'class' => 'form-horizontal',
-                                        'files' => true,
-                                        'enctype' => 'multipart/form-data',
-                                        'id' => 'add-income-update',
-                                    ])->open() }}
+                        'class' => 'form-horizontal',
+                        'files' => true,
+                        'enctype' => 'multipart/form-data',
+                        'id' => 'add-income-update',
+                    ])->open() }}
             @else
             @if (userPermission('add_income_store'))
             {{ html()->form('POST', route('add_income_store'))->attributes([
-                                            'class' => 'form-horizontal',
-                                            'files' => true,
-                                            'enctype' => 'multipart/form-data',
-                                            'id' => 'add-income',
-                                        ])->open() }}
+                            'class' => 'form-horizontal',
+                            'files' => true,
+                            'enctype' => 'multipart/form-data',
+                            'id' => 'add-income',
+                        ])->open() }}
             @endif
             @endif
             <div class="white-box">
               <div class="main-title">
                 <h3 class="mb-15">
-                  // Export logic (adapted)
-                  $(function() {
-                  function fallbackIncomePayload(rowEl, groupScope) {
-                  const $tds = $(rowEl).find('td');
-                  if (!$tds.length) return null;
-                  const textAt = index => ($tds.eq(index).text() || '').trim();
-                  const amountCell = $tds.filter('[data-amount]').first();
-                  let amount = amountCell.length ? parseFloat(amountCell.data('amount')) : NaN;
-                  if (isNaN(amount)) {
-                  const fallbackText = textAt(Math.max(0, $tds.length - 2));
-                  const numeric = parseFloat(fallbackText.replace(/[^0-9.,-]/g, '').replace(/,/g, ''));
+                  @if (isset($add_income))
+                  @lang('accounts.edit_income')
+                  @else
+                  @lang('accounts.add_income')
+                  @endif
+                </h3>
               </div>
-              amount = isNaN(numeric) ? 0 : numeric;
-              }
-              const payload = {
-              date: groupScope === 'method' ? textAt(1) : '',
-              name: groupScope === 'method' ? textAt(2) : textAt(1),
-              identifier: '',
-              payment_method: groupScope === 'method' ? $('#incomeMethodAccordion').find('>
-              .card:visible').first().find('.card-header .font-weight-bold').text().trim() : textAt(2),
-              details: groupScope === 'method' ? textAt(4) : textAt(3),
-              amount: isNaN(amount) ? 0 : amount,
-              amount_display: formatIncomeAmount(isNaN(amount) ? 0 : amount)
-              };
-              return payload;
-              }
+              <div class="add-visitor">
+                <div class="row">
+                  <div class="col-lg-12">
+                    <div class="primary_input">
+                      <label class="primary_input_label" for="">@lang('common.name') <span class="text-danger">
+                          *</span></label>
+                      <input class="primary_input_field form-control{{ @$errors->has('name') ? ' is-invalid' : '' }}"
+                        type="text" name="name" autocomplete="off"
+                        value="{{ isset($add_income) ? $add_income->name : old('name') }}">
+                      <input type="hidden" name="id" value="{{ isset($add_income) ? $add_income->id : '' }}">
 
-              function parseIncomeExportPayload(rowEl, groupScope) {
-              const raw = rowEl.getAttribute('data-export');
-              let payload = null;
-              if (raw) {
-              try {
-              payload = JSON.parse(raw);
-              } catch (err) {
-              console.warn('Income export payload parse failed', err);
-              }
-              }
-              if (!payload) {
-              payload = fallbackIncomePayload(rowEl, groupScope);
-              }
-              if (!payload) return null;
-              const normalizedAmount = Number(payload.amount);
-              payload.amount = isNaN(normalizedAmount) ? 0 : normalizedAmount;
-              payload.amount_display = payload.amount_display || formatIncomeAmount(payload.amount);
-              payload.date = payload.date || '';
-              payload.name = payload.name || '';
-              payload.identifier = payload.identifier || '';
-              payload.payment_method = payload.payment_method || '';
-              payload.details = payload.details || payload.head || payload.invoice || '';
-              return payload;
-              }
 
-              function collectIncomeRows() {
-              const group = $('#incomeGroupBy').val();
-              const rows = [];
-              $('.group-accordion[data-group="' + group + '"]').find('tbody tr').each(function() {
-              <div class="white-box">
-                <div class="main-title">
-                  <h3 class="mb-15">
-                    @if (isset($add_income))
-                    @lang('accounts.edit_income')
-                    @else
-                    @lang('accounts.add_income')
-                    @endif
-                  </h3>
+                      @if ($errors->has('name'))
+                      <span class="text-danger">
+                        {{ $errors->first('name') }}
+                      </span>
+                      @endif
+                    </div>
+
+                  </div>
                 </div>
-                <div class="add-visitor">
-                  <div class="row">
-                    <div class="col-lg-12">
-                      <div class="primary_input">
-                        <label class="primary_input_label" for="">@lang('common.name') <span class="text-danger">
-                            *</span></label>
-                        <input class="primary_input_field form-control{{ @$errors->has('name') ? ' is-invalid' : '' }}"
-                          type="text" name="name" autocomplete="off"
-                          value="{{ isset($add_income) ? $add_income->name : old('name') }}">
-                        <input type="hidden" name="id" value="{{ isset($add_income) ? $add_income->id : '' }}">
-
-
-                        @if ($errors->has('name'))
-                        <span class="text-danger">
-                          {{ $errors->first('name') }}
-                        </span>
-                        @endif
-                      </div>
-
-                    </div>
+                <div class="row  mt-15">
+                  <div class="col-lg-12">
+                    <label class="primary_input_label" for="">@lang('accounts.a_c_Head') <span class="text-danger">
+                        *</span></label>
+                    <select class="primary_select  form-control{{ @$errors->has('income_head') ? ' is-invalid' : '' }}"
+                      name="income_head">
+                      <option data-display="@lang('accounts.a_c_Head') *" value="">
+                        @lang('accounts.a_c_Head') *</option>
+                      @foreach ($income_heads as $income_head)
+                      @if (isset($add_income))
+                      <option value="{{ @$income_head->id }}"
+                        {{ @$add_income->income_head_id == @$income_head->id ? 'selected' : '' }}>
+                        {{ @$income_head->head }}</option>
+                      @else
+                      <option value="{{ @$income_head->id }}"
+                        {{ old('income_head') == @$income_head->id ? 'selected' : '' }}>
+                        {{ @$income_head->head }}</option>
+                      @endif
+                      @endforeach
+                    </select>
+                    @if (@$errors->has('income_head'))
+                    <span class="text-danger invalid-select" role="alert">
+                      {{ @$errors->first('income_head') }}
+                    </span>
+                    @endif
                   </div>
-                  <div class="row  mt-15">
-                    <div class="col-lg-12">
-                      <label class="primary_input_label" for="">@lang('accounts.a_c_Head') <span class="text-danger">
+                </div>
+
+                <div class="row mt-15">
+                  <div class="col-lg-12">
+                    <label class="primary_input_label" for="">@lang('accounts.payment_method') <span
+                        class="text-danger"> *</span></label>
+                    <select
+                      class="primary_select  form-control{{ @$errors->has('payment_method') ? ' is-invalid' : '' }}"
+                      name="payment_method" id="payment_method">
+                      <option data-display="@lang('accounts.payment_method') *" value="">
+                        @lang('accounts.payment_method') *</option>
+                      @foreach ($payment_methods as $payment_method)
+                      @if (isset($add_income))
+                      <option data-string="{{ $payment_method->method }}" value="{{ @$payment_method->id }}"
+                        {{ @$add_income->payment_method_id == @$payment_method->id ? 'selected' : '' }}>
+                        {{ @$payment_method->method }}
+                      </option>
+                      @else
+                      <option data-string="{{ $payment_method->method }}" value="{{ @$payment_method->id }}">
+                        {{ @$payment_method->method }}</option>
+                      @endif
+                      @endforeach
+                    </select>
+                    @if (@$errors->has('payment_method'))
+                    <span class="text-danger invalid-select" role="alert">
+                      {{ @$errors->first('payment_method') }}
+                    </span>
+                    @endif
+                  </div>
+                </div>
+                <div class="row mt-15 d-none" id="bankAccount">
+                  <div class="col-lg-12">
+                    <label class="primary_input_label" for="">@lang('accounts.bank_accounts') <span class="text-danger">
+                        *</span></label>
+                    <select class="primary_select  form-control{{ @$errors->has('accounts') ? ' is-invalid' : '' }}"
+                      name="accounts">
+                      <option data-display="@lang('accounts.bank_accounts') *" value="">
+                        @lang('accounts.bank_accounts') *</option>
+                      @foreach ($bank_accounts as $bank_account)
+                      @if (isset($add_income))
+                      <option value="{{ @$bank_account->id }}"
+                        {{ @$add_income->account_id == @$bank_account->id ? 'selected' : '' }}>
+                        {{ @$bank_account->account_name }}
+                        ({{ @$bank_account->bank_name }})</option>
+                      @else
+                      <option value="{{ @$bank_account->id }}">
+                        {{ @$bank_account->account_name }}
+                        ({{ @$bank_account->bank_name }})</option>
+                      @endif
+                      @endforeach
+                    </select>
+                    @if ($errors->has('accounts'))
+                    <span class="text-danger invalid-select" role="alert">
+                      {{ @$errors->first('accounts') }}
+                    </span>
+                    @endif
+                  </div>
+                </div>
+
+
+                <div class="row  mt-15">
+                  <div class="col-lg-12">
+                    <div class="primary_input">
+                      <label class="primary_input_label" for="">@lang('admin.date') <span class="text-danger">
                           *</span></label>
-                      <select
-                        class="primary_select  form-control{{ @$errors->has('income_head') ? ' is-invalid' : '' }}"
-                        name="income_head">
-                        <option data-display="@lang('accounts.a_c_Head') *" value="">
-                          @lang('accounts.a_c_Head') *</option>
-                        @foreach ($income_heads as $income_head)
-                        @if (isset($add_income))
-                        <option value="{{ @$income_head->id }}"
-                          {{ @$add_income->income_head_id == @$income_head->id ? 'selected' : '' }}>
-                          {{ @$income_head->head }}</option>
-                        @else
-                        <option value="{{ @$income_head->id }}"
-                          {{ old('income_head') == @$income_head->id ? 'selected' : '' }}>
-                          {{ @$income_head->head }}</option>
-                        @endif
-                        @endforeach
-                      </select>
-                      @if (@$errors->has('income_head'))
-                      <span class="text-danger invalid-select" role="alert">
-                        {{ @$errors->first('income_head') }}
-                      </span>
-                      @endif
-                    </div>
-                  </div>
-
-                  <div class="row mt-15">
-                    <div class="col-lg-12">
-                      <label class="primary_input_label" for="">@lang('accounts.payment_method') <span
-                          class="text-danger"> *</span></label>
-                      <select
-                        class="primary_select  form-control{{ @$errors->has('payment_method') ? ' is-invalid' : '' }}"
-                        name="payment_method" id="payment_method">
-                        <option data-display="@lang('accounts.payment_method') *" value="">
-                          @lang('accounts.payment_method') *</option>
-                        @foreach ($payment_methods as $payment_method)
-                        @if (isset($add_income))
-                        <option data-string="{{ $payment_method->method }}" value="{{ @$payment_method->id }}"
-                          {{ @$add_income->payment_method_id == @$payment_method->id ? 'selected' : '' }}>
-                          {{ @$payment_method->method }}
-                        </option>
-                        @else
-                        <option data-string="{{ $payment_method->method }}" value="{{ @$payment_method->id }}">
-                          {{ @$payment_method->method }}</option>
-                        @endif
-                        @endforeach
-                      </select>
-                      @if (@$errors->has('payment_method'))
-                      <span class="text-danger invalid-select" role="alert">
-                        {{ @$errors->first('payment_method') }}
-                      </span>
-                      @endif
-                    </div>
-                  </div>
-                  <div class="row mt-15 d-none" id="bankAccount">
-                    <div class="col-lg-12">
-                      <label class="primary_input_label" for="">@lang('accounts.bank_accounts') <span
-                          class="text-danger">
-                          *</span></label>
-                      <select class="primary_select  form-control{{ @$errors->has('accounts') ? ' is-invalid' : '' }}"
-                        name="accounts">
-                        <option data-display="@lang('accounts.bank_accounts') *" value="">
-                          @lang('accounts.bank_accounts') *</option>
-                        @foreach ($bank_accounts as $bank_account)
-                        @if (isset($add_income))
-                        <option value="{{ @$bank_account->id }}"
-                          {{ @$add_income->account_id == @$bank_account->id ? 'selected' : '' }}>
-                          {{ @$bank_account->account_name }}
-                          ({{ @$bank_account->bank_name }})</option>
-                        @else
-                        <option value="{{ @$bank_account->id }}">
-                          {{ @$bank_account->account_name }}
-                          ({{ @$bank_account->bank_name }})</option>
-                        @endif
-                        @endforeach
-                      </select>
-                      @if ($errors->has('accounts'))
-                      <span class="text-danger invalid-select" role="alert">
-                        {{ @$errors->first('accounts') }}
-                      </span>
-                      @endif
-                    </div>
-                  </div>
-
-
-                  <div class="row  mt-15">
-                    <div class="col-lg-12">
-                      <div class="primary_input">
-                        <label class="primary_input_label" for="">@lang('admin.date') <span class="text-danger">
-                            *</span></label>
-                        <div class="primary_datepicker_input">
-                          <div class="no-gutters input-right-icon">
-                            <div class="col">
-                              <div class="">
-                                <input
-                                  class="primary_input_field  primary_input_field date form-control form-control{{ @$errors->has('date') ? ' is-invalid' : '' }}"
-                                  id="startDate" type="text" placeholder="@lang('common.date') *" name="date"
-                                  value="{{ isset($add_income) ? date('m/d/Y', strtotime($add_income->date)) : date('m/d/Y') }}">
-                              </div>
+                      <div class="primary_datepicker_input">
+                        <div class="no-gutters input-right-icon">
+                          <div class="col">
+                            <div class="">
+                              <input
+                                class="primary_input_field  primary_input_field date form-control form-control{{ @$errors->has('date') ? ' is-invalid' : '' }}"
+                                id="startDate" type="text" placeholder="@lang('common.date') *" name="date"
+                                value="{{ isset($add_income) ? date('m/d/Y', strtotime($add_income->date)) : date('m/d/Y') }}">
                             </div>
-                            <button class="btn-date" data-id="#startDate" type="button">
-                              <label class="m-0 p-0" for="startDate">
-                                <i class="ti-calendar" id="start-date-icon"></i>
-                              </label>
-                            </button>
                           </div>
-                        </div>
-                        <span class="text-danger">{{ $errors->first('date') }}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row  mt-15">
-                    <div class="col-lg-12">
-                      <div class="primary_input">
-                        <label class="primary_input_label" for="">@lang('accounts.amount') <span class="text-danger">
-                            *</span></label>
-                        <input
-                          class="primary_input_field form-control{{ @$errors->has('amount') ? ' is-invalid' : '' }}"
-                          type="number" step="0.01" min="0" name="amount" autocomplete="off"
-                          value="{{ isset($add_income) ? $add_income->amount : old('amount') }}">
-                        @if ($errors->has('amount'))
-                        <span class="text-danger">
-                          {{ $errors->first('amount') }}
-                        </span>
-                        @endif
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row  mt-15">
-                    <div class="col-lg-12">
-                      <div class="primary_input">
-                        <label class="primary_input_label" for="">@lang('common.description')</label>
-                        <textarea class="primary_input_field form-control" cols="0" rows="4"
-                          name="description">{{ isset($add_income) ? $add_income->description : old('description') }}</textarea>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row mt-15">
-                    <div class="col-lg-12">
-                      <div class="primary_input">
-                        <label class="primary_input_label" for="">@lang('common.attach_file')</label>
-                        <div class="primary_file_uploader">
-                          <input class="primary-input filePlaceholder" type="text" id="placeholderInput"
-                            placeholder="@lang('common.attach_file')" readonly>
-                          <button class="primary-btn small fix-gr-bg" type="button">
-                            <label class="primary-btn small fix-gr-bg" for="browseFile">@lang('common.browse')</label>
-                            <input type="file" class="d-none" name="file" id="browseFile">
+                          <button class="btn-date" data-id="#startDate" type="button">
+                            <label class="m-0 p-0" for="startDate">
+                              <i class="ti-calendar" id="start-date-icon"></i>
+                            </label>
                           </button>
                         </div>
-                        @if ($errors->has('file'))
-                        <span class="text-danger">
-                          {{ $errors->first('file') }}
-                        </span>
-                        @endif
+                      </div>
+                      <span class="text-danger">{{ $errors->first('date') }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="row  mt-15">
+                  <div class="col-lg-12">
+                    <div class="primary_input">
+                      <label class="primary_input_label" for="">@lang('accounts.amount') <span class="text-danger">
+                          *</span></label>
+                      <input class="primary_input_field form-control{{ @$errors->has('amount') ? ' is-invalid' : '' }}"
+                        type="number" step="0.01" min="0" name="amount" autocomplete="off"
+                        value="{{ isset($add_income) ? $add_income->amount : old('amount') }}">
+                      @if ($errors->has('amount'))
+                      <span class="text-danger">
+                        {{ $errors->first('amount') }}
+                      </span>
+                      @endif
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row  mt-15">
+                  <div class="col-lg-12">
+                    <div class="primary_input">
+                      <label class="primary_input_label" for="">@lang('common.description')</label>
+                      <textarea class="primary_input_field form-control" cols="0" rows="4"
+                        name="description">{{ isset($add_income) ? $add_income->description : old('description') }}</textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row mt-15">
+                  <div class="col-lg-12">
+                    <div class="primary_input">
+                      <label class="primary_input_label" for="">@lang('common.attach_file')</label>
+                      <div class="primary_file_uploader">
+                        <input class="primary-input filePlaceholder" type="text" id="placeholderInput"
+                          placeholder="@lang('common.attach_file')" readonly>
+                        <button class="primary-btn small fix-gr-bg" type="button">
+                          <label class="primary-btn small fix-gr-bg" for="browseFile">@lang('common.browse')</label>
+                          <input type="file" class="d-none" name="file" id="browseFile">
+                        </button>
+                      </div>
+                      @if ($errors->has('file'))
+                      <span class="text-danger">
+                        {{ $errors->first('file') }}
+                      </span>
+                      @endif
+                    </div>
+                  </div>
+                </div>
+
+                @php
+                $tooltip = '';
+                if (userPermission('add_income_store') || userPermission('add_income_edit')) {
+                $tooltip = '';
+                } else {
+                $tooltip = 'You have no permission to add';
+                }
+                @endphp
+
+                <div class="row mt-40">
+                  <div class="col-lg-12 text-center">
+                    <button class="primary-btn fix-gr-bg" data-toggle="tooltip" title="{{ @$tooltip }}">
+                      <span class="ti-check"></span>
+                      @if (@$add_income)
+                      @lang('accounts.update_income')
+                      @else
+                      @lang('accounts.save_income')
+                      @endif
+
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {{ html()->form()->close() }}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8 col-xl-9">
+        <div class="white-box">
+          {{-- Income list (grouped view) --}}
+          <div class="row align-items-center mb-3">
+            <div class="col-6">
+              <div class="main-title">
+                <h3 class="mb-0">@lang('accounts.income_list')</h3>
+              </div>
+            </div>
+            <div class="col-6 text-right">
+              <div class="d-inline-flex flex-wrap justify-content-end">
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="incExportExcel">Export
+                  XLSX</button>
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="incExportCSV">Export
+                  CSV</button>
+                <button type="button" class="primary-btn small fix-gr-bg mr-2 mb-2" id="incExportPDF">Export
+                  PDF</button>
+                <button type="button" class="primary-btn small fix-gr-bg mb-2" id="incExportPrint">Print</button>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="d-flex justify-content-start align-items-center mb-3 flex-wrap">
+                <label class="mb-0 mr-2 font-weight-bold">Group by:</label>
+                <select id="incomeGroupBy" class="primary_select" style="min-width:160px;display:inline-block;">
+                  <option value="date" selected>@lang('common.date')</option>
+                  <option value="name">@lang('common.name')</option>
+                  <option value="method">@lang('accounts.payment_method')</option>
+                </select>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
+                <div class="mb-2">
+                  <label class="mb-0 mr-2">Show entries</label>
+                  <select id="incomePageLength" class="form-control"
+                    style="min-width:90px;display:inline-block;"></select>
+                </div>
+                <div id="incomePagination" class="mb-2"></div>
+              </div>
+
+              <div id="incomeDateAccordion" class="mb-20 group-accordion" data-group="date">
+                @php
+                $buildIncomeDisplayRows = function ($entries, $scopeKey) {
+                $displayRows = [];
+                $manualCounter = 1;
+                $invoiceRowBuckets = [];
+
+                foreach ($entries as $row) {
+                $headName = optional($row->ACHead)->head
+                ?? optional($row->incomeHeads)->name
+                ?? '';
+                $invoiceMeta = $row->invoice_meta ?? null;
+                $invoiceKey = $invoiceMeta['invoice_db_id'] ?? $row->fees_collection_id ?? null;
+
+                if ($invoiceKey) {
+                if (! $invoiceMeta) {
+                $invoiceMeta = [
+                'invoice_db_id' => $invoiceKey,
+                'invoice_number' => is_string($invoiceKey)
+                ? $invoiceKey
+                : __('fees.invoice').' #'.str_pad((string) $invoiceKey, 6, '0', STR_PAD_LEFT),
+                'student_name' => $row->name ?? __('common.unknown'),
+                'student_identifier' => '',
+                'fee_heads' => [],
+                'invoice_date' => $row->date,
+                'view_url' => null,
+                ];
+                }
+
+                $bucketKey = $scopeKey.'_' . md5((string) $invoiceKey);
+
+                if (! isset($invoiceRowBuckets[$bucketKey])) {
+                $invoiceRowBuckets[$bucketKey] = [
+                'meta' => $invoiceMeta,
+                'total_amount' => 0,
+                'head_names' => [],
+                'payment_methods' => [],
+                'entries' => 0,
+                'rows' => collect(),
+                ];
+                $displayRows[] = ['type' => 'invoice', 'bucketKey' => $bucketKey];
+                }
+
+                $invoiceRowBuckets[$bucketKey]['total_amount'] += (float) $row->amount;
+
+                if ($headName !== '') {
+                $invoiceRowBuckets[$bucketKey]['head_names'][$headName] = true;
+                }
+
+                $methodLabel = optional($row->paymentMethod)->method;
+                if (! empty($methodLabel)) {
+                $invoiceRowBuckets[$bucketKey]['payment_methods'][$methodLabel] = true;
+                }
+
+                $invoiceRowBuckets[$bucketKey]['rows']->push($row);
+                $invoiceRowBuckets[$bucketKey]['entries']++;
+                continue;
+                }
+
+                $displayRows[] = [
+                'type' => 'manual',
+                'row' => $row,
+                'head_name' => $headName,
+                'row_number' => $manualCounter++,
+                ];
+                }
+
+                foreach ($displayRows as $index => $entry) {
+                if (($entry['type'] ?? null) === 'invoice') {
+                $displayRows[$index]['bucket'] = $invoiceRowBuckets[$entry['bucketKey']] ?? [];
+                unset($displayRows[$index]['bucketKey']);
+                }
+                }
+
+                return $displayRows;
+                };
+                @endphp
+                @forelse($grouped_incomes as $dateKey => $incomesForDate)
+                @php
+                $incCollapseId = 'incDate_' . md5($dateKey);
+                $displayDate = date('M d, Y', strtotime($dateKey));
+                $totalForDate = $incomesForDate->sum('amount');
+                $incomeDisplayRows = $buildIncomeDisplayRows($incomesForDate, 'date_'.$dateKey);
+                @endphp
+                <div class="card mb-2 border-0 shadow-sm">
+                  <div
+                    class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
+                    data-toggle="collapse" data-target="#{{ $incCollapseId }}"
+                    aria-expanded="{{ $loop->first ? 'true':'false' }}" data-total="{{ $totalForDate }}">
+                    <div class="d-flex align-items-center">
+                      <i class="ti-angle-down mr-3 collapse-icon"></i>
+                      <div>
+                        <span class="font-weight-bold text-dark">{{ $displayDate }}</span>
+                        <div class="text-muted small">{{ $incomesForDate->count() }} entries</div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="amount-display">
+                        <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
+                        <span
+                          class="amount-value font-weight-bold text-primary">{{ number_format($totalForDate,2) }}</span>
+                      </div>
+                      <span class="badge badge-primary badge-pill">{{ $incomesForDate->count() }}</span>
+                    </div>
+                  </div>
+                  <div id="{{ $incCollapseId }}" class="collapse @if($loop->first) show @endif"
+                    data-parent="#incomeDateAccordion">
+                    <div class="card-body p-0">
+                      <div class="table-responsive">
+                        <table class="table table-sm mb-0 table-striped">
+                          <thead class="thead-light">
+                            <tr>
+                              <th style="width:60px" class="text-center">#</th>
+                              <th style="min-width:150px">Name</th>
+                              <th style="min-width:120px">Payment Method</th>
+                              <th style="min-width:140px">Head</th>
+                              <th style="min-width:100px" class="text-right">Amount</th>
+                              <th style="width:120px" class="text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @foreach($incomeDisplayRows as $displayRow)
+                            @if(($displayRow['type'] ?? null) === 'invoice')
+                            @php
+                            $group = $displayRow['bucket'];
+                            $meta = $group['meta'] ?? [];
+                            $methodNames = array_keys($group['payment_methods'] ?? []);
+                            $headLabels = !empty($meta['fee_heads']) ? $meta['fee_heads'] :
+                            array_keys($group['head_names'] ?? []);
+                            $firstPaymentDate = optional($group['rows']->first())->date ?? $dateKey ?? null;
+                            $invoiceExportPayload = [
+                            'date' => $firstPaymentDate ? dateConvert($firstPaymentDate) : '',
+                            'name' => $meta['student_name'] ?? __('common.unknown'),
+                            'identifier' => $meta['student_identifier'] ?? '',
+                            'payment_method' => count($methodNames) ? implode(', ', $methodNames) : '',
+                            'details' => count($headLabels) ? implode(', ', $headLabels) : __('fees.fees_invoice'),
+                            'invoice' => $meta['invoice_number'] ?? '',
+                            'amount' => round($group['total_amount'] ?? 0, 2),
+                            'amount_display' => generalSetting()->currency_symbol .
+                            number_format($group['total_amount'] ?? 0,2),
+                            'group_scope' => 'date',
+                            ];
+                            @endphp
+                            <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
+                              <td class="text-center">
+                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
+                              </td>
+                              <td class="font-weight-500">
+                                <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
+                                @if(!empty($meta['student_identifier']))
+                                <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
+                                @endif
+                                <div class="text-muted small">@lang('fees.invoice_number'):
+                                  <span class="font-weight-600">{{ $meta['invoice_number'] ?? __('common.na') }}</span>
+                                </div>
+                              </td>
+                              <td>
+                                @if(count($methodNames))
+                                <span class="badge badge-outline-info mr-1">{{ $methodNames[0] }}</span>
+                                @if(count($methodNames) > 1)
+                                <span class="badge badge-light text-muted">+{{ count($methodNames) - 1 }}
+                                  more</span>
+                                @endif
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                              </td>
+                              <td class="text-muted">
+                                @if(count($headLabels))
+                                {{ implode(', ', $headLabels) }}
+                                @else
+                                @lang('fees.fees_invoice')
+                                @endif
+                              </td>
+                              <td class="text-right font-weight-600" data-amount="{{ $group['total_amount'] ?? 0 }}">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'] ?? 0,2) }}
+                              </td>
+                              <td class="text-right">
+                                @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
+                                <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
+                                  target="_blank">@lang('common.view')</a>
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                              </td>
+                            </tr>
+                            @else
+                            @php
+                            $row = $displayRow['row'];
+                            $headName = $displayRow['head_name'];
+                            @endphp
+                            @php
+                            $manualExportPayload = [
+                            'date' => $row->date ? dateConvert($row->date) : '',
+                            'name' => $row->name,
+                            'identifier' => '',
+                            'payment_method' => optional($row->paymentMethod)->method,
+                            'details' => $headName,
+                            'invoice' => optional($row->invoiceInfo)->invoice_number,
+                            'amount' => round($row->amount, 2),
+                            'amount_display' => generalSetting()->currency_symbol . number_format($row->amount,2),
+                            'group_scope' => 'date',
+                            ];
+                            @endphp
+                            <tr data-export='@json($manualExportPayload)'>
+                              <td class="text-center">{{ $displayRow['row_number'] ?? $loop->iteration }}</td>
+                              <td class="font-weight-500">{{ $row->name }}</td>
+                              <td><span
+                                  class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span>
+                              </td>
+                              <td class="text-muted">{{ $headName }}</td>
+                              <td class="text-right font-weight-600" data-amount="{{ $row->amount }}">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
+                              <td class="text-right">
+                                <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
+                                  <button class="btn btn-dots-trigger" type="button">
+                                    <i class="ti-more-alt"></i>
+                                  </button>
+                                  <div class="inline-action-buttons d-none">
+                                    @if (userPermission('add_income_edit'))
+                                    <a class="btn btn-sm btn-outline-primary action-btn-edit"
+                                      href="{{ route('add_income_edit', $row->id) }}" title="Edit">
+                                      <i class="ti-pencil-alt"></i>
+                                    </a>
+                                    @endif
+                                    @if (userPermission('add_income_delete'))
+                                    <button
+                                      class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger"
+                                      type="button" data-income-id="{{ $row->id }}" title="Delete">
+                                      <i class="ti-trash"></i>
+                                    </button>
+                                    @endif
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                            @endif
+                            @endforeach
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
-
-                  <div class="row mt-40">
-                    <div class="col-lg-12 text-center">
-                      <button class="primary-btn fix-gr-bg" data-toggle="tooltip" title="{{ @$tooltip }}">
-                        <span class="ti-check"></span>
-                        @if (@$add_income)
-                        @lang('accounts.update_income')
-                        @else
-                        @lang('accounts.save_income')
-                        @endif
-
-                      </button>
-                    </div>
-                  </div>
                 </div>
+                @empty
+                <p class="text-center text-muted mb-0 py-4">@lang('common.no_data_available')</p>
+                @endforelse
               </div>
-              {{ html()->form()->close() }}
-              $displayRows = [];
-              $manualCounter = 1;
 
-              foreach ($entries as $row) {
-              $headName = optional($row->ACHead)->head
-              ?? optional($row->incomeHeads)->name
-              ?? '';
-              $invoiceMeta = $row->invoice_meta ?? null;
-              $invoiceKey = $invoiceMeta['invoice_db_id'] ?? $row->fees_collection_id ?? null;
-
-              if ($invoiceKey) {
-              if (! $invoiceMeta) {
-              $invoiceMeta = [
-              'invoice_db_id' => $invoiceKey,
-              'invoice_number' => is_string($invoiceKey)
-              ? $invoiceKey
-              : __('fees.invoice').' #'.str_pad((string) $invoiceKey, 6, '0', STR_PAD_LEFT),
-              'student_name' => $row->name ?? __('common.unknown'),
-              'student_identifier' => '',
-              'fee_heads' => [],
-              'invoice_date' => $row->date,
-              'view_url' => null,
-              ];
-              }
-
-              $bucketKey = $scopeKey.'_' . md5((string) $invoiceKey);
-
-              if (! isset($invoiceRowBuckets[$bucketKey])) {
-              $invoiceRowBuckets[$bucketKey] = [
-              'meta' => $invoiceMeta,
-              'total_amount' => 0,
-              'head_names' => [],
-              'payment_methods' => [],
-              'entries' => 0,
-              'rows' => collect(),
-              ];
-              $displayRows[] = ['type' => 'invoice', 'bucketKey' => $bucketKey];
-              }
-
-              $invoiceRowBuckets[$bucketKey]['total_amount'] += (float) $row->amount;
-
-              if ($headName !== '') {
-              $invoiceRowBuckets[$bucketKey]['head_names'][$headName] = true;
-              }
-
-              $methodLabel = optional($row->paymentMethod)->method;
-              if (! empty($methodLabel)) {
-              $invoiceRowBuckets[$bucketKey]['payment_methods'][$methodLabel] = true;
-              }
-
-              $invoiceRowBuckets[$bucketKey]['rows']->push($row);
-              $invoiceRowBuckets[$bucketKey]['entries']++;
-              continue;
-              }
-
-              $displayRows[] = [
-              'type' => 'manual',
-              'row' => $row,
-              'head_name' => $headName,
-              'row_number' => $manualCounter++,
-              ];
-              }
-
-              foreach ($displayRows as $index => $entry) {
-              if (($entry['type'] ?? null) === 'invoice') {
-              $displayRows[$index]['bucket'] = $invoiceRowBuckets[$entry['bucketKey']] ?? [];
-              unset($displayRows[$index]['bucketKey']);
-              }
-              }
-
-              return $displayRows;
-              };
-              @endphp
-              @forelse($grouped_incomes as $dateKey => $incomesForDate)
-              @php
-              $incCollapseId = 'incDate_' . md5($dateKey);
-              $displayDate = date('M d, Y', strtotime($dateKey));
-              $totalForDate = $incomesForDate->sum('amount');
-              $incomeDisplayRows = $buildIncomeDisplayRows($incomesForDate, 'date_'.$dateKey);
-              @endphp
-              <div class="card mb-2 border-0 shadow-sm">
-                <div
-                  class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
-                  data-toggle="collapse" data-target="#{{ $incCollapseId }}"
-                  aria-expanded="{{ $loop->first ? 'true':'false' }}" data-total="{{ $totalForDate }}">
-                  <div class="d-flex align-items-center">
-                    <i class="ti-angle-down mr-3 collapse-icon"></i>
-                    <div>
-                      <span class="font-weight-bold text-dark">{{ $displayDate }}</span>
-                      <div class="text-muted small">{{ $incomesForDate->count() }} entries</div>
+              {{-- Grouped by Name --}}
+              <div id="incomeNameAccordion" class="mb-20 group-accordion d-none" data-group="name">
+                @php
+                if(!isset($grouped_by_income_name)){
+                if(isset($__incomeCollection) && $__incomeCollection instanceof \Illuminate\Support\Collection){
+                $grouped_by_income_name = $__incomeCollection->groupBy(function($i){ return $i->name;
+                })->sortKeys();
+                } else { $grouped_by_income_name = collect(); }
+                }
+                @endphp
+                @foreach(($grouped_by_income_name ?? collect()) as $nameKey => $incomesForName)
+                @php
+                $incNameCollapseId = 'incName_' . md5($nameKey);
+                $displayName = $nameKey ?: __('common.unknown');
+                $totalForName = $incomesForName->sum('amount');
+                $incomeDisplayRows = $buildIncomeDisplayRows($incomesForName, 'name_'.$nameKey);
+                @endphp
+                <div class="card mb-2 border-0 shadow-sm">
+                  <div
+                    class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
+                    data-toggle="collapse" data-target="#{{ $incNameCollapseId }}" aria-expanded="false"
+                    data-total="{{ $totalForName }}">
+                    <div class="d-flex align-items-center">
+                      <i class="ti-angle-down mr-3 collapse-icon"></i>
+                      <div>
+                        <span class="font-weight-bold text-dark">{{ $displayName }}</span>
+                        <div class="text-muted small">{{ $incomesForName->count() }} entries</div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="amount-display">
+                        <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
+                        <span
+                          class="amount-value font-weight-bold text-primary">{{ number_format($totalForName,2) }}</span>
+                      </div>
+                      <span class="badge badge-primary badge-pill">{{ $incomesForName->count() }}</span>
                     </div>
                   </div>
-                  <div class="text-right">
-                    <div class="amount-display">
-                      <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
-                      <span
-                        class="amount-value font-weight-bold text-primary">{{ number_format($totalForDate,2) }}</span>
-                    </div>
-                    <span class="badge badge-primary badge-pill">{{ $incomesForDate->count() }}</span>
-                  </div>
-                </div>
-                <div id="{{ $incCollapseId }}" class="collapse @if($loop->first) show @endif"
-                  data-parent="#incomeDateAccordion">
-                  <div class="card-body p-0">
-                    <div class="table-responsive">
-                      <table class="table table-sm mb-0 table-striped">
-                        <thead class="thead-light">
-                          <tr>
-                            <th style="width:60px" class="text-center">#</th>
-                            <th style="min-width:150px">Name</th>
-                            <th style="min-width:120px">Payment Method</th>
-                            <th style="min-width:140px">Head</th>
-                            <th style="min-width:100px" class="text-right">Amount</th>
-                            <th style="width:120px" class="text-right">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @foreach($incomeDisplayRows as $displayRow)
-                          @if(($displayRow['type'] ?? null) === 'invoice')
-                          @php
-                          $group = $displayRow['bucket'];
-                          $meta = $group['meta'] ?? [];
-                          $methodNames = array_keys($group['payment_methods'] ?? []);
-                          $headLabels = !empty($meta['fee_heads']) ? $meta['fee_heads'] :
-                          array_keys($group['head_names'] ?? []);
-                          $firstPaymentDate = optional($group['rows']->first())->date ?? $dateKey ?? null;
-                          $invoiceExportPayload = [
-                          'date' => $firstPaymentDate ? dateConvert($firstPaymentDate) : '',
-                          'name' => $meta['student_name'] ?? __('common.unknown'),
-                          'identifier' => $meta['student_identifier'] ?? '',
-                          'payment_method' => count($methodNames) ? implode(', ', $methodNames) : '',
-                          'details' => count($headLabels) ? implode(', ', $headLabels) : __('fees.fees_invoice'),
-                          'invoice' => $meta['invoice_number'] ?? '',
-                          'amount' => round($group['total_amount'] ?? 0, 2),
-                          'amount_display' => generalSetting()->currency_symbol .
-                          number_format($group['total_amount'] ?? 0,2),
-                          'group_scope' => 'date',
-                          ];
-                          @endphp
-                          <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
-                            <td class="text-center">
-                              <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
-                            </td>
-                            <td class="font-weight-500">
-                              <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
-                              @if(!empty($meta['student_identifier']))
-                              <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
-                              @endif
-                              <div class="text-muted small">@lang('fees.invoice_number'):
-                                <span class="font-weight-600">{{ $meta['invoice_number'] ?? __('common.na') }}</span>
-                              </div>
-                            </td>
-                            <td>
-                              @if(count($methodNames))
-                              <span class="badge badge-outline-info mr-1">{{ $methodNames[0] }}</span>
-                              @if(count($methodNames) > 1)
-                              <span class="badge badge-light text-muted">+{{ count($methodNames) - 1 }}
-                                more</span>
-                              @endif
-                              @else
-                              <span class="text-muted">—</span>
-                              @endif
-                            </td>
-                            <td class="text-muted">
-                              @if(count($headLabels))
-                              {{ implode(', ', $headLabels) }}
-                              @else
-                              @lang('fees.fees_invoice')
-                              @endif
-                            </td>
-                            <td class="text-right font-weight-600" data-amount="{{ $group['total_amount'] ?? 0 }}">
-                              {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'] ?? 0,2) }}
-                            </td>
-                            <td class="text-right">
-                              @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
-                              <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
-                                target="_blank">@lang('common.view')</a>
-                              @else
-                              <span class="text-muted">—</span>
-                              @endif
-                            </td>
-                          </tr>
-                          @else
-                          @php
-                          $row = $displayRow['row'];
-                          $headName = $displayRow['head_name'];
-                          @endphp
-                          @php
-                          $manualExportPayload = [
-                          'date' => $row->date ? dateConvert($row->date) : '',
-                          'name' => $row->name,
-                          'identifier' => '',
-                          'payment_method' => optional($row->paymentMethod)->method,
-                          'details' => $headName,
-                          'invoice' => optional($row->invoiceInfo)->invoice_number,
-                          'amount' => round($row->amount, 2),
-                          'amount_display' => generalSetting()->currency_symbol . number_format($row->amount,2),
-                          'group_scope' => 'date',
-                          ];
-                          @endphp
-                          <tr data-export='@json($manualExportPayload)'>
-                            <td class="text-center">{{ $displayRow['row_number'] ?? $loop->iteration }}</td>
-                            <td class="font-weight-500">{{ $row->name }}</td>
-                            <td><span
-                                class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span>
-                            </td>
-                            <td class="text-muted">{{ $headName }}</td>
-                            <td class="text-right font-weight-600" data-amount="{{ $row->amount }}">
-                              {{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
-                            <td class="text-right">
-                              <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
-                                <button class="btn btn-dots-trigger" type="button">
-                                  <i class="ti-more-alt"></i>
-                                </button>
-                                <div class="inline-action-buttons d-none">
-                                  @if (userPermission('add_income_edit'))
-                                  <a class="btn btn-sm btn-outline-primary action-btn-edit"
-                                    href="{{ route('add_income_edit', $row->id) }}" title="Edit">
-                                    <i class="ti-pencil-alt"></i>
-                                  </a>
-                                  @endif
-                                  @if (userPermission('add_income_delete'))
-                                  <button class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger"
-                                    type="button" data-income-id="{{ $row->id }}" title="Delete">
-                                    <i class="ti-trash"></i>
-                                  </button>
-                                  @endif
+                  <div id="{{ $incNameCollapseId }}" class="collapse" data-parent="#incomeNameAccordion">
+                    <div class="card-body p-0">
+                      <div class="table-responsive">
+                        <table class="table table-sm mb-0 table-striped">
+                          <thead class="thead-light">
+                            <tr>
+                              <th style="width:60px" class="text-center">#</th>
+                              <th style="min-width:150px">Name</th>
+                              <th style="min-width:120px">Payment Method</th>
+                              <th style="min-width:140px">Head</th>
+                              <th style="min-width:100px" class="text-right">Amount</th>
+                              <th style="width:120px" class="text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @foreach($incomeDisplayRows as $displayRow)
+                            @if(($displayRow['type'] ?? null) === 'invoice')
+                            @php
+                            $group = $displayRow['bucket'];
+                            $meta = $group['meta'] ?? [];
+                            $methodNames = array_keys($group['payment_methods'] ?? []);
+                            $headLabels = !empty($meta['fee_heads']) ? $meta['fee_heads'] :
+                            array_keys($group['head_names'] ?? []);
+                            $firstPaymentDate = optional($group['rows']->first())->date ?? null;
+                            $invoiceExportPayload = [
+                            'date' => $firstPaymentDate ? dateConvert($firstPaymentDate) : '',
+                            'name' => $meta['student_name'] ?? __('common.unknown'),
+                            'identifier' => $meta['student_identifier'] ?? '',
+                            'payment_method' => count($methodNames) ? implode(', ', $methodNames) : '',
+                            'details' => count($headLabels) ? implode(', ', $headLabels) : __('fees.fees_invoice'),
+                            'invoice' => $meta['invoice_number'] ?? '',
+                            'amount' => round($group['total_amount'] ?? 0, 2),
+                            'amount_display' => generalSetting()->currency_symbol .
+                            number_format($group['total_amount'] ?? 0,2),
+                            'group_scope' => 'name',
+                            ];
+                            @endphp
+                            <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
+                              <td class="text-center">
+                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
+                              </td>
+                              <td class="font-weight-500">
+                                <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
+                                @if(!empty($meta['student_identifier']))
+                                <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
+                                @endif
+                                <div class="text-muted small">@lang('fees.invoice_number'):
+                                  <span class="font-weight-600">{{ $meta['invoice_number'] ?? __('common.na') }}</span>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                          @endif
-                          @endforeach
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              @empty
-              <p class="text-center text-muted mb-0 py-4">@lang('common.no_data_available')</p>
-              @endforelse
-            </div>
-
-            {{-- Grouped by Name --}}
-            <div id="incomeNameAccordion" class="mb-20 group-accordion d-none" data-group="name">
-              @php
-              if(!isset($grouped_by_income_name)){
-              if(isset($__incomeCollection) && $__incomeCollection instanceof \Illuminate\Support\Collection){
-              $grouped_by_income_name = $__incomeCollection->groupBy(function($i){ return $i->name;
-              })->sortKeys();
-              } else { $grouped_by_income_name = collect(); }
-              }
-              @endphp
-              @foreach(($grouped_by_income_name ?? collect()) as $nameKey => $incomesForName)
-              @php
-              $incNameCollapseId = 'incName_' . md5($nameKey);
-              $displayName = $nameKey ?: __('common.unknown');
-              $totalForName = $incomesForName->sum('amount');
-              $incomeDisplayRows = $buildIncomeDisplayRows($incomesForName, 'name_'.$nameKey);
-              @endphp
-              <div class="card mb-2 border-0 shadow-sm">
-                <div
-                  class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
-                  data-toggle="collapse" data-target="#{{ $incNameCollapseId }}" aria-expanded="false"
-                  data-total="{{ $totalForName }}">
-                  <div class="d-flex align-items-center">
-                    <i class="ti-angle-down mr-3 collapse-icon"></i>
-                    <div>
-                      <span class="font-weight-bold text-dark">{{ $displayName }}</span>
-                      <div class="text-muted small">{{ $incomesForName->count() }} entries</div>
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <div class="amount-display">
-                      <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
-                      <span
-                        class="amount-value font-weight-bold text-primary">{{ number_format($totalForName,2) }}</span>
-                    </div>
-                    <span class="badge badge-primary badge-pill">{{ $incomesForName->count() }}</span>
-                  </div>
-                </div>
-                <div id="{{ $incNameCollapseId }}" class="collapse" data-parent="#incomeNameAccordion">
-                  <div class="card-body p-0">
-                    <div class="table-responsive">
-                      <table class="table table-sm mb-0 table-striped">
-                        <thead class="thead-light">
-                          <tr>
-                            <th style="width:60px" class="text-center">#</th>
-                            <th style="min-width:150px">Name</th>
-                            <th style="min-width:120px">Payment Method</th>
-                            <th style="min-width:140px">Head</th>
-                            <th style="min-width:100px" class="text-right">Amount</th>
-                            <th style="width:120px" class="text-right">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @foreach($incomeDisplayRows as $displayRow)
-                          @if(($displayRow['type'] ?? null) === 'invoice')
-                          @php
-                          $group = $displayRow['bucket'];
-                          $meta = $group['meta'] ?? [];
-                          $methodNames = array_keys($group['payment_methods'] ?? []);
-                          $headLabels = !empty($meta['fee_heads']) ? $meta['fee_heads'] :
-                          array_keys($group['head_names'] ?? []);
-                          $firstPaymentDate = optional($group['rows']->first())->date ?? null;
-                          $invoiceExportPayload = [
-                          'date' => $firstPaymentDate ? dateConvert($firstPaymentDate) : '',
-                          'name' => $meta['student_name'] ?? __('common.unknown'),
-                          'identifier' => $meta['student_identifier'] ?? '',
-                          'payment_method' => count($methodNames) ? implode(', ', $methodNames) : '',
-                          'details' => count($headLabels) ? implode(', ', $headLabels) : __('fees.fees_invoice'),
-                          'invoice' => $meta['invoice_number'] ?? '',
-                          'amount' => round($group['total_amount'] ?? 0, 2),
-                          'amount_display' => generalSetting()->currency_symbol .
-                          number_format($group['total_amount'] ?? 0,2),
-                          'group_scope' => 'name',
-                          ];
-                          @endphp
-                          <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
-                            <td class="text-center">
-                              <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
-                            </td>
-                            <td class="font-weight-500">
-                              <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
-                              @if(!empty($meta['student_identifier']))
-                              <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
-                              @endif
-                              <div class="text-muted small">@lang('fees.invoice_number'):
-                                <span class="font-weight-600">{{ $meta['invoice_number'] ?? __('common.na') }}</span>
-                              </div>
-                            </td>
-                            <td>
-                              @if(count($methodNames))
-                              <span class="badge badge-outline-info mr-1">{{ $methodNames[0] }}</span>
-                              @if(count($methodNames) > 1)
-                              <span class="badge badge-light text-muted">+{{ count($methodNames) - 1 }}
-                                more</span>
-                              @endif
-                              @else
-                              <span class="text-muted">—</span>
-                              @endif
-                            </td>
-                            <td class="text-muted">
-                              @if(count($headLabels))
-                              {{ implode(', ', $headLabels) }}
-                              @else
-                              @lang('fees.fees_invoice')
-                              @endif
-                            </td>
-                            <td class="text-right font-weight-600" data-amount="{{ $group['total_amount'] ?? 0 }}">
-                              {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'] ?? 0,2) }}
-                            </td>
-                            <td class="text-right">
-                              @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
-                              <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
-                                target="_blank">@lang('common.view')</a>
-                              @else
-                              <span class="text-muted">—</span>
-                              @endif
-                            </td>
-                          </tr>
-                          @else
-                          @php
-                          $row = $displayRow['row'];
-                          $headName = $displayRow['head_name'];
-                          @endphp
-                          @php
-                          $manualExportPayload = [
-                          'date' => $row->date ? dateConvert($row->date) : '',
-                          'name' => $row->name,
-                          'identifier' => '',
-                          'payment_method' => optional($row->paymentMethod)->method,
-                          'details' => $headName,
-                          'invoice' => optional($row->invoiceInfo)->invoice_number,
-                          'amount' => round($row->amount, 2),
-                          'amount_display' => generalSetting()->currency_symbol . number_format($row->amount,2),
-                          'group_scope' => 'name',
-                          ];
-                          @endphp
-                          <tr data-export='@json($manualExportPayload)'>
-                            <td class="text-center">{{ $displayRow['row_number'] ?? $loop->iteration }}</td>
-                            <td class="font-weight-500">{{ $row->name }}</td>
-                            <td><span
-                                class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span>
-                            </td>
-                            <td class="text-muted">{{ $headName }}</td>
-                            <td class="text-right font-weight-600" data-amount="{{ $row->amount }}">
-                              {{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
-                            <td class="text-right">
-                              <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
-                                <button class="btn btn-dots-trigger" type="button">
-                                  <i class="ti-more-alt"></i>
-                                </button>
-                                <div class="inline-action-buttons d-none">
-                                  @if (userPermission('add_income_edit'))
-                                  <a class="btn btn-sm btn-outline-primary action-btn-edit"
-                                    href="{{ route('add_income_edit', $row->id) }}" title="Edit">
-                                    <i class="ti-pencil-alt"></i>
-                                  </a>
-                                  @endif
-                                  @if (userPermission('add_income_delete'))
-                                  <button class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger"
-                                    type="button" data-income-id="{{ $row->id }}" title="Delete">
-                                    <i class="ti-trash"></i>
+                              </td>
+                              <td>
+                                @if(count($methodNames))
+                                <span class="badge badge-outline-info mr-1">{{ $methodNames[0] }}</span>
+                                @if(count($methodNames) > 1)
+                                <span class="badge badge-light text-muted">+{{ count($methodNames) - 1 }}
+                                  more</span>
+                                @endif
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                              </td>
+                              <td class="text-muted">
+                                @if(count($headLabels))
+                                {{ implode(', ', $headLabels) }}
+                                @else
+                                @lang('fees.fees_invoice')
+                                @endif
+                              </td>
+                              <td class="text-right font-weight-600" data-amount="{{ $group['total_amount'] ?? 0 }}">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'] ?? 0,2) }}
+                              </td>
+                              <td class="text-right">
+                                @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
+                                <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
+                                  target="_blank">@lang('common.view')</a>
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                              </td>
+                            </tr>
+                            @else
+                            @php
+                            $row = $displayRow['row'];
+                            $headName = $displayRow['head_name'];
+                            @endphp
+                            @php
+                            $manualExportPayload = [
+                            'date' => $row->date ? dateConvert($row->date) : '',
+                            'name' => $row->name,
+                            'identifier' => '',
+                            'payment_method' => optional($row->paymentMethod)->method,
+                            'details' => $headName,
+                            'invoice' => optional($row->invoiceInfo)->invoice_number,
+                            'amount' => round($row->amount, 2),
+                            'amount_display' => generalSetting()->currency_symbol . number_format($row->amount,2),
+                            'group_scope' => 'name',
+                            ];
+                            @endphp
+                            <tr data-export='@json($manualExportPayload)'>
+                              <td class="text-center">{{ $displayRow['row_number'] ?? $loop->iteration }}</td>
+                              <td class="font-weight-500">{{ $row->name }}</td>
+                              <td><span
+                                  class="badge badge-outline-info">{{ optional($row->paymentMethod)->method }}</span>
+                              </td>
+                              <td class="text-muted">{{ $headName }}</td>
+                              <td class="text-right font-weight-600" data-amount="{{ $row->amount }}">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
+                              <td class="text-right">
+                                <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
+                                  <button class="btn btn-dots-trigger" type="button">
+                                    <i class="ti-more-alt"></i>
                                   </button>
-                                  @endif
+                                  <div class="inline-action-buttons d-none">
+                                    @if (userPermission('add_income_edit'))
+                                    <a class="btn btn-sm btn-outline-primary action-btn-edit"
+                                      href="{{ route('add_income_edit', $row->id) }}" title="Edit">
+                                      <i class="ti-pencil-alt"></i>
+                                    </a>
+                                    @endif
+                                    @if (userPermission('add_income_delete'))
+                                    <button
+                                      class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger"
+                                      type="button" data-income-id="{{ $row->id }}" title="Delete">
+                                      <i class="ti-trash"></i>
+                                    </button>
+                                    @endif
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                          @endif
-                          @endforeach
-                        </tbody>
-                      </table>
+                              </td>
+                            </tr>
+                            @endif
+                            @endforeach
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
+                @endforeach
               </div>
-              @endforeach
-            </div>
 
-            {{-- Grouped by Payment Method --}}
-            <div id="incomeMethodAccordion" class="mb-20 group-accordion d-none" data-group="method">
-              @php
-              if(!isset($grouped_by_income_method)){
-              if(isset($__incomeCollection) && $__incomeCollection instanceof \Illuminate\Support\Collection){
-              $grouped_by_income_method = $__incomeCollection->groupBy(function($i){ return
-              optional($i->paymentMethod)->method; })->sortKeys();
-              } else { $grouped_by_income_method = collect(); }
-              }
-              @endphp
-              @foreach(($grouped_by_income_method ?? collect()) as $methodKey => $incomesForMethod)
-              @php
-              $incMethodCollapseId = 'incMethod_' . md5($methodKey);
-              $displayMethod = $methodKey ?: __('common.unknown');
-              $totalForMethod = $incomesForMethod->sum('amount');
-              $incomeDisplayRows = $buildIncomeDisplayRows($incomesForMethod, 'method_'.$methodKey);
-              @endphp
-              <div class="card mb-2 border-0 shadow-sm">
-                <div
-                  class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
-                  data-toggle="collapse" data-target="#{{ $incMethodCollapseId }}" aria-expanded="false"
-                  data-total="{{ $totalForMethod }}">
-                  <div class="d-flex align-items-center">
-                    <i class="ti-angle-down mr-3 collapse-icon"></i>
-                    <div>
-                      <span class="font-weight-bold text-dark">{{ $displayMethod ?: 'Unknown' }}</span>
-                      <div class="text-muted small">{{ $incomesForMethod->count() }} entries</div>
+              {{-- Grouped by Payment Method --}}
+              <div id="incomeMethodAccordion" class="mb-20 group-accordion d-none" data-group="method">
+                @php
+                if(!isset($grouped_by_income_method)){
+                if(isset($__incomeCollection) && $__incomeCollection instanceof \Illuminate\Support\Collection){
+                $grouped_by_income_method = $__incomeCollection->groupBy(function($i){ return
+                optional($i->paymentMethod)->method; })->sortKeys();
+                } else { $grouped_by_income_method = collect(); }
+                }
+                @endphp
+                @foreach(($grouped_by_income_method ?? collect()) as $methodKey => $incomesForMethod)
+                @php
+                $incMethodCollapseId = 'incMethod_' . md5($methodKey);
+                $displayMethod = $methodKey ?: __('common.unknown');
+                $totalForMethod = $incomesForMethod->sum('amount');
+                $incomeDisplayRows = $buildIncomeDisplayRows($incomesForMethod, 'method_'.$methodKey);
+                @endphp
+                <div class="card mb-2 border-0 shadow-sm">
+                  <div
+                    class="card-header bg-gradient-light p-3 cursor-pointer d-flex justify-content-between align-items-center"
+                    data-toggle="collapse" data-target="#{{ $incMethodCollapseId }}" aria-expanded="false"
+                    data-total="{{ $totalForMethod }}">
+                    <div class="d-flex align-items-center">
+                      <i class="ti-angle-down mr-3 collapse-icon"></i>
+                      <div>
+                        <span class="font-weight-bold text-dark">{{ $displayMethod ?: 'Unknown' }}</span>
+                        <div class="text-muted small">{{ $incomesForMethod->count() }} entries</div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="amount-display">
+                        <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
+                        <span
+                          class="amount-value font-weight-bold text-primary">{{ number_format($totalForMethod,2) }}</span>
+                      </div>
+                      <span class="badge badge-primary badge-pill">{{ $incomesForMethod->count() }}</span>
                     </div>
                   </div>
-                  <div class="text-right">
-                    <div class="amount-display">
-                      <span class="currency-symbol">{{ generalSetting()->currency_symbol }}</span>
-                      <span
-                        class="amount-value font-weight-bold text-primary">{{ number_format($totalForMethod,2) }}</span>
-                    </div>
-                    <span class="badge badge-primary badge-pill">{{ $incomesForMethod->count() }}</span>
-                  </div>
-                </div>
-                <div id="{{ $incMethodCollapseId }}" class="collapse" data-parent="#incomeMethodAccordion">
-                  <div class="card-body p-0">
-                    <div class="table-responsive">
-                      <table class="table table-sm mb-0 table-striped">
-                        <thead class="thead-light">
-                          <tr>
-                            <th style="width:60px" class="text-center">#</th>
-                            <th style="min-width:120px">@lang('common.date')</th>
-                            <th style="min-width:150px">@lang('common.name')</th>
-                            <th style="min-width:140px">@lang('fees.invoice_number')</th>
-                            <th style="min-width:140px">@lang('accounts.head')</th>
-                            <th style="min-width:100px" class="text-right">@lang('accounts.amount')</th>
-                            <th style="width:120px" class="text-right">@lang('common.action')</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @foreach($incomeDisplayRows as $displayRow)
-                          @if(($displayRow['type'] ?? null) === 'invoice')
-                          @php
-                          $group = $displayRow['bucket'];
-                          $meta = $group['meta'] ?? [];
-                          $methodNames = array_keys($group['payment_methods'] ?? []);
-                          $headLabels = !empty($meta['fee_heads']) ? $meta['fee_heads'] :
-                          array_keys($group['head_names'] ?? []);
-                          $firstPaymentDate = optional($group['rows']->first())->date ?? null;
-                          $invoiceExportPayload = [
-                          'date' => $firstPaymentDate ? dateConvert($firstPaymentDate) : '',
-                          'name' => $meta['student_name'] ?? __('common.unknown'),
-                          'identifier' => $meta['student_identifier'] ?? '',
-                          'payment_method' => count($methodNames) ? implode(', ', $methodNames) : $displayMethod,
-                          'details' => count($headLabels) ? implode(', ', $headLabels) : __('fees.fees_invoice'),
-                          'invoice' => $meta['invoice_number'] ?? '',
-                          'amount' => round($group['total_amount'] ?? 0, 2),
-                          'amount_display' => generalSetting()->currency_symbol .
-                          number_format($group['total_amount'] ?? 0,2),
-                          'group_scope' => 'method',
-                          ];
-                          @endphp
-                          <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
-                            <td class="text-center">
-                              <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
-                            </td>
-                            <td>{{ dateConvert(optional($group['rows']->first())->date) }}</td>
-                            <td class="font-weight-500">
-                              <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
-                              @if(!empty($meta['student_identifier']))
-                              <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
-                              @endif
-                            </td>
-                            <td>
-                              @if(!empty($meta['invoice_number']))
-                              <span class="badge badge-outline-info">{{ $meta['invoice_number'] }}</span>
-                              @else
-                              <span class="text-muted">@lang('common.na')</span>
-                              @endif
-                            </td>
-                            <td class="text-muted">
-                              @if(count($headLabels))
-                              {{ implode(', ', $headLabels) }}
-                              @else
-                              @lang('fees.fees_invoice')
-                              @endif
-                            </td>
-                            <td class="text-right font-weight-600" data-amount="{{ $group['total_amount'] ?? 0 }}">
-                              {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'] ?? 0,2) }}
-                            </td>
-                            <td class="text-right">
-                              @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
-                              <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
-                                target="_blank">@lang('common.view')</a>
-                              @else
-                              <span class="text-muted">—</span>
-                              @endif
-                            </td>
-                          </tr>
-                          @else
-                          @php
-                          $row = $displayRow['row'];
-                          $headName = $displayRow['head_name'];
-                          @endphp
-                          @php
-                          $manualExportPayload = [
-                          'date' => $row->date ? dateConvert($row->date) : '',
-                          'name' => $row->name,
-                          'identifier' => '',
-                          'payment_method' => optional($row->paymentMethod)->method ?: $displayMethod,
-                          'details' => $headName,
-                          'invoice' => optional($row->invoiceInfo)->invoice_number,
-                          'amount' => round($row->amount, 2),
-                          'amount_display' => generalSetting()->currency_symbol . number_format($row->amount,2),
-                          'group_scope' => 'method',
-                          ];
-                          @endphp
-                          <tr data-export='@json($manualExportPayload)'>
-                            <td class="text-center">{{ $displayRow['row_number'] ?? $loop->iteration }}</td>
-                            <td>{{ dateConvert($row->date) }}</td>
-                            <td class="font-weight-500">{{ $row->name }}</td>
-                            <td>
-                              @if(!empty($row->invoiceInfo->invoice_number))
-                              <span class="badge badge-outline-info">{{ $row->invoiceInfo->invoice_number }}</span>
-                              @else
-                              <span class="text-muted">@lang('common.na')</span>
-                              @endif
-                            </td>
-                            <td class="text-muted">{{ $headName }}</td>
-                            <td class="text-right font-weight-600" data-amount="{{ $row->amount }}">
-                              {{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
-                            <td class="text-right">
-                              <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
-                                <button class="btn btn-dots-trigger" type="button">
-                                  <i class="ti-more-alt"></i>
-                                </button>
-                                <div class="inline-action-buttons d-none">
-                                  @if (userPermission('add_income_edit'))
-                                  <a class="btn btn-sm btn-outline-primary action-btn-edit"
-                                    href="{{ route('add_income_edit', $row->id) }}" title="Edit">
-                                    <i class="ti-pencil-alt"></i>
-                                  </a>
-                                  @endif
-                                  @if (userPermission('add_income_delete'))
-                                  <button class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger"
-                                    type="button" data-income-id="{{ $row->id }}" title="Delete">
-                                    <i class="ti-trash"></i>
+                  <div id="{{ $incMethodCollapseId }}" class="collapse" data-parent="#incomeMethodAccordion">
+                    <div class="card-body p-0">
+                      <div class="table-responsive">
+                        <table class="table table-sm mb-0 table-striped">
+                          <thead class="thead-light">
+                            <tr>
+                              <th style="width:60px" class="text-center">#</th>
+                              <th style="min-width:120px">@lang('common.date')</th>
+                              <th style="min-width:150px">@lang('common.name')</th>
+                              <th style="min-width:140px">@lang('fees.invoice_number')</th>
+                              <th style="min-width:140px">@lang('accounts.head')</th>
+                              <th style="min-width:100px" class="text-right">@lang('accounts.amount')</th>
+                              <th style="width:120px" class="text-right">@lang('common.action')</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @foreach($incomeDisplayRows as $displayRow)
+                            @if(($displayRow['type'] ?? null) === 'invoice')
+                            @php
+                            $group = $displayRow['bucket'];
+                            $meta = $group['meta'] ?? [];
+                            $methodNames = array_keys($group['payment_methods'] ?? []);
+                            $headLabels = !empty($meta['fee_heads']) ? $meta['fee_heads'] :
+                            array_keys($group['head_names'] ?? []);
+                            $firstPaymentDate = optional($group['rows']->first())->date ?? null;
+                            $invoiceExportPayload = [
+                            'date' => $firstPaymentDate ? dateConvert($firstPaymentDate) : '',
+                            'name' => $meta['student_name'] ?? __('common.unknown'),
+                            'identifier' => $meta['student_identifier'] ?? '',
+                            'payment_method' => count($methodNames) ? implode(', ', $methodNames) : $displayMethod,
+                            'details' => count($headLabels) ? implode(', ', $headLabels) : __('fees.fees_invoice'),
+                            'invoice' => $meta['invoice_number'] ?? '',
+                            'amount' => round($group['total_amount'] ?? 0, 2),
+                            'amount_display' => generalSetting()->currency_symbol .
+                            number_format($group['total_amount'] ?? 0,2),
+                            'group_scope' => 'method',
+                            ];
+                            @endphp
+                            <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
+                              <td class="text-center">
+                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
+                              </td>
+                              <td>{{ dateConvert(optional($group['rows']->first())->date) }}</td>
+                              <td class="font-weight-500">
+                                <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
+                                @if(!empty($meta['student_identifier']))
+                                <div class="text-muted small">{{ $meta['student_identifier'] }}</div>
+                                @endif
+                              </td>
+                              <td>
+                                @if(!empty($meta['invoice_number']))
+                                <span class="badge badge-outline-info">{{ $meta['invoice_number'] }}</span>
+                                @else
+                                <span class="text-muted">@lang('common.na')</span>
+                                @endif
+                              </td>
+                              <td class="text-muted">
+                                @if(count($headLabels))
+                                {{ implode(', ', $headLabels) }}
+                                @else
+                                @lang('fees.fees_invoice')
+                                @endif
+                              </td>
+                              <td class="text-right font-weight-600" data-amount="{{ $group['total_amount'] ?? 0 }}">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($group['total_amount'] ?? 0,2) }}
+                              </td>
+                              <td class="text-right">
+                                @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
+                                <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
+                                  target="_blank">@lang('common.view')</a>
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                              </td>
+                            </tr>
+                            @else
+                            @php
+                            $row = $displayRow['row'];
+                            $headName = $displayRow['head_name'];
+                            @endphp
+                            @php
+                            $manualExportPayload = [
+                            'date' => $row->date ? dateConvert($row->date) : '',
+                            'name' => $row->name,
+                            'identifier' => '',
+                            'payment_method' => optional($row->paymentMethod)->method ?: $displayMethod,
+                            'details' => $headName,
+                            'invoice' => optional($row->invoiceInfo)->invoice_number,
+                            'amount' => round($row->amount, 2),
+                            'amount_display' => generalSetting()->currency_symbol . number_format($row->amount,2),
+                            'group_scope' => 'method',
+                            ];
+                            @endphp
+                            <tr data-export='@json($manualExportPayload)'>
+                              <td class="text-center">{{ $displayRow['row_number'] ?? $loop->iteration }}</td>
+                              <td>{{ dateConvert($row->date) }}</td>
+                              <td class="font-weight-500">{{ $row->name }}</td>
+                              <td>
+                                @if(!empty($row->invoiceInfo->invoice_number))
+                                <span class="badge badge-outline-info">{{ $row->invoiceInfo->invoice_number }}</span>
+                                @else
+                                <span class="text-muted">@lang('common.na')</span>
+                                @endif
+                              </td>
+                              <td class="text-muted">{{ $headName }}</td>
+                              <td class="text-right font-weight-600" data-amount="{{ $row->amount }}">
+                                {{ generalSetting()->currency_symbol }}{{ number_format($row->amount,2) }}</td>
+                              <td class="text-right">
+                                <div class="action-buttons-wrapper" data-income-id="{{ $row->id }}">
+                                  <button class="btn btn-dots-trigger" type="button">
+                                    <i class="ti-more-alt"></i>
                                   </button>
-                                  @endif
+                                  <div class="inline-action-buttons d-none">
+                                    @if (userPermission('add_income_edit'))
+                                    <a class="btn btn-sm btn-outline-primary action-btn-edit"
+                                      href="{{ route('add_income_edit', $row->id) }}" title="Edit">
+                                      <i class="ti-pencil-alt"></i>
+                                    </a>
+                                    @endif
+                                    @if (userPermission('add_income_delete'))
+                                    <button
+                                      class="btn btn-sm btn-outline-danger action-btn-delete income-delete-trigger"
+                                      type="button" data-income-id="{{ $row->id }}" title="Delete">
+                                      <i class="ti-trash"></i>
+                                    </button>
+                                    @endif
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                          @endif
-                          @endforeach
-                        </tbody>
-                      </table>
+                              </td>
+                            </tr>
+                            @endif
+                            @endforeach
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
+                @endforeach
               </div>
-              @endforeach
-            </div>
 
-            {{-- Totals summary --}}
-            <div id="incomeTotalsSummary" class="mt-3 mb-4">
-              <div class="income-totals-bar d-flex flex-wrap align-items-center p-2 rounded shadow-sm">
-                <span class="mr-4"><strong>Page Total:</strong> {{ generalSetting()->currency_symbol }} <span
-                    id="incomePageTotalAmount">0.00</span></span>
-                <span class="mr-4"><strong>Grand Total:</strong> {{ generalSetting()->currency_symbol }} <span
-                    id="incomeGrandTotalAmount">0.00</span></span>
+              {{-- Totals summary --}}
+              <div id="incomeTotalsSummary" class="mt-3 mb-4">
+                <div class="income-totals-bar d-flex flex-wrap align-items-center p-2 rounded shadow-sm">
+                  <span class="mr-4"><strong>Page Total:</strong> {{ generalSetting()->currency_symbol }} <span
+                      id="incomePageTotalAmount">0.00</span></span>
+                  <span class="mr-4"><strong>Grand Total:</strong> {{ generalSetting()->currency_symbol }} <span
+                      id="incomeGrandTotalAmount">0.00</span></span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  </div>
 </section>
 
 
@@ -1265,8 +1262,7 @@ $(function() {
       identifier: '',
       payment_method: groupScope === 'method' ?
         $('#incomeMethodAccordion').find('> .card:visible').first().find('.card-header .font-weight-bold').text()
-        .trim() :
-        textAt(2),
+        .trim() : textAt(2),
       details: groupScope === 'method' ? textAt(4) : textAt(3),
       amount: isNaN(amount) ? 0 : amount,
       amount_display: formatIncomeAmount(isNaN(amount) ? 0 : amount)
