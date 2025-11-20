@@ -250,14 +250,42 @@ class SmAddIncomeController extends Controller
             return;
         }
 
+        $numericIds = $collectionIds->filter(function ($id) {
+            return is_numeric($id);
+        })->map(function ($id) {
+            return (int) $id;
+        })->values();
+
+        $stringIds = $collectionIds->filter(function ($id) {
+            return ! is_numeric($id);
+        })->values();
+
         $metaIndex = [];
-        $directInvoices = FmFeesInvoice::with([
+        $directInvoiceQuery = FmFeesInvoice::with([
             'studentInfo',
             'invoiceDetails.feesType',
-        ])->whereIn('id', $collectionIds)->get()->keyBy('id');
+        ]);
 
+        $appliedInvoiceFilter = false;
+        if ($numericIds->isNotEmpty()) {
+            $directInvoiceQuery->whereIn('id', $numericIds);
+            $appliedInvoiceFilter = true;
+        }
+        if ($stringIds->isNotEmpty()) {
+            $method = $appliedInvoiceFilter ? 'orWhereIn' : 'whereIn';
+            $directInvoiceQuery->{$method}('invoice_id', $stringIds);
+            $appliedInvoiceFilter = true;
+        }
+
+        $directInvoices = $appliedInvoiceFilter ? $directInvoiceQuery->get() : collect();
+
+        /** @var \Modules\Fees\Entities\FmFeesInvoice $invoice */
         foreach ($directInvoices as $invoice) {
-            $metaIndex[$invoice->id] = $this->formatInvoiceMeta($invoice);
+            $meta = $this->formatInvoiceMeta($invoice);
+            $metaIndex[$invoice->id] = $meta;
+            if (! empty($invoice->invoice_id)) {
+                $metaIndex[$invoice->invoice_id] = $meta;
+            }
         }
 
         $pendingIds = $collectionIds->filter(function ($id) use ($metaIndex) {
@@ -265,13 +293,39 @@ class SmAddIncomeController extends Controller
         });
 
         if ($pendingIds->isNotEmpty()) {
-            $transactions = FmFeesTransaction::with(['feesInvoiceInfo.studentInfo', 'feesInvoiceInfo.invoiceDetails.feesType'])
-                ->whereIn('id', $pendingIds)
-                ->get();
+            $transactionQuery = FmFeesTransaction::with([
+                'feesInvoiceInfo.studentInfo',
+                'feesInvoiceInfo.invoiceDetails.feesType',
+            ]);
 
+            $pendingNumericIds = $pendingIds->filter(function ($id) {
+                return is_numeric($id);
+            })->map(function ($id) {
+                return (int) $id;
+            })->values();
+
+            $appliedTransactionFilter = false;
+            if ($pendingNumericIds->isNotEmpty()) {
+                $transactionQuery->whereIn('id', $pendingNumericIds);
+                $appliedTransactionFilter = true;
+            }
+
+            if ($pendingIds->isNotEmpty()) {
+                $method = $appliedTransactionFilter ? 'orWhereIn' : 'whereIn';
+                $transactionQuery->{$method}('fees_invoice_id', $pendingIds);
+                $appliedTransactionFilter = true;
+            }
+
+            $transactions = $appliedTransactionFilter ? $transactionQuery->get() : collect();
+
+            /** @var \Modules\Fees\Entities\FmFeesTransaction $transaction */
             foreach ($transactions as $transaction) {
                 if ($transaction->feesInvoiceInfo) {
-                    $metaIndex[$transaction->id] = $this->formatInvoiceMeta($transaction->feesInvoiceInfo);
+                    $meta = $this->formatInvoiceMeta($transaction->feesInvoiceInfo);
+                    $metaIndex[$transaction->id] = $meta;
+                    if (! empty($transaction->fees_invoice_id)) {
+                        $metaIndex[$transaction->fees_invoice_id] = $meta;
+                    }
                 }
             }
 
@@ -281,10 +335,15 @@ class SmAddIncomeController extends Controller
         }
 
         if ($pendingIds->isNotEmpty()) {
-            $legacyPayments = SmFeesPayment::with('studentInfo')
-                ->whereIn('id', $pendingIds)
-                ->get()
-                ->keyBy('id');
+            $legacyNumericIds = $pendingIds->filter(function ($id) {
+                return is_numeric($id);
+            })->map(function ($id) {
+                return (int) $id;
+            })->values();
+
+            $legacyPayments = $legacyNumericIds->isNotEmpty()
+                ? SmFeesPayment::with('studentInfo')->whereIn('id', $legacyNumericIds)->get()->keyBy('id')
+                : collect();
 
             foreach ($legacyPayments as $payment) {
                 $metaIndex[$payment->id] = $this->formatLegacyPaymentMeta($payment);
@@ -330,12 +389,18 @@ class SmAddIncomeController extends Controller
                 ->all();
         }
 
+        $invoiceDate = $this->normalizeDateValue($invoice->invoice_date ?? null)
+            ?? $this->normalizeDateValue($invoice->issue_date ?? null)
+            ?? $this->normalizeDateValue($invoice->due_date ?? null)
+            ?? $this->normalizeDateValue($invoice->created_at ?? null);
+
         return [
             'invoice_db_id' => $invoice->id,
             'invoice_number' => $invoice->invoice_id,
             'student_name' => $studentName ?: __('common.unknown'),
             'student_identifier' => $identifier,
             'fee_heads' => $feeHeads,
+            'invoice_date' => $invoiceDate,
             'view_url' => route('fees.fees-invoice-view', ['id' => $invoice->id, 'state' => 'view']),
         ];
     }
@@ -359,13 +424,35 @@ class SmAddIncomeController extends Controller
 
         $legacyInvoiceNumber = __('fees.payment_id').' #'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
 
+        $paymentDate = $this->normalizeDateValue($payment->payment_date ?? null)
+            ?? $this->normalizeDateValue($payment->date ?? null)
+            ?? $this->normalizeDateValue($payment->created_at ?? null);
+
         return [
             'invoice_db_id' => $payment->id,
             'invoice_number' => $legacyInvoiceNumber,
             'student_name' => $studentName ?: __('common.unknown'),
             'student_identifier' => $identifier,
             'fee_heads' => [],
+            'invoice_date' => $paymentDate,
             'view_url' => null,
         ];
+    }
+
+    private function normalizeDateValue($value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        if (is_string($value) && trim($value) !== '') {
+            $timestamp = strtotime($value);
+
+            if ($timestamp !== false) {
+                return date('Y-m-d', $timestamp);
+            }
+        }
+
+        return null;
     }
 }
