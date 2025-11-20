@@ -321,7 +321,6 @@ $__incomeCollection = $__incomeCollection ?? collect();
                 @php
                 $buildIncomeDisplayRows = function ($entries, $scopeKey) {
                 $displayRows = [];
-                $manualCounter = 1;
                 $invoiceRowBuckets = [];
 
                 foreach ($entries as $row) {
@@ -380,7 +379,6 @@ $__incomeCollection = $__incomeCollection ?? collect();
                 'type' => 'manual',
                 'row' => $row,
                 'head_name' => $headName,
-                'row_number' => $manualCounter++,
                 ];
                 }
 
@@ -389,6 +387,11 @@ $__incomeCollection = $__incomeCollection ?? collect();
                 $displayRows[$index]['bucket'] = $invoiceRowBuckets[$entry['bucketKey']] ?? [];
                 unset($displayRows[$index]['bucketKey']);
                 }
+                }
+
+                $sequentialNumber = 1;
+                foreach ($displayRows as $index => $entry) {
+                $displayRows[$index]['row_number'] = $sequentialNumber++;
                 }
 
                 return $displayRows;
@@ -462,7 +465,10 @@ $__incomeCollection = $__incomeCollection ?? collect();
                             @endphp
                             <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
                               <td class="text-center">
-                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
+                                <span class="font-weight-600">{{ $displayRow['row_number'] ?? $loop->iteration }}</span>
+                                @if(($group['entries'] ?? 0) > 1)
+                                <div class="text-muted small">&sum;{{ $group['entries'] ?? 0 }}</div>
+                                @endif
                               </td>
                               <td class="font-weight-500">
                                 <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
@@ -643,7 +649,10 @@ $__incomeCollection = $__incomeCollection ?? collect();
                             @endphp
                             <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
                               <td class="text-center">
-                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
+                                <span class="font-weight-600">{{ $displayRow['row_number'] ?? $loop->iteration }}</span>
+                                @if(($group['entries'] ?? 0) > 1)
+                                <div class="text-muted small">&sum;{{ $group['entries'] ?? 0 }}</div>
+                                @endif
                               </td>
                               <td class="font-weight-500">
                                 <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
@@ -823,7 +832,10 @@ $__incomeCollection = $__incomeCollection ?? collect();
                             @endphp
                             <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
                               <td class="text-center">
-                                <span class="badge badge-primary badge-pill">&sum;{{ $group['entries'] ?? 0 }}</span>
+                                <span class="font-weight-600">{{ $displayRow['row_number'] ?? $loop->iteration }}</span>
+                                @if(($group['entries'] ?? 0) > 1)
+                                <div class="text-muted small">&sum;{{ $group['entries'] ?? 0 }}</div>
+                                @endif
                               </td>
                               <td>{{ dateConvert(optional($group['rows']->first())->date) }}</td>
                               <td class="font-weight-500">
