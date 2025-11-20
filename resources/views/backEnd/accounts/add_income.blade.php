@@ -503,8 +503,7 @@ $__incomeCollection = $__incomeCollection ?? collect();
                                   href="{{ $meta['view_url'] }}" target="_blank">
                                   <span>@lang('common.view')</span>
                                   @if(($group['entries'] ?? 0) > 1)
-                                  <span
-                                    class="badge badge-primary badge-pill ml-2">&sum;{{ $group['entries'] ?? 0 }}</span>
+                                  <span class="badge badge-primary badge-pill ml-2">{{ $group['entries'] ?? 0 }}</span>
                                   @endif
                                 </a>
                                 @else
