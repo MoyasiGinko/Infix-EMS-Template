@@ -33,7 +33,18 @@ class SmAddIncomeController extends Controller
             $bank_accounts = SmBankAccount::where('school_id', Auth::user()->school_id)->select(['bank_name', 'account_name', 'opening_balance', 'account_number', 'current_balance'])->get();
             $payment_methods = SmPaymentMethhod::select(['method', 'id', 'type'])->get();
 
-            return view('backEnd.accounts.add_income', ['add_incomes' => $add_incomes, 'income_heads' => $income_heads, 'bank_accounts' => $bank_accounts, 'payment_methods' => $payment_methods]);
+            $grouped_incomes = $add_incomes->groupBy(function ($item) {
+                return $item->date;
+            })->sortKeysDesc();
+
+            return view('backEnd.accounts.add_income', [
+                'add_incomes' => $add_incomes,
+                '__incomeCollection' => $add_incomes,
+                'grouped_incomes' => $grouped_incomes,
+                'income_heads' => $income_heads,
+                'bank_accounts' => $bank_accounts,
+                'payment_methods' => $payment_methods,
+            ]);
         /*
         } catch (Exception $exception) {
             Toastr::error('Operation Failed', 'Failed');
@@ -116,7 +127,19 @@ class SmAddIncomeController extends Controller
             $bank_accounts = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
             $payment_methods = SmPaymentMethhod::get();
 
-            return view('backEnd.accounts.add_income', ['add_income' => $add_income, 'add_incomes' => $add_incomes, 'income_heads' => $income_heads, 'bank_accounts' => $bank_accounts, 'payment_methods' => $payment_methods]);
+            $grouped_incomes = $add_incomes->groupBy(function ($item) {
+                return $item->date;
+            })->sortKeysDesc();
+
+            return view('backEnd.accounts.add_income', [
+                'add_income' => $add_income,
+                'add_incomes' => $add_incomes,
+                '__incomeCollection' => $add_incomes,
+                'grouped_incomes' => $grouped_incomes,
+                'income_heads' => $income_heads,
+                'bank_accounts' => $bank_accounts,
+                'payment_methods' => $payment_methods,
+            ]);
         /*
         } catch (Exception $exception) {
             Toastr::error('Operation Failed', 'Failed');
