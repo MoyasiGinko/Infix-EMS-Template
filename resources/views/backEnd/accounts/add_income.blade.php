@@ -466,9 +466,6 @@ $__incomeCollection = $__incomeCollection ?? collect();
                             <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
                               <td class="text-center">
                                 <span class="font-weight-600">{{ $displayRow['row_number'] ?? $loop->iteration }}</span>
-                                @if(($group['entries'] ?? 0) > 1)
-                                <div class="text-muted small">&sum;{{ $group['entries'] ?? 0 }}</div>
-                                @endif
                               </td>
                               <td class="font-weight-500">
                                 <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
@@ -502,8 +499,14 @@ $__incomeCollection = $__incomeCollection ?? collect();
                               </td>
                               <td class="text-right">
                                 @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
-                                <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
-                                  target="_blank">@lang('common.view')</a>
+                                <a class="btn btn-sm btn-outline-info d-inline-flex align-items-center"
+                                  href="{{ $meta['view_url'] }}" target="_blank">
+                                  <span>@lang('common.view')</span>
+                                  @if(($group['entries'] ?? 0) > 1)
+                                  <span
+                                    class="badge badge-primary badge-pill ml-2">&sum;{{ $group['entries'] ?? 0 }}</span>
+                                  @endif
+                                </a>
                                 @else
                                 <span class="text-muted">—</span>
                                 @endif
@@ -650,9 +653,6 @@ $__incomeCollection = $__incomeCollection ?? collect();
                             <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
                               <td class="text-center">
                                 <span class="font-weight-600">{{ $displayRow['row_number'] ?? $loop->iteration }}</span>
-                                @if(($group['entries'] ?? 0) > 1)
-                                <div class="text-muted small">&sum;{{ $group['entries'] ?? 0 }}</div>
-                                @endif
                               </td>
                               <td class="font-weight-500">
                                 <div>{{ $meta['student_name'] ?? __('common.unknown') }}</div>
@@ -686,8 +686,14 @@ $__incomeCollection = $__incomeCollection ?? collect();
                               </td>
                               <td class="text-right">
                                 @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
-                                <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
-                                  target="_blank">@lang('common.view')</a>
+                                <a class="btn btn-sm btn-outline-info d-inline-flex align-items-center"
+                                  href="{{ $meta['view_url'] }}" target="_blank">
+                                  <span>@lang('common.view')</span>
+                                  @if(($group['entries'] ?? 0) > 1)
+                                  <span
+                                    class="badge badge-primary badge-pill ml-2">&sum;{{ $group['entries'] ?? 0 }}</span>
+                                  @endif
+                                </a>
                                 @else
                                 <span class="text-muted">—</span>
                                 @endif
@@ -833,9 +839,6 @@ $__incomeCollection = $__incomeCollection ?? collect();
                             <tr class="invoice-group-row" data-export='@json($invoiceExportPayload)'>
                               <td class="text-center">
                                 <span class="font-weight-600">{{ $displayRow['row_number'] ?? $loop->iteration }}</span>
-                                @if(($group['entries'] ?? 0) > 1)
-                                <div class="text-muted small">&sum;{{ $group['entries'] ?? 0 }}</div>
-                                @endif
                               </td>
                               <td>{{ dateConvert(optional($group['rows']->first())->date) }}</td>
                               <td class="font-weight-500">
@@ -863,8 +866,14 @@ $__incomeCollection = $__incomeCollection ?? collect();
                               </td>
                               <td class="text-right">
                                 @if(userPermission('fees.fees-invoice-view') && !empty($meta['view_url']))
-                                <a class="btn btn-sm btn-outline-info" href="{{ $meta['view_url'] }}"
-                                  target="_blank">@lang('common.view')</a>
+                                <a class="btn btn-sm btn-outline-info d-inline-flex align-items-center"
+                                  href="{{ $meta['view_url'] }}" target="_blank">
+                                  <span>@lang('common.view')</span>
+                                  @if(($group['entries'] ?? 0) > 1)
+                                  <span
+                                    class="badge badge-primary badge-pill ml-2">&sum;{{ $group['entries'] ?? 0 }}</span>
+                                  @endif
+                                </a>
                                 @else
                                 <span class="text-muted">—</span>
                                 @endif
