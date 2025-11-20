@@ -753,29 +753,6 @@
   border-radius: 10px;
 }
 
-.fees-invoice-card.is-loading .modern-datatable::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(248, 250, 255, 0.75);
-  backdrop-filter: blur(1.5px);
-  z-index: 5;
-}
-
-.fees-invoice-card.is-loading .modern-datatable::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 4px solid rgba(79, 70, 229, 0.24);
-  border-top-color: #4f46e5;
-  transform: translate(-50%, -50%);
-  animation: feesSpin 0.8s linear infinite;
-  z-index: 6;
-}
 
 #feesInvoiceRefresh.loading {
   position: relative;
@@ -2845,6 +2822,7 @@ $(document).ready(function() {
   const initialLength = urlLen !== null ? urlLen : savedLength;
 
   const $card = $('.fees-invoice-card');
+  let hasFeesTableDrawn = false;
   const $lengthSelect = $('#feesInvoiceLength');
   const $searchInput = $('#feesInvoiceSearch');
   const $refreshBtn = $('#feesInvoiceRefresh');
@@ -2853,6 +2831,10 @@ $(document).ready(function() {
   const $filterContainer = $('#feesInvoiceFilters');
   const $filterControls = $filterContainer.find('.fees-filter-control');
   const $filterReset = $('#feesFilterReset');
+
+  if ($card.length) {
+    $card.addClass('is-loading');
+  }
 
   if ($lengthSelect.length && !isNaN(initialLength)) {
     $lengthSelect.val(String(initialLength));
@@ -3352,10 +3334,21 @@ $(document).ready(function() {
     $refreshBtn.removeClass('loading');
   });
 
-  dt.on('processing.dt', function(e, settings, processing) {
+  dt.on('draw.dt', function() {
+    hasFeesTableDrawn = true;
     if ($card.length) {
-      $card.toggleClass('is-loading', processing);
+      $card.removeClass('is-loading');
     }
+  });
+
+  dt.on('processing.dt', function(e, settings, processing) {
+    if (!$card.length) {
+      return;
+    }
+    if (!hasFeesTableDrawn && !processing) {
+      return;
+    }
+    $card.toggleClass('is-loading', processing);
   });
 
   function rebuildExportMenu() {
