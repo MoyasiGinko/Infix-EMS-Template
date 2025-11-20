@@ -341,13 +341,24 @@
   background: #fff;
 }
 
+
 .fees-invoice-card__body {
   padding: 28px 28px 34px;
 }
 
+.modern-datatable {
+  position: relative;
+  min-height: 260px;
+}
+
 .fees-table-skeleton {
   display: none;
-  margin-bottom: 18px;
+  position: absolute;
+  inset: 0;
+  padding: 58px 24px 24px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 255, 0.9));
+  z-index: 3;
 }
 
 .fees-table-skeleton__row {
@@ -387,9 +398,8 @@
   display: block;
 }
 
-.fees-invoice-card.is-loading .modern-datatable {
-  opacity: 0.25;
-  filter: blur(0.5px);
+.fees-invoice-card.is-loading .modern-datatable table {
+  opacity: 0.08;
 }
 
 .fees-invoice-card__body .dataTables_wrapper {
@@ -2444,249 +2454,241 @@ $filterMonthOptions = collect($monthOptions ?? [])->filter();
             <div class="fees-invoice-card__header">
 
               <div class="fees-invoice-toolbar">
-                <div class="fees-invoice-toolbar__left">
-                  <div class="fees-invoice-length">
-                    <label for="feesInvoiceLength">{{ __('Rows') }}</label>
-                    <select id="feesInvoiceLength">
-                      <option value="10">10</option>
-                      <option value="50">50</option>
-                      <option value="100">100</option>
-                      <option value="250">250</option>
-                      <option value="500">500</option>
-                      <option value="10000">All (10k)</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="fees-invoice-toolbar__right">
-                  <div class="fees-invoice-search">
-                    <span class="ti-search"></span>
-                    <input type="text" id="feesInvoiceSearch"
-                      placeholder="{{ __('Search invoices, students or roll') }}">
-                  </div>
-                  <div class="dropdown fees-tool-dropdown">
-                    <button class="fees-tool-btn dropdown-toggle" type="button" id="feesInvoiceExportToggle"
-                      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      <span class="icon ti-download"></span>
-                      <span>{{ __('Export') }}</span>
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="feesInvoiceExportToggle"
-                      id="feesInvoiceExportMenu">
-                      <span class="dropdown-item text-muted small">{{ __('Loading...') }}</span>
-                    </div>
-                  </div>
-                  <div class="dropdown fees-tool-dropdown">
-                    <button class="fees-tool-btn dropdown-toggle" type="button" id="feesInvoiceColumnToggle"
-                      data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      <span class="icon ti-layout"></span>
-                      <span>{{ __('Columns') }}</span>
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="feesInvoiceColumnToggle"
-                      id="feesInvoiceColumnMenu">
-                    </div>
-                  </div>
-                  <button class="fees-tool-btn" type="button" id="feesInvoiceRefresh">
-                    <span class="icon ti-reload"></span>
-                    <span>{{ __('Refresh') }}</span>
-                  </button>
-                </div>
+                <select id="feesInvoiceLength">
+                  @for($row = 0; $row < 6; $row++) <div class="fees-table-skeleton__row">
+                    @for($cell = 0; $cell < 12; $cell++) <span class="fees-table-skeleton__cell"></span>
+                      @endfor
               </div>
-              <div class="fees-advanced-filters" id="feesInvoiceFilters">
-                <div class="fees-advanced-filters__group">
-                  <label class="fees-advanced-filters__label" for="feesFilterClass">{{ __('common.class') }}</label>
-                  <select id="feesFilterClass" class="fees-advanced-filters__control fees-filter-control"
-                    data-filter-key="class_id">
-                    <option value="">{{ __('common.all') }}</option>
-                    @foreach ($filterClasses as $class)
-                    <option value="{{ $class->id }}">{{ $class->class_name }}</option>
-                    @endforeach
-                  </select>
-                </div>
-                <div class="fees-advanced-filters__group">
-                  <label class="fees-advanced-filters__label"
-                    for="feesFilterStudentCategory">{{ __('student.student_category') }}</label>
-                  <select id="feesFilterStudentCategory" class="fees-advanced-filters__control fees-filter-control"
-                    data-filter-key="student_category_id">
-                    <option value="">{{ __('common.all') }}</option>
-                    @foreach ($filterStudentCategories as $category)
-                    <option value="{{ $category->id }}">{{ $category->category_name }}</option>
-                    @endforeach
-                  </select>
-                </div>
-                <div class="fees-advanced-filters__group">
-                  <label class="fees-advanced-filters__label"
-                    for="feesFilterStatus">{{ __('fees.payment_status') }}</label>
-                  <select id="feesFilterStatus" class="fees-advanced-filters__control fees-filter-control"
-                    data-filter-key="payment_status">
-                    <option value="">{{ __('common.all') }}</option>
-                    @foreach ($filterStatusOptions as $statusKey => $statusLabel)
-                    <option value="{{ $statusKey }}">{{ $statusLabel }}</option>
-                    @endforeach
-                  </select>
-                </div>
-                <div class="fees-advanced-filters__group">
-                  <label class="fees-advanced-filters__label" for="feesFilterMonth">{{ __('common.month') }}</label>
-                  <select id="feesFilterMonth" class="fees-advanced-filters__control fees-filter-control"
-                    data-filter-key="month">
-                    <option value="">{{ __('common.all') }}</option>
-                    @foreach ($filterMonthOptions as $monthOption)
-                    <option value="{{ $monthOption['value'] }}">{{ $monthOption['label'] }}</option>
-                    @endforeach
-                  </select>
-                </div>
-                <div class="fees-advanced-filters__actions">
-                  <button type="button" class="fees-filters__reset"
-                    id="feesFilterReset">{{ __('common.reset') }}</button>
-                </div>
+              @endfor
+            </div>
+          </div>
+          <div class="fees-invoice-toolbar__right">
+            <div class="fees-invoice-search">
+              <span class="ti-search"></span>
+              <input type="text" id="feesInvoiceSearch" placeholder="{{ __('Search invoices, students or roll') }}">
+            </div>
+            <div class="dropdown fees-tool-dropdown">
+              <button class="fees-tool-btn dropdown-toggle" type="button" id="feesInvoiceExportToggle"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="icon ti-download"></span>
+                <span>{{ __('Export') }}</span>
+              </button>
+              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="feesInvoiceExportToggle"
+                id="feesInvoiceExportMenu">
+                <span class="dropdown-item text-muted small">{{ __('Loading...') }}</span>
               </div>
             </div>
-            <div class="fees-invoice-card__body">
-              <x-table>
-                <div class="modern-datatable table-responsive">
-                  @php
-                  $feesSkeletonColumns =
-                  ['60px','210px','140px','120px','120px','120px','120px','140px','120px','150px','140px','110px'];
-                  @endphp
-                  <div class="fees-table-skeleton" aria-hidden="true">
-                    @for($row = 0; $row < 6; $row++) <div class="fees-table-skeleton__row">
-                      @foreach($feesSkeletonColumns as $width)
-                      <span class="fees-table-skeleton__cell"></span>
-                      @endforeach
-                  </div>
-                  @endfor
-                </div>
-                <table id="table_id" class="table data-table modern-table" cellspacing="0" width="100%">
-                  <colgroup>
-                    <col data-name="serial" style="width:60px;">
-                    <col data-name="student" style="width:210px;">
-                    <col data-name="roll" style="width:140px;">
-                    <col data-name="amount" style="width:120px;">
-                    <col data-name="weaver" style="width:120px;">
-                    <col data-name="fine" style="width:120px;">
-                    <col data-name="paid" style="width:120px;">
-                    <col data-name="balance" style="width:140px;">
-                    <col data-name="status" style="width:120px;">
-                    <col data-name="paid_date" style="width:150px;">
-                    <col data-name="date" style="width:140px;">
-                    <col data-name="action" style="width:110px;">
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th>@lang('common.sl')</th>
-                      <th>@lang('common.student')</th>
-                      <th>@lang('student.roll_no')</th>
-                      <th>@lang('accounts.amount')</th>
-                      <th>@lang('fees::feesModule.waiver')</th>
-                      <th>@lang('fees.fine')</th>
-                      <th>@lang('fees.paid')</th>
-                      <th>@lang('accounts.balance')</th>
-                      <th>@lang('common.status')</th>
-                      <th>@lang('fees.payment_date')</th>
-                      <th>@lang('common.date')</th>
-                      <th>@lang('common.action')</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  </tbody>
-                </table>
+            <div class="dropdown fees-tool-dropdown">
+              <button class="fees-tool-btn dropdown-toggle" type="button" id="feesInvoiceColumnToggle"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="icon ti-layout"></span>
+                <span>{{ __('Columns') }}</span>
+              </button>
+              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="feesInvoiceColumnToggle"
+                id="feesInvoiceColumnMenu">
+              </div>
             </div>
-            </x-table>
+            <button class="fees-tool-btn" type="button" id="feesInvoiceRefresh">
+              <span class="icon ti-reload"></span>
+              <span>{{ __('Refresh') }}</span>
+            </button>
           </div>
-
+        </div>
+        <div class="fees-advanced-filters" id="feesInvoiceFilters">
+          <div class="fees-advanced-filters__group">
+            <label class="fees-advanced-filters__label" for="feesFilterClass">{{ __('common.class') }}</label>
+            <select id="feesFilterClass" class="fees-advanced-filters__control fees-filter-control"
+              data-filter-key="class_id">
+              <option value="">{{ __('common.all') }}</option>
+              @foreach ($filterClasses as $class)
+              <option value="{{ $class->id }}">{{ $class->class_name }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div class="fees-advanced-filters__group">
+            <label class="fees-advanced-filters__label"
+              for="feesFilterStudentCategory">{{ __('student.student_category') }}</label>
+            <select id="feesFilterStudentCategory" class="fees-advanced-filters__control fees-filter-control"
+              data-filter-key="student_category_id">
+              <option value="">{{ __('common.all') }}</option>
+              @foreach ($filterStudentCategories as $category)
+              <option value="{{ $category->id }}">{{ $category->category_name }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div class="fees-advanced-filters__group">
+            <label class="fees-advanced-filters__label" for="feesFilterStatus">{{ __('fees.payment_status') }}</label>
+            <select id="feesFilterStatus" class="fees-advanced-filters__control fees-filter-control"
+              data-filter-key="payment_status">
+              <option value="">{{ __('common.all') }}</option>
+              @foreach ($filterStatusOptions as $statusKey => $statusLabel)
+              <option value="{{ $statusKey }}">{{ $statusLabel }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div class="fees-advanced-filters__group">
+            <label class="fees-advanced-filters__label" for="feesFilterMonth">{{ __('common.month') }}</label>
+            <select id="feesFilterMonth" class="fees-advanced-filters__control fees-filter-control"
+              data-filter-key="month">
+              <option value="">{{ __('common.all') }}</option>
+              @foreach ($filterMonthOptions as $monthOption)
+              <option value="{{ $monthOption['value'] }}">{{ $monthOption['label'] }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div class="fees-advanced-filters__actions">
+            <button type="button" class="fees-filters__reset" id="feesFilterReset">{{ __('common.reset') }}</button>
+          </div>
         </div>
       </div>
-      @else
-      <div class="col-lg-12 student-details up_admin_visitor mt-0">
-        <ul class="nav nav-tabs tabs_scroll_nav mt-0 ml-0" role="tablist">
-          @foreach ($records as $key => $record)
-          <li class="nav-item mb-0">
-            <a class="nav-link mb-0 @if ($key == 0) active @endif " href="#tab{{ $key }}" role="tab"
-              data-toggle="tab">{{ moduleStatusCheck('University') ? $record->unSemesterLabel->name : $record->class->class_name }}
-              ({{ $record->section->section_name }}) @if(shiftEnable())
-              @if($record->shift)[{{@$record->shift->shift_name}}]@endif @endif
-            </a>
-          </li>
-          @endforeach
-        </ul>
-
-        <div class="tab-content" style="margin-top:70px">
-          @foreach ($records as $key => $record)
-          <div role="tabpanel" class="tab-pane fade  @if ($key == 0) active show @endif" id="tab{{ $key }}">
-            <x-table>
-              <table id="table_id" class="table" cellspacing="0" width="100%">
-                <thead>
-                  <tr>
-                    <th>@lang('common.sl')</th>
-                    <th>@lang('common.student')</th>
-                    <th>@if(shiftEnable()) @lang('admin.class_Sec_shift') @else @lang('student.class_section') @endif
-                    </th>
-                    <th>@lang('accounts.amount')</th>
-                    <th>@lang('fees::feesModule.waiver')</th>
-                    <th>@lang('fees.fine')</th>
-                    <th>@lang('fees.paid')</th>
-                    <th>@lang('accounts.balance')</th>
-                    <th>@lang('common.status')</th>
-                    <th>@lang('common.date')</th>
-                    <th>@lang('common.action')</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @foreach ($record->feesInvoice as $key => $studentInvoice)
-                  @php
-                  $amount = $studentInvoice->Tamount;
-                  $weaver = $studentInvoice->Tweaver;
-                  $fine = $studentInvoice->Tfine;
-                  $paid_amount = $studentInvoice->Tpaidamount;
-                  $sub_total = $studentInvoice->Tsubtotal;
-                  $balance = $amount + $fine - ($paid_amount + $weaver);
-                  @endphp
-                  <tr>
-                    <td>{{ $key + 1 }}</td>
-                    <td>
-                      <a href="{{ route('fees.fees-invoice-view', ['id' => $studentInvoice->id, 'state' => 'view']) }}"
-                        target="_blank">
-                        {{ @$studentInvoice->studentInfo->full_name }}
-                      </a>
-                    </td>
-                    <td>{{ @$studentInvoice->recordDetail->class->class_name }}
-                      ({{ @$studentInvoice->recordDetail->section->section_name }})
-                      @if(shiftEnable())[{{ '(' . @$studentInvoice->recordDetail->shift != '' ? @$studentInvoice->recordDetail->shift->name : '' . ')' }}]@endif
-                    </td>
-                    <td>{{ $amount }}</td>
-                    <td>{{ $weaver }}</td>
-                    <td>{{ $fine }}</td>
-                    <td>{{ $paid_amount }}</td>
-                    <td>{{ $balance }}</td>
-                    <td>
-                      @if ($balance == 0)
-                      <button class="primary-btn small bg-success text-white border-0">@lang('fees.paid')</button>
-                      @elseif ($paid_amount > 0)
-                      <button class="primary-btn small bg-warning text-white border-0">@lang('fees.partial')</button>
-                      @else
-                      <button class="primary-btn small bg-danger text-white border-0">@lang('fees.unpaid')</button>
-                      @endif
-                    </td>
-                    <td>{{ dateConvert($studentInvoice->create_date) }}</td>
-                    <td>
-                      <x-drop-down>
-                        <a class="dropdown-item"
-                          href="{{ route('fees.fees-invoice-view', ['id' => $studentInvoice->id, 'state' => 'view']) }}">@lang('common.view')</a>
-                        @if ($balance != 0)
-                        <a class="dropdown-item"
-                          href="{{ route('fees.student-fees-payment', $studentInvoice->id) }}">@lang('inventory.add_payment')</a>
-                        @endif
-                      </x-drop-down>
-                    </td>
-                  </tr>
-                  @endforeach
-                </tbody>
-              </table>
-            </x-table>
+      <div class="fees-invoice-card__body">
+        <x-table>
+          <div class="modern-datatable table-responsive">
+            @php
+            $feesSkeletonColumns =
+            ['60px','210px','140px','120px','120px','120px','120px','140px','120px','150px','140px','110px'];
+            @endphp
+            <div class="fees-table-skeleton" aria-hidden="true">
+              @for($row = 0; $row < 6; $row++) <div class="fees-table-skeleton__row">
+                @foreach($feesSkeletonColumns as $width)
+                <span class="fees-table-skeleton__cell"></span>
+                @endforeach
+            </div>
+            @endfor
           </div>
-          @endforeach
-        </div>
+          <table id="table_id" class="table data-table modern-table" cellspacing="0" width="100%">
+            <colgroup>
+              <col data-name="serial" style="width:60px;">
+              <col data-name="student" style="width:210px;">
+              <col data-name="roll" style="width:140px;">
+              <col data-name="amount" style="width:120px;">
+              <col data-name="weaver" style="width:120px;">
+              <col data-name="fine" style="width:120px;">
+              <col data-name="paid" style="width:120px;">
+              <col data-name="balance" style="width:140px;">
+              <col data-name="status" style="width:120px;">
+              <col data-name="paid_date" style="width:150px;">
+              <col data-name="date" style="width:140px;">
+              <col data-name="action" style="width:110px;">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>@lang('common.sl')</th>
+                <th>@lang('common.student')</th>
+                <th>@lang('student.roll_no')</th>
+                <th>@lang('accounts.amount')</th>
+                <th>@lang('fees::feesModule.waiver')</th>
+                <th>@lang('fees.fine')</th>
+                <th>@lang('fees.paid')</th>
+                <th>@lang('accounts.balance')</th>
+                <th>@lang('common.status')</th>
+                <th>@lang('fees.payment_date')</th>
+                <th>@lang('common.date')</th>
+                <th>@lang('common.action')</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
       </div>
-      @endif
+      </x-table>
     </div>
+
+  </div>
+  </div>
+  @else
+  <div class="col-lg-12 student-details up_admin_visitor mt-0">
+    <ul class="nav nav-tabs tabs_scroll_nav mt-0 ml-0" role="tablist">
+      @foreach ($records as $key => $record)
+      <li class="nav-item mb-0">
+        <a class="nav-link mb-0 @if ($key == 0) active @endif " href="#tab{{ $key }}" role="tab"
+          data-toggle="tab">{{ moduleStatusCheck('University') ? $record->unSemesterLabel->name : $record->class->class_name }}
+          ({{ $record->section->section_name }}) @if(shiftEnable())
+          @if($record->shift)[{{@$record->shift->shift_name}}]@endif @endif
+        </a>
+      </li>
+      @endforeach
+    </ul>
+
+    <div class="tab-content" style="margin-top:70px">
+      @foreach ($records as $key => $record)
+      <div role="tabpanel" class="tab-pane fade  @if ($key == 0) active show @endif" id="tab{{ $key }}">
+        <x-table>
+          <table id="table_id" class="table" cellspacing="0" width="100%">
+            <thead>
+              <tr>
+                <th>@lang('common.sl')</th>
+                <th>@lang('common.student')</th>
+                <th>@if(shiftEnable()) @lang('admin.class_Sec_shift') @else @lang('student.class_section') @endif
+                </th>
+                <th>@lang('accounts.amount')</th>
+                <th>@lang('fees::feesModule.waiver')</th>
+                <th>@lang('fees.fine')</th>
+                <th>@lang('fees.paid')</th>
+                <th>@lang('accounts.balance')</th>
+                <th>@lang('common.status')</th>
+                <th>@lang('common.date')</th>
+                <th>@lang('common.action')</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach ($record->feesInvoice as $key => $studentInvoice)
+              @php
+              $amount = $studentInvoice->Tamount;
+              $weaver = $studentInvoice->Tweaver;
+              $fine = $studentInvoice->Tfine;
+              $paid_amount = $studentInvoice->Tpaidamount;
+              $sub_total = $studentInvoice->Tsubtotal;
+              $balance = $amount + $fine - ($paid_amount + $weaver);
+              @endphp
+              <tr>
+                <td>{{ $key + 1 }}</td>
+                <td>
+                  <a href="{{ route('fees.fees-invoice-view', ['id' => $studentInvoice->id, 'state' => 'view']) }}"
+                    target="_blank">
+                    {{ @$studentInvoice->studentInfo->full_name }}
+                  </a>
+                </td>
+                <td>{{ @$studentInvoice->recordDetail->class->class_name }}
+                  ({{ @$studentInvoice->recordDetail->section->section_name }})
+                  @if(shiftEnable())[{{ '(' . @$studentInvoice->recordDetail->shift != '' ? @$studentInvoice->recordDetail->shift->name : '' . ')' }}]@endif
+                </td>
+                <td>{{ $amount }}</td>
+                <td>{{ $weaver }}</td>
+                <td>{{ $fine }}</td>
+                <td>{{ $paid_amount }}</td>
+                <td>{{ $balance }}</td>
+                <td>
+                  @if ($balance == 0)
+                  <button class="primary-btn small bg-success text-white border-0">@lang('fees.paid')</button>
+                  @elseif ($paid_amount > 0)
+                  <button class="primary-btn small bg-warning text-white border-0">@lang('fees.partial')</button>
+                  @else
+                  <button class="primary-btn small bg-danger text-white border-0">@lang('fees.unpaid')</button>
+                  @endif
+                </td>
+                <td>{{ dateConvert($studentInvoice->create_date) }}</td>
+                <td>
+                  <x-drop-down>
+                    <a class="dropdown-item"
+                      href="{{ route('fees.fees-invoice-view', ['id' => $studentInvoice->id, 'state' => 'view']) }}">@lang('common.view')</a>
+                    @if ($balance != 0)
+                    <a class="dropdown-item"
+                      href="{{ route('fees.student-fees-payment', $studentInvoice->id) }}">@lang('inventory.add_payment')</a>
+                    @endif
+                  </x-drop-down>
+                </td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </x-table>
+      </div>
+      @endforeach
+    </div>
+  </div>
+  @endif
+  </div>
   </div>
   </div>
 </section>
