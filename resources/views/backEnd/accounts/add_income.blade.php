@@ -4,6 +4,11 @@
 @endsection
 @section('mainContent')
 
+@php
+$grouped_incomes = $grouped_incomes ?? collect();
+$__incomeCollection = $__incomeCollection ?? collect();
+@endphp
+
 <section class="sms-breadcrumb mb-20">
   <div class="container-fluid">
     <div class="row justify-content-between">
