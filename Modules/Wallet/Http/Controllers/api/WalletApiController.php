@@ -58,11 +58,16 @@ class WalletApiController extends Controller
     public function addWalletAmount(Request $request)
     {
         $request->validate([
-            'amount' => 'required',
+            'amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required',
             'bank' => 'required_if:payment_method,Bank',
             'file' => 'mimes:jpg,jpeg,png,pdf',
         ]);
+
+        $amount = (float) $request->amount;
+        if ($amount <= 0) {
+            return response()->json(['error' => 'Invalid amount. Must be greater than zero.'], 422);
+        }
 
         try {
             if ($request->payment_method === 'Cheque' || $request->payment_method === 'Bank') {
@@ -83,7 +88,7 @@ class WalletApiController extends Controller
                 }
 
                 $addPayment = new WalletTransaction();
-                $addPayment->amount = $request->amount;
+                $addPayment->amount = $amount;
                 $addPayment->payment_method = $request->payment_method;
                 $addPayment->bank_id = $request->bank;
                 $addPayment->note = $request->note;
@@ -105,7 +110,7 @@ class WalletApiController extends Controller
                 // Notification End
             } else {
                 $addPayment = new WalletTransaction();
-                $addPayment->amount = $request->amount;
+                $addPayment->amount = $amount;
                 $addPayment->payment_method = $request->payment_method;
                 $addPayment->user_id = Auth::user()->id;
                 $addPayment->type = 'diposit';
@@ -117,7 +122,7 @@ class WalletApiController extends Controller
             return response()->json([
                 'sucess' => 'Wallet request submitted',
                 'id' => $addPayment->id,
-                'amount' => $request->amount,
+                'amount' => $amount,
                 'transactionId' => 'wallet_request_id_'.$addPayment->id,
                 'description' => 'Wallet Request',
             ]);

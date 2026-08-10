@@ -1,5 +1,5 @@
 @php
-    $menus = getMenus("staff");  
+    $menus = getMenus("staff");
     $paid_modules = ['Zoom','University','Gmeet','QRCodeAttendance','BBB','ParentRegistration','InfixBiometrics','AiContent','Lms','Certificate','Jitsi','WhatsappSupport','InAppLiveClass'];
     $module_enable = false;
     foreach($paid_modules as $module){
@@ -10,32 +10,32 @@
     }
     $free_modules = ['Chat','fees_collection','Fees'];
 @endphp
-    
+
 @foreach($menus as $key => $menu)
 
     @if ($menu->route == 'module_section')
         @if($module_enable)
-                @if($menu->childs->count() > 0)    
+                @if($menu->childs->count() > 0)
                  <span class="menu_seperator" id="seperator_{{$menu->route}}"  data-section="{{ $menu->route }}">{{ __($menu->lang_name)}} </span>
                     @foreach($menu->childs as $child)
                         @if($child->childs->count() > 0)
                             @if(userPermission($child->route) && isMenuAllowToShow($child->route))
                                 @if(!empty($child->module) && in_array($child->module,$paid_modules) )
                                     @if( moduleStatusCheck($child->module))
-                                        @includeIf('backEnd.menu.staff_sub_menu',compact('menu','child'))     
+                                        @includeIf('backEnd.menu.staff_sub_menu',compact('menu','child'))
                                     @endif
-                                @else 
-                                   
-                                    @includeIf('backEnd.menu.staff_sub_menu',compact('menu','child'))       
-                                @endif                            
+                                @else
+
+                                    @includeIf('backEnd.menu.staff_sub_menu',compact('menu','child'))
+                                @endif
                             @endif
                             @if($key == 1)
                                 @if(auth()->user()->school_id != 1)
                                     @includeIf('saas::menu.staff')
                                 @endif
                             @endif
-                        @else  
-                            @if(userPermission($child->route) && isMenuAllowToShow($child->route))  
+                        @else
+                            @if(userPermission($child->route) && isMenuAllowToShow($child->route))
                                 <li class="{{ spn_active_link([$child->route], "mm-active") }}  main">
                                     <a href="{{ validRouteUrl($child->route) }}">
                                         <div class="nav_icon_small">
@@ -58,9 +58,9 @@
 
         @endif
 
-    @else   
-        
-        @if($menu->childs->count() > 0)   
+    @else
+
+        @if($menu->childs->count() > 0)
           <span class="menu_seperator" id="seperator_{{$menu->route}}"  data-section="{{ $menu->route }}">{{ __($menu->lang_name)}} </span>
             @foreach($menu->childs as $child)
                 @if($child->childs->count() > 0)
@@ -74,15 +74,15 @@
                         @endif
                       @else
                         @includeIf('backEnd.menu.staff_sub_menu',compact('menu','child'))
-                      @endif 
+                      @endif
                     @endif
                     @if($key == 1)
                         @if(auth()->user()->school_id != 1)
                             @includeIf('saas::menu.staff')
                         @endif
                     @endif
-                @else  
-                    @if(userPermission($child->route) && isMenuAllowToShow($child->route))  
+                @else
+                    @if(userPermission($child->route) && isMenuAllowToShow($child->route))
                         <li class="{{ spn_active_link([$child->route], "mm-active") }} {{ $child->route }} main">
                             <a href="{{ validRouteUrl($child->route) }}">
                                 <div class="nav_icon_small">
@@ -102,9 +102,8 @@
                 @endif
             @endforeach
         @endif
-        
+
     @endif
 
 @endforeach
-
-
+{{-- Removed hardcoded Notes menu include: now managed entirely by Sidebar Manager (sm_menus). --}}

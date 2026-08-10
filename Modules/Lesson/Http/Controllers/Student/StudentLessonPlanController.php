@@ -43,7 +43,7 @@ class StudentLessonPlanController extends Controller
                 $dates[] = $date->format('Y-m-d');
             }
 
-            $student_detail = SmStudent::where('user_id', auth()->user()->id)->first();
+            $student_detail = SmStudent::where('user_id', Auth::user()->id)->first();
             // return $student_detail;
             $class_id = $student_detail->class_id;
             $section_id = $student_detail->section_id;
@@ -109,7 +109,7 @@ class StudentLessonPlanController extends Controller
      *
      * @return Renderable
      */
-    public function changeWeek(Request $request, $next_date)
+    public function changeWeek(Request $request, $id, $next_date)
     {
         $start_date = Carbon::parse($next_date)->addDay();
         $date = Carbon::parse($next_date)->addDay();
@@ -144,7 +144,7 @@ class StudentLessonPlanController extends Controller
 
     }
 
-    public function discreaseChangeWeek(Request $request, $pre_date)
+    public function discreaseChangeWeek(Request $request, $id, $pre_date)
     {
 
         $end_date = Carbon::parse($pre_date)->subDays(1);

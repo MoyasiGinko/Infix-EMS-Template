@@ -33,14 +33,14 @@ class SmLeaveDefine extends Model
 
     public function getremainingDaysAttribute()
     {
-        $diff_in_days = 0;
+        $used_days = 0;
         foreach ($this->leaveRequests as $leaveRequest) {
-            $to = Carbon::parse($leaveRequest->leave_from);
-            $from = Carbon::parse($leaveRequest->leave_to);
-            $diff_in_days = $to->diffInDays($from) + 1;
+            $to = Carbon::parse($leaveRequest->leave_to);
+            $from = Carbon::parse($leaveRequest->leave_from);
+            $used_days += $from->diffInDays($to) + 1;
         }
 
-        return $diff_in_days;
+        return $this->total_days - $used_days;
     }
 
     protected static function boot(): void

@@ -99,6 +99,7 @@ return [
     'not_leaves_data' => 'Not Leaves Data',
     'joining_letter' => 'Joining Letter',
     'student_information' => 'Student Info',
+
     'student_admission' => 'Student Admission',
     'student_registration' => 'Student Registration',
     'add_custom_field' => 'Add Custom Field',

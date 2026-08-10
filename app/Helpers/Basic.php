@@ -294,12 +294,12 @@ if (!function_exists('subModuleRoute')) {
 // {
 //     function getSubModuleRoutes($menu, $routes = [])
 //     {
-       
+
 //         $routes[] = $menu->route;
 //         if($menu->childs->count() ){
 //             foreach($menu->childs as $child)
 //             {
-                
+
 //                 //$routes = getSubModuleRoutes($child, $routes);
 //             }
 //             return $routes;
@@ -411,8 +411,8 @@ if (!function_exists('sidebar_menus')) {
 if(!function_exists('getMenus'))
 {
     function getMenus($role_name = 'staff')
-    {   
-        
+    {
+
        $menus =  SmMenu::with([
                     'childs' => function($q) use ($role_name) {
                         $q->where('menu_status',1)
@@ -424,14 +424,14 @@ if(!function_exists('getMenus'))
                             ->when($role_name == 'parent',function($q){ $q->where('role_id',3); })
                             ->when($role_name == 'staff',function($q){ $q->where('role_id',1); })->orderBy('position','ASC');
                     }])
-                    ->where('menu_status',1)          
+                    ->where('menu_status',1)
                     ->where('permission_section',1)
                     ->when($role_name == 'student',function($q){ $q->where('role_id',2); })
                     ->when($role_name == 'parent',function($q){ $q->where('role_id',3); })
                     ->when($role_name == 'staff',function($q){ $q->where('role_id',1); })
                     ->orderBy('position','ASC')
-                    ->get();   
-       
+                    ->get();
+
        return $menus;
     }
 }
@@ -439,39 +439,84 @@ if(!function_exists('getMenus'))
 if(!function_exists('getUnusedMenus'))
 {
     function getUnusedMenus($role_name = 'staff')
-    {   
-        
-       $sectionIds = SmMenu::whereNull('parent')    
-                           ->when($role_name == 'student',function($q){ $q->where('role_id',2); })
-                           ->when($role_name == 'parent',function($q){ $q->where('role_id',3); })
-                           ->when($role_name == 'staff',function($q){ $q->where('role_id',1); })
-                           ->where('menu_status',0)
-                           ->pluck('id')->toArray();
+    {
+        // Determine role id mapping used by sm_menus
+        $role_id = $role_name === 'student' ? 2 : ($role_name === 'parent' ? 3 : 1);
 
-        $parentSidebars = SmMenu::whereIn('parent', $sectionIds)
-            ->where('menu_status',0)
-            ->when($role_name == 'student',function($q){ $q->where('role_id',2); })
-            ->when($role_name == 'parent',function($q){ $q->where('role_id',3); })
-            ->when($role_name == 'staff',function($q){ $q->where('role_id',1); })
-            ->pluck('id')
-            ->toArray();
+        // Core unused sm_menus logic (adjusted to use parent_id for broader compatibility)
+        $sectionIds = SmMenu::whereNull('parent_id')
+            ->where('role_id', $role_id)
+            ->where('menu_status', 0)
+            ->pluck('id')->toArray();
 
-        $single = SmMenu::whereNotIn('parent', $parentSidebars)
-            ->where('menu_status',0)
-            ->when($role_name == 'student',function($q){ $q->where('role_id',2); })
-            ->when($role_name == 'parent',function($q){ $q->where('role_id',3); })
-            ->when($role_name == 'staff',function($q){ $q->where('role_id',1); })
-            ->pluck('id')
-            ->toArray();
-        $hasIds = array_merge($parentSidebars, $single);
+        $parentIds = SmMenu::whereIn('parent_id', $sectionIds)
+            ->where('role_id', $role_id)
+            ->where('menu_status', 0)
+            ->pluck('id')->toArray();
 
-        $hasIds = (array_unique($hasIds));
-        
-        if ($hasIds != []) {
-            return SmMenu::whereIn('id', $hasIds)->get();
+        $singleIds = SmMenu::where('role_id', $role_id)
+            ->where('menu_status', 0)
+            ->whereNotIn('parent_id', $parentIds)
+            ->pluck('id')->toArray();
+
+        $hasIds = array_unique(array_merge($parentIds, $singleIds));
+        $smMenuUnused = $hasIds ? SmMenu::whereIn('id', $hasIds)->get() : collect();
+
+        // Merge inactive sidebars (legacy entries) to cover modules like Notes when only in sidebars table
+        try {
+            $sidebarUnused = \Modules\MenuManage\Entities\Sidebar::leftJoin('permissions', 'sidebars.permission_id', '=', 'permissions.id')
+                ->where('sidebars.role_id', $role_id)
+                ->whereNull('sidebars.user_id')
+                ->where('sidebars.active_status', 0)
+                ->where('sidebars.ignore', 0)
+                ->where('permissions.status', 1)
+                ->where('permissions.menu_status', 1)
+                ->select(
+                    'sidebars.permission_id',
+                    'sidebars.parent as parent',
+                    'sidebars.parent_route as parent_id',
+                    'sidebars.position',
+                    'permissions.name',
+                    'permissions.lang_name',
+                    'permissions.module',
+                    'permissions.route'
+                )
+                ->orderBy('sidebars.position')
+                ->get()
+                ->map(function($row) use ($role_id){
+                    $o = new \stdClass();
+                    $o->id = (int) $row->permission_id; // unify id
+                    $o->permission_id = (int) $row->permission_id;
+                    $o->name = $row->name;
+                    $o->lang_name = $row->lang_name ?? $row->name;
+                    $o->module = $row->module;
+                    $o->route = $row->route;
+                    $o->parent = $row->parent; // legacy structure
+                    $o->parent_id = $row->parent_id; // structural hint
+                    $o->position = $row->position;
+                    // Important: preserve role so orderMenu() stores correct role_id instead of defaulting to 1
+                    $o->role_id = $role_id;
+                    $o->deActiveChild = collect();
+                    return $o;
+                });
+
+            // Remove duplicates based on route or id already in sm_menus
+            $existingIds = $smMenuUnused->pluck('id')->map(fn($v)=>(int)$v)->all();
+            $existingRoutes = $smMenuUnused->pluck('route')->filter()->all();
+            $sidebarUnused = $sidebarUnused->reject(function($o) use ($existingIds, $existingRoutes){
+                return in_array($o->id, $existingIds, true) || ($o->route && in_array($o->route, $existingRoutes, true));
+            });
+
+            // Merge & sort
+            $merged = $smMenuUnused->concat($sidebarUnused)->sortBy(function($item){
+                return $item->position ?? 9999;
+            })->values();
+
+            return $merged;
+        } catch (\Throwable $e) {
+            // On failure, fall back to original sm menus result
+            return $smMenuUnused;
         }
-
-        return collect();
     }
 }
 
@@ -491,7 +536,7 @@ if(!function_exists('isTeacher'))
 if (!function_exists('storePermissionData')) {
     function storePermissionData($permission, $user_id = null, $school_id = null, $role_id = null)
     {
-        
+
         $is_role_based_sidebar = is_role_based_sidebar();
         Permission::updateOrCreate([
             'module' => $permission['module'],

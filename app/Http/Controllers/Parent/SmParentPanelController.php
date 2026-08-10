@@ -86,13 +86,13 @@ class SmParentPanelController extends Controller
 
     public function parentDashboard()
     {
-            $holidays = SmHoliday::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', auth()->user()->school_id)->get();
-            $my_childrens = auth()->user()->parent ? auth()->user()->parent->childrens->load('assignSubjects', 'assignSubject', 'studentOnlineExams', 'studentRecords', 'studentRecords.feesInvoice', 'studentRecords.class', 'studentRecords.section', 'studentRecords.incidents', 'examSchedule', 'attendances') : [];
+            $holidays = SmHoliday::where('active_status', 1)->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
+            $my_childrens = Auth::user()->parent ? Auth::user()->parent->childrens->load('assignSubjects', 'assignSubject', 'studentOnlineExams', 'studentRecords', 'studentRecords.feesInvoice', 'studentRecords.class', 'studentRecords.section', 'studentRecords.incidents', 'examSchedule', 'attendances') : [];
 
-            $sm_weekends = SmWeekend::orderBy('order', 'ASC')->where('active_status', 1)->where('school_id', auth()->user()->school_id)->get();
+            $sm_weekends = SmWeekend::orderBy('order', 'ASC')->where('active_status', 1)->where('school_id', Auth::user()->school_id)->get();
             $smevents = SmEvent::where('active_status', 1)
                 ->where('academic_id', getAcademicId())
-                ->where('school_id', auth()->user()->school_id)
+                ->where('school_id', Auth::user()->school_id)
                 ->where(function ($q): void {
                     $q->where('for_whom', 'All')->orWhere('for_whom', 'Parents');
                 })
@@ -133,14 +133,14 @@ class SmParentPanelController extends Controller
                 ->orderBy('id', 'DESC')
                 ->where('publish_on', '<=', date('Y-m-d'))
                 ->where('academic_id', getAcademicId())
-                ->where('school_id', auth()->user()->school_id)->get();
+                ->where('school_id', Auth::user()->school_id)->get();
             $currency = SmGeneralSettings::find(1);
 
             $complaints = SmComplaint::with('complaintType', 'complaintSource')->get();
 
             $data['settings'] = SmCalendarSetting::get();
             $data['roles'] = InfixRole::where('is_saas', 0)->where(function ($q): void {
-                $q->where('school_id', auth()->user()->school_id)->orWhere('type', 'System');
+                $q->where('school_id', Auth::user()->school_id)->orWhere('type', 'System');
             })
                 ->whereNotIn('id', [1, 2])
                 ->get();
@@ -174,7 +174,7 @@ class SmParentPanelController extends Controller
             DB::beginTransaction();
 
             if ($student) {
-                
+
                 $username = $smStudentAdmissionRequest->phone_number ?: $smStudentAdmissionRequest->admission_number;
                 $phone_number = $smStudentAdmissionRequest->phone_number ?: null;
                 $user_stu = $this->addUser($student_detail->user_id, 2, $username, $smStudentAdmissionRequest->email_address, $phone_number);
@@ -210,7 +210,7 @@ class SmParentPanelController extends Controller
                     }
 
                     $parent->user_id = $user_parent->id;
-                    
+
                     if ($smStudentAdmissionRequest->filled('fathers_name')) {
                         $parent->fathers_name = $smStudentAdmissionRequest->fathers_name;
                     }
@@ -490,7 +490,7 @@ class SmParentPanelController extends Controller
 
                             $maxFileSize = generalSetting()->file_size;
                             $file = $field;
-                            $fileSize = filesize($file);
+                            $fileSize = $file ? $file->getSize() : 0;
                             $fileSizeKb = ($fileSize / 1000000);
                             if ($fileSizeKb >= $maxFileSize) {
                                 Toastr::error('Max upload file size '.$maxFileSize.' Mb is set in system', 'Failed');
@@ -539,7 +539,7 @@ class SmParentPanelController extends Controller
             return redirect()->back();
         }
     }
-    
+
     public function UpdatemyChildren($id)
     {
 
@@ -595,15 +595,15 @@ class SmParentPanelController extends Controller
             $sources = [];
 
             if (moduleStatusCheck('Lead') == true) {
-                $lead_city = \Modules\Lead\Entities\LeadCity::where('school_id', auth()->user()->school_id)->get(['id', 'city_name']);
-                $sources = \Modules\Lead\Entities\Source::where('school_id', auth()->user()->school_id)->get(['id', 'source_name']);
+                $lead_city = \Modules\Lead\Entities\LeadCity::where('school_id', Auth::user()->school_id)->get(['id', 'city_name']);
+                $sources = \Modules\Lead\Entities\Source::where('school_id', Auth::user()->school_id)->get(['id', 'source_name']);
             }
 
-            $fields = SmStudentRegistrationField::where('school_id', auth()->user()->school_id)
-                ->when(auth()->user()->role_id == 2, function ($query): void {
+            $fields = SmStudentRegistrationField::where('school_id', Auth::user()->school_id)
+                ->when(Auth::user()->role_id == 2, function ($query): void {
                     $query->where('student_edit', 1);
                 })
-                ->when(auth()->user()->role_id == 3, function ($query): void {
+                ->when(Auth::user()->role_id == 3, function ($query): void {
                     $query->where('parent_edit', 1);
                 })
                 ->pluck('field_name')->toArray();
@@ -860,12 +860,14 @@ class SmParentPanelController extends Controller
                 //                'attach_file' => "sometimes|nullable|mimes:pdf,doc,docx,jpg,jpeg,png,txt",
                 $maxFileSize = SmGeneralSettings::first('file_size')->file_size;
                 $file = $request->file('attach_file');
-                $fileSize = filesize($file);
-                $fileSizeKb = ($fileSize / 1000000);
-                if ($fileSizeKb >= $maxFileSize) {
-                    Toastr::error('Max upload file size '.$maxFileSize.' Mb is set in system', 'Failed');
+                if ($file) {
+                    $fileSize = $file->getSize();
+                    $fileSizeKb = ($fileSize / 1000000);
+                    if ($fileSizeKb >= $maxFileSize) {
+                        Toastr::error('Max upload file size '.$maxFileSize.' Mb is set in system', 'Failed');
 
-                    return redirect()->back();
+                        return redirect()->back();
+                    }
                 }
                 if($request->file('attach_file'))
                 {
@@ -874,7 +876,7 @@ class SmParentPanelController extends Controller
                     $file->move('public/uploads/leave_request/', $fileName);
                     $fileName = 'public/uploads/leave_request/'.$fileName;
                 }
-                
+
             }
 
             $leaveDefine = SmLeaveDefine::where('user_id', $request->student_id)->where('type_id', $request->leave_type)->first();
@@ -1022,7 +1024,7 @@ class SmParentPanelController extends Controller
             if ($request->file('attach_file') != '') {
                 $maxFileSize = SmGeneralSettings::first('file_size')->file_size;
                 $file = $request->file('attach_file');
-                $fileSize = filesize($file);
+                $fileSize = $file ? $file->getSize() : 0;
                 $fileSizeKb = ($fileSize / 1000000);
                 if ($fileSizeKb >= $maxFileSize) {
                     Toastr::error('Max upload file size '.$maxFileSize.' Mb is set in system', 'Failed');
@@ -1044,7 +1046,7 @@ class SmParentPanelController extends Controller
                 }
             }
 
-            $user = Auth()->user();
+            $user = Auth::user();
             $apply_leave = SmLeaveRequest::find($request->id);
             $apply_leave->staff_id = $request->student_id;
             $apply_leave->role_id = 2;
@@ -1100,7 +1102,7 @@ class SmParentPanelController extends Controller
 
     public function classRoutine($id)
     {
-            
+
             $student_detail = SmStudent::where('id', $id)->with([
                 'studentRecords' => function($query){
                     $query->when(moduleStatusCheck("University"),function($query){
@@ -1118,16 +1120,16 @@ class SmParentPanelController extends Controller
                     });
                 }
             ])->first();
-        
-            
+
+
             $class_id = $student_detail->class_id;
             $section_id = $student_detail->section_id;
 
             $sm_weekends = SmWeekend::orderBy('order', 'ASC')->where('active_status', 1)->where('school_id', Auth::user()->school_id)->get();
             $class_times = SmClassTime::where('type', 'class')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->get();
             $records = $student_detail->studentRecords;
-            
-            
+
+
             return view('backEnd.parentPanel.class_routine', compact('class_times', 'class_id', 'section_id', 'sm_weekends', 'student_detail', 'records'));
     }
 
@@ -1295,7 +1297,7 @@ class SmParentPanelController extends Controller
             $exam_routines = SmExamSchedule::where('class_id', $class_id)
                 ->where('section_id', $section_id)
                 ->where('exam_term_id', $exam_type_id)->orderBy('date', 'ASC')->get();
-            
+
             return view('backEnd.parentPanel.parent_exam_schedule', compact('exams', 'assign_subjects', 'class_id', 'section_id', 'exam_id', 'exam_schedule_subjects', 'assign_subject_check', 'records', 'exam_type_id', 'exam_routines', 'exam_periods', 'student_id'));
     }
 
@@ -1702,5 +1704,5 @@ class SmParentPanelController extends Controller
 
         return null;
     }
-    
+
 }

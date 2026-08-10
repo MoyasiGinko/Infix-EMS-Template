@@ -824,5 +824,8 @@ return [
     'forget_password' => 'Olvidar la contraseña',
 
     'password' => 'Contraseña',
-
+    'quantity' => 'Cantidad',
+    'amount' => 'Monto',
+    'related' => 'Relacionado',
+    'my' => 'Mi'
 ];

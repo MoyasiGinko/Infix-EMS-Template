@@ -19,13 +19,13 @@ use Modules\Fees\Entities\FmFeesTransaction;
 use Modules\Fees\Entities\FmFeesInvoiceChield;
 use Modules\Wallet\Entities\WalletTransaction;
 use Modules\Fees\Entities\FmFeesTransactionChield;
-use Modules\University\Repositories\Interfaces\UnCommonRepositoryInterface;
+// University module interface optional: no direct import to avoid errors when module absent
 class FeesExtendedController extends Controller
 {
     public function invStore($request)
     {
 
-        
+
         $fmFeesInvoice = new FmFeesInvoice();
         $fmFeesInvoice->class_id = $request->class;
         $fmFeesInvoice->create_date = date('Y-m-d', strtotime($request->create_date));
@@ -35,20 +35,20 @@ class FeesExtendedController extends Controller
         $fmFeesInvoice->bank_id = $request->bank;
         $fmFeesInvoice->student_id = $request->student;
         $fmFeesInvoice->record_id = $request->record_id;
-        $fmFeesInvoice->school_id = auth()->user()->school_id;
-        if (moduleStatusCheck('University')) {
-            $common = App::make(UnCommonRepositoryInterface::class);
-            $common->storeUniversityData($fmFeesInvoice, $request);
+    $fmFeesInvoice->school_id = Auth::user()->school_id;
+        if (moduleStatusCheck('University') && class_exists('Modules\\University\\Repositories\\Interfaces\\UnCommonRepositoryInterface')) {
+            $common = App::make('Modules\\University\\Repositories\\Interfaces\\UnCommonRepositoryInterface');
+            if(method_exists($common,'storeUniversityData')) { $common->storeUniversityData($fmFeesInvoice, $request); }
         } else {
             $fmFeesInvoice->academic_id = getAcademicId();
         }
-        
-       
+
+
 
         $fmFeesInvoice->save();
         $fmFeesInvoice->invoice_id = feesInvoiceNumber($fmFeesInvoice);
         $fmFeesInvoice->save();
-        
+
         if ($request->paid_amount > 0) {
             $fmFeesTransaction = new FmFeesTransaction();
             $fmFeesTransaction->fees_invoice_id = $fmFeesInvoice->id;
@@ -62,7 +62,7 @@ class FeesExtendedController extends Controller
             $fmFeesTransaction->academic_id = getAcademicId();
             $fmFeesTransaction->save();
         }
-       
+
         foreach ($request->feesType as $key => $type) {
             $storeFeesInvoiceChield = new FmFeesInvoiceChield();
             $storeFeesInvoiceChield->fees_invoice_id = $fmFeesInvoice->id;
@@ -73,7 +73,11 @@ class FeesExtendedController extends Controller
             $storeFeesInvoiceChield->note = $request->note[$key] ?? 0;
             if ($request->paid_amount[$key] ?? 0 > 0) {
                 $storeFeesInvoiceChield->paid_amount = $request->paid_amount[$key] ?? 0;
-                $storeFeesInvoiceChield->due_amount = bcsub($request->sub_total[$key] ?? 0, $request->paid_amount[$key] ?? 0);
+                $subTotal = (float) ($request->sub_total[$key] ?? 0);
+                $paid = (float) ($request->paid_amount[$key] ?? 0);
+                $due = $subTotal - $paid;
+                if ($due < 0) { $due = 0; }
+                $storeFeesInvoiceChield->due_amount = $due;
             } else {
                 $storeFeesInvoiceChield->due_amount = $request->sub_total[$key] ?? 0;
             }
@@ -81,7 +85,7 @@ class FeesExtendedController extends Controller
             $storeFeesInvoiceChield->school_id = Auth::user()->school_id;
             $storeFeesInvoiceChield->academic_id = getAcademicId();
             $storeFeesInvoiceChield->save();
-            
+
             if ($request->paid_amount[$key] ?? 0 > 0) {
                 $storeTransactionChield = new FmFeesTransactionChield();
                 $storeTransactionChield->fees_transaction_id = $fmFeesTransaction->id;
@@ -95,9 +99,9 @@ class FeesExtendedController extends Controller
 
                 // Income
                 if (moduleStatusCheck('University')) {
-                    addIncome($request->payment_method, 'Fees Collect', $request->paid_amount[$key] ?? 0, $fmFeesTransaction->id, auth()->user()->id, $request);
+                    addIncome($request->payment_method, 'Fees Collect', $request->paid_amount[$key] ?? 0, $fmFeesTransaction->id, Auth::user()->id, $request);
                 } else {
-                    addIncome($request->payment_method, 'Fees Collect', $request->paid_amount[$key] ?? 0, $fmFeesTransaction->id, auth()->user()->id, null);
+                    addIncome($request->payment_method, 'Fees Collect', $request->paid_amount[$key] ?? 0, $fmFeesTransaction->id, Auth::user()->id, null);
                 }
 
                 // Bank
@@ -172,7 +176,7 @@ class FeesExtendedController extends Controller
                 $add_income->account_id = $transcation->bank_id;
             }
 
-            $add_income->created_by = Auth()->user()->id;
+            $add_income->created_by = Auth::user()->id;
             $add_income->school_id = Auth::user()->school_id;
             $add_income->academic_id = getAcademicId();
             $add_income->save();

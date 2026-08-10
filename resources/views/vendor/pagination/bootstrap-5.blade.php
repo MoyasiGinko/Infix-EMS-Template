@@ -1,5 +1,5 @@
 @if ($paginator->hasPages())
-    <nav class="d-flex justify-items-center justify-content-between">
+    <nav class="d-flex flex-column flex-md-row justify-items-center justify-content-between">
         <div class="d-flex justify-content-between flex-fill d-sm-none">
             <ul class="pagination">
                 {{-- Previous Page Link --}}
@@ -11,7 +11,28 @@
                     <li class="page-item">
                         <a class="page-link" href="{{ $paginator->previousPageUrl() }}" rel="prev">@lang('pagination.previous')</a>
                     </li>
-                @endif
+    @php
+        $perPageKey = 'per_page';
+        $perPageCurrent = (int) request($perPageKey, $paginator->perPage());
+        $perPageOptions = [10,50,100,250,500];
+        if(!in_array($perPageCurrent,$perPageOptions)) { $perPageOptions[] = $perPageCurrent; sort($perPageOptions); }
+        $query = request()->except('page');
+    @endphp
+                    <div class="d-flex align-items-center mb-2 mb-md-0">
+                        <form method="GET" class="form-inline me-3">
+                            @foreach($query as $qk=>$qv)
+                                @if($qk !== 'per_page')
+                                    <input type="hidden" name="{{ $qk }}" value="{{ $qv }}" />
+                                @endif
+                            @endforeach
+                            <label for="per_page_select" class="me-2 small text-muted mb-0">Show</label>
+                            <select name="per_page" id="per_page_select" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                                @foreach($perPageOptions as $opt)
+                                    <option value="{{ $opt }}" @selected($opt==$perPageCurrent)>{{ $opt }}</option>
+                                @endforeach
+                            </select>
+                            <span class="ms-2 small text-muted">per page</span>
+                        </form>
 
                 {{-- Next Page Link --}}
                 @if ($paginator->hasMorePages())
@@ -21,7 +42,7 @@
                 @else
                     <li class="page-item disabled" aria-disabled="true">
                         <span class="page-link">@lang('pagination.next')</span>
-                    </li>
+                    </div>
                 @endif
             </ul>
         </div>

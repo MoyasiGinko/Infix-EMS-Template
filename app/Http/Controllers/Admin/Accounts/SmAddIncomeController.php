@@ -22,7 +22,7 @@ class SmAddIncomeController extends Controller
         /*
         try {
         */
-            $add_incomes = SmAddIncome::with('paymentMethod:method,id', 'ACHead:head,type')->select(['name', 'id', 'date', 'payment_method_id', 'income_head_id', 'amount'])->get();
+            $add_incomes = SmAddIncome::with(['paymentMethod:method,id', 'ACHead:head,type,id', 'incomeHeads:name,id'])->select(['name', 'id', 'date', 'payment_method_id', 'income_head_id', 'amount'])->get();
             $income_heads = SmChartOfAccount::where('type', 'I')->select(['head', 'type', 'id'])->get();
             $bank_accounts = SmBankAccount::where('school_id', Auth::user()->school_id)->select(['bank_name', 'account_name', 'opening_balance', 'account_number', 'current_balance'])->get();
             $payment_methods = SmPaymentMethhod::select(['method', 'id', 'type'])->get();

@@ -27,8 +27,26 @@ class SmAddExpenseController extends Controller
             $expense_heads = SmChartOfAccount::where('type', 'E')->get(['head', 'id']);
             $bank_accounts = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
             $payment_methods = SmPaymentMethhod::get(['method', 'id']);
+            // Group expenses for various group-view modes
+            $grouped_expenses = $add_expenses->groupBy(function ($item) { // by date
+                return $item->date;
+            })->sortKeysDesc();
+            $grouped_by_head = $add_expenses->groupBy(function ($item) { // by A/C Head name
+                return optional($item->ACHead)->head ?? __('common.unknown');
+            })->sortKeys();
+            $grouped_by_method = $add_expenses->groupBy(function ($item) { // by payment method
+                return optional($item->paymentMethod)->method ?? __('common.unknown');
+            })->sortKeys();
 
-            return view('backEnd.accounts.add_expense', ['add_expenses' => $add_expenses, 'expense_heads' => $expense_heads, 'bank_accounts' => $bank_accounts, 'payment_methods' => $payment_methods]);
+            return view('backEnd.accounts.add_expense', [
+                'add_expenses' => $add_expenses,
+                'grouped_expenses' => $grouped_expenses,
+                'expense_heads' => $expense_heads,
+                'bank_accounts' => $bank_accounts,
+                'payment_methods' => $payment_methods,
+                'grouped_by_head' => $grouped_by_head,
+                'grouped_by_method' => $grouped_by_method,
+            ]);
         /*
         } catch (Exception $exception) {
             Toastr::error('Operation Failed', 'Failed');
@@ -112,8 +130,20 @@ class SmAddExpenseController extends Controller
             $expense_heads = SmChartOfAccount::where('type', 'E')->get(['head', 'id']);
             $bank_accounts = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
             $payment_methods = SmPaymentMethhod::get(['method', 'id']);
+            $grouped_expenses = $add_expenses->groupBy(function ($item) { return $item->date; })->sortKeysDesc();
+            $grouped_by_head = $add_expenses->groupBy(function ($item) { return optional($item->ACHead)->head ?? __('common.unknown'); })->sortKeys();
+            $grouped_by_method = $add_expenses->groupBy(function ($item) { return optional($item->paymentMethod)->method ?? __('common.unknown'); })->sortKeys();
 
-            return view('backEnd.accounts.add_expense', ['add_expenses' => $add_expenses, 'add_expense' => $add_expense, 'expense_heads' => $expense_heads, 'bank_accounts' => $bank_accounts, 'payment_methods' => $payment_methods]);
+            return view('backEnd.accounts.add_expense', [
+                'add_expenses' => $add_expenses,
+                'add_expense' => $add_expense,
+                'grouped_expenses' => $grouped_expenses,
+                'expense_heads' => $expense_heads,
+                'bank_accounts' => $bank_accounts,
+                'payment_methods' => $payment_methods,
+                'grouped_by_head' => $grouped_by_head,
+                'grouped_by_method' => $grouped_by_method,
+            ]);
         /*
         } catch (Exception $exception) {
             Toastr::error('Operation Failed', 'Failed');

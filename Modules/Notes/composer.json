@@ -1,0 +1,22 @@
+{
+  "name": "modules/notes",
+  "description": "Notes Management Module for Infix EMS",
+  "type": "laravel-module",
+  "license": "MIT",
+  "require": {
+    "php": "^8.0",
+    "illuminate/support": "^9.0|^10.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Modules\\Notes\\": ""
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Modules\\Notes\\Providers\\NotesServiceProvider"
+      ]
+    }
+  }
+}

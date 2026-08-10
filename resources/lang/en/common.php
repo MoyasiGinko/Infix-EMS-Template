@@ -664,5 +664,10 @@
     "add_lesson_plan" => "Add Lesson Plan",
     "shift_topic" => "Shift Topic",
     "shift_setting" => "Shift Setting",
+    "quantity" => "Quantity",
+    "amount" => "Amount",
+    "related" => "Related",
+    "my" => "My"
+
         ]
 ?>

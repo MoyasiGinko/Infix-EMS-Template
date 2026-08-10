@@ -13,6 +13,11 @@
             <div class="">
                 <a href="{{ route('menumanage.resetSidebar',['role_name' => $role_name ]) }}"
                    class="primary-btn radius_30px  fix-gr-bg">{{ __('menumanage::menuManage.Reset to  with Section') }}</a>
+                @if(auth()->user()->role_id == 1)
+                    <a href="{{ route('menumanage.settings') }}" class="primary-btn radius_30px fix-gr-bg ml-3">
+                        <i class="ti-settings"></i> {{ __('common.settings') }}
+                    </a>
+                @endif
             </div>
 
         </div>
@@ -36,7 +41,7 @@
                     </div>
                     <div id="accordion">
                         <div class="card">
-                            
+
                             <div class="card-header pt-0 pb-0" id="headingOne">
                                 <h5 class="mb-0 create-title" data-toggle="collapse" data-target="#collapseOne"
                                     aria-expanded="false" aria-controls="collapseOne">
@@ -57,7 +62,7 @@
                                     <div class="row pt-0">
 
                                     </div>
-                                    
+
                                     <div id="row_element_div">
                                         <div class="row">
                                             <div class="col-lg-12">
@@ -140,4 +145,3 @@
             });
     </script>
 @endpush
-

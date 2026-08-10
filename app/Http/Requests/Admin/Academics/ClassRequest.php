@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin\Academics;
 
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class ClassRequest extends FormRequest
 {
@@ -22,27 +23,40 @@ class ClassRequest extends FormRequest
     {
         $shift_id = shiftEnable() &&  !empty($this->shift) ? $this->shift:null;
         if (generalSetting()->result_type == 'mark') {
+            $unique_rule = Rule::unique('sm_classes', 'class_name')
+                ->where('academic_id', getAcademicId())
+                ->where('school_id', Auth::user()->school_id)
+                ->ignore($this->id);
+
+            if (shiftEnable() && !empty($shift_id)) {
+                $unique_rule = $unique_rule->where('shift_id', $shift_id);
+            }
+
             return [
-                'name' => ['required', 'max:200', Rule::unique('sm_classes', 'class_name')->where('academic_id', getAcademicId())
-                ->where(shiftEnable() && !empty($shift_id),function($query) use($shift_id){
-                    $query->where('shift_id',$shift_id);
-                })->where('school_id', auth()->user()->school_id)->ignore($this->id)],
+                'name' => ['required', 'max:200', $unique_rule],
                 'section' => 'required',
                 'pass_mark' => 'required',
             ];
         }
 
         if(shiftEnable()){
+            $unique_rule = Rule::unique('sm_classes', 'class_name')
+                ->where('academic_id', getAcademicId())
+                ->where('school_id', Auth::user()->school_id)
+                ->ignore($this->id);
+
+            if (shiftEnable() && !empty($shift_id)) {
+                $unique_rule = $unique_rule->where('shift_id', $shift_id);
+            }
+
             return [
-                'name' => ['required', 'max:200', Rule::unique('sm_classes', 'class_name')->where('academic_id', getAcademicId())->where(shiftEnable() && !empty($shift_id),function($query) use($shift_id){
-                    $query->where('shift_id',$shift_id);
-                })->where('school_id', auth()->user()->school_id)->ignore($this->id)],
+                'name' => ['required', 'max:200', $unique_rule],
                 'section' => 'required',
                 'shift' => "required",
             ];
         }else{
             return [
-                'name' => ['required', 'max:200', Rule::unique('sm_classes', 'class_name')->where('academic_id', getAcademicId())->where('school_id', auth()->user()->school_id)->ignore($this->id)],
+                'name' => ['required', 'max:200', Rule::unique('sm_classes', 'class_name')->where('academic_id', getAcademicId())->where('school_id', Auth::user()->school_id)->ignore($this->id)],
                 'section' => 'required',
             ];
         }

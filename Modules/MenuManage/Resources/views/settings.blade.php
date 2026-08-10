@@ -52,26 +52,56 @@
                             </div>
                         </div>
                     @endforeach
-
-                    <div class="col-lg-12 text-center">
-                        <button class="primary-btn fix-gr-bg small white_space" type="submit">
-                            <span class="ti-check"></span>
-                            {{ __('common.save') }}
-                        </button>
-
-                        {{-- <a class="primary-btn fix-gr-bg small white_space" href="{{ route('menumanage.all', ['type' => 'enable']) }}" style="overflow: unset;">
-                            <span class="ti-check"></span>
-                            {{ __('common.enable_all') }}
-                        </a>
-
-                        <a class="primary-btn fix-gr-bg small white_space" href="{{ route('menumanage.all', ['type' => 'enable']) }}" style="overflow: unset;">
-                            <span class="ti-check"></span>
-                            {{ __('common.disable_all') }}
-                        </a> --}}
-
-
+                @else
+                    {{-- Single School Installation --}}
+                    <div class="col-lg-12">
+                        <div class="row">
+                            <div class="col-lg-3 d-flex pt-10">
+                                <p class="text-uppercase fw-500 mb-10">{{ __('menumanage::menuManage.role_based_sidebar') }}</p>
+                            </div>
+                            <div class="col-lg-9">
+                                <div class="radio-btn-flex ml-20">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <div class="">
+                                                <input type="radio" name="role_based_sidebar" id="role_based_sidebar_enable" value="1"
+                                                    class="common-radio relationButton"
+                                                    @if (isset($settings) && $settings->role_based_sidebar) checked @endif>
+                                                <label for="role_based_sidebar_enable">{{ __('common.enable') }}</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3">
+                                            <div class="">
+                                                <input type="radio" name="role_based_sidebar" id="role_based_sidebar_disable" value="0"
+                                                    class="common-radio relationButton"
+                                                    @if (!isset($settings) || !$settings->role_based_sidebar) checked @endif>
+                                                <label for="role_based_sidebar_disable">{{ __('common.disable') }}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 @endif
+
+                <div class="col-lg-12 text-center">
+                    <button class="primary-btn fix-gr-bg small white_space" type="submit">
+                        <span class="ti-check"></span>
+                        {{ __('common.save') }}
+                    </button>
+
+                    {{-- <a class="primary-btn fix-gr-bg small white_space" href="{{ route('menumanage.all', ['type' => 'enable']) }}" style="overflow: unset;">
+                        <span class="ti-check"></span>
+                        {{ __('common.enable_all') }}
+                    </a>
+
+                    <a class="primary-btn fix-gr-bg small white_space" href="{{ route('menumanage.all', ['type' => 'enable']) }}" style="overflow: unset;">
+                        <span class="ti-check"></span>
+                        {{ __('common.disable_all') }}
+                    </a> --}}
+
+                </div>
                 {!! html()->form()->close() !!}
             </div>
         </div>

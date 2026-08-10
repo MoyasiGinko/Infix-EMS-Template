@@ -783,4 +783,9 @@ return [
 
     'password' => 'Mot de passe',
 
+    'quantity' => 'Quantité',
+    'amount' => 'Montant',
+    'related' => 'Lié',
+    'my' => 'Mon'
+
 ];

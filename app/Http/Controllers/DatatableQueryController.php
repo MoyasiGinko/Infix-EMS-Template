@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers; 
+namespace App\Http\Controllers;
 
 use Exception;
 use Throwable;
@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\Config;
 use App\Scopes\ActiveStatusSchoolScope;
 use App\Scopes\StatusAcademicSchoolScope;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class DatatableQueryController extends Controller
 {
@@ -65,7 +66,7 @@ class DatatableQueryController extends Controller
             $data['un_semester_id'] = $request->un_semester_id;
             $data['un_semester_label_id'] = $request->un_semester_label_id;
             $data['un_section_id'] = $request->un_section_id;
-            
+
             return view('backEnd.studentInformation.student_details', ['classes' => $classes, 'class_id' => $class_id, 'name' => $name, 'roll_no' => $roll_no, 'sessions' => $sessions, 'section_id' => $section_id, 'academic_year' => $academic_year, 'data' => $data, 'shift_id' => $shift_id]);
         }
 
@@ -111,7 +112,33 @@ class DatatableQueryController extends Controller
             }
 
 
-            $student_records = $records->whereHas('student')->get(['student_id'])->unique('student_id')->toArray();
+            // get a flat array of student_id scalars so whereIn() works correctly
+            $student_records = $records->whereHas('student')->pluck('student_id')->unique()->toArray();
+
+            // Debug logging to help trace why DataTable returns no rows.
+            // This will write request payload, computed ids and query info to the laravel log.
+            try {
+                Log::debug('student-list-datatable: debug', [
+                    'request' => $request->all(),
+                    'student_records_count' => count($student_records),
+                    'student_records_sample' => array_slice($student_records, 0, 20),
+                    'records_sql' => $records->toSql(),
+                    'records_bindings' => $records->getBindings(),
+                ]);
+            } catch (\Throwable $e) {
+                // suppress logging errors in case of any unexpected issues
+            }
+
+            // If caller requests debug response directly, return JSON with diagnostics.
+            if ($request->filled('debug')) {
+                return response()->json([
+                    'request' => $request->all(),
+                    'student_records_count' => count($student_records),
+                    'student_records' => $student_records,
+                    'records_sql' => $records->toSql(),
+                    'records_bindings' => $records->getBindings(),
+                ]);
+            }
             $all_students = SmStudent::with('studentRecords', 'studentRecords.class', 'studentRecords.section', 'studentRecords.shift')->whereIn('id', $student_records)
                 ->where('active_status', 1)
                 ->with(['parents' => function ($query): void {
@@ -187,11 +214,14 @@ class DatatableQueryController extends Controller
                         . ((userPermission('student_view') && moduleStatusCheck('University')) ?
                             '<a class="dropdown-item" target="_blank" href="' . route('student_view', [$row->id, 'assign_subject']) . '">' . app('translator')->get('common.view') . '</a>' : '')
                         .(userPermission('student_view') ? '<a class="dropdown-item" target="_blank" href="' . route('student_view', [$row->id]) . '">' . app('translator')->get('common.view') . '</a>' :'')
-                        
+
                         .(userPermission('student_edit') ? '<a class="dropdown-item" href="' . route('student_edit', [$row->id]) . '">' . app('translator')->get('common.edit') . '</a>' : '') .
 
                         (userPermission('student_edit') ? (Config::get('app.app_sync') ? '<span  data-toggle="tooltip" title="Disabled For Demo "><a  class="dropdown-item" href="#"  >' . app('translator')->get('common.disable') . '</a></span>' :
                             '<a onclick="deleteId(' . $row->id . ');" class="dropdown-item" href="#" data-toggle="modal" data-target="#deleteStudentModal" data-id="' . $row->id . '"  >' . app('translator')->get('common.disable') . '</a>') : '') .
+
+                        // Download Form PDF
+                        '<a class="dropdown-item" target="_blank" href="' . route('student_profile_print', [$row->id]) . '?pdf=1">Download Form</a>' .
 
                         '</div>
                                 </div>';
@@ -397,8 +427,8 @@ class DatatableQueryController extends Controller
                                         <input type="radio" data-id="' . $row['std_id'] . '" name="attendance[' . $row['std_id'] . ']" id="attendanceF' . $row['std_id'] . '"' . ($row['attendance_type'] == 'F' ? 'checked' : '') . ' value="F" class="common-radio attendanceF attendance_type">
                                         <label for="attendanceF' . $row['std_id'] . '">' . app('translator')->get('common.half_day') . '</label>
                                     </div>
-                                       
-    
+
+
                                     </div>';
                 })
                 ->rawColumns(['action', 'teacher_note'])
@@ -893,7 +923,7 @@ class DatatableQueryController extends Controller
                 'role', 'user', 'leaveType',
             ])->where('academic_id', getAcademicId())
                 ->select(['sm_leave_defines.*']);
-                
+
             return DataTables::of($leave_defines->get())
                 ->addColumn('leave_type', function ($row) {
                     return $row->leaveType?->type;
@@ -1422,8 +1452,8 @@ class DatatableQueryController extends Controller
                         if ($row->available_for_all_classes == 1) {
                             $avaiable .= app('translator')->get('study.all_classes_student') . ', ';
                         }
-                        
-                        
+
+
 
 
                         if (moduleStatusCheck('University')) {
@@ -1444,12 +1474,12 @@ class DatatableQueryController extends Controller
 
                     })
                     ->addColumn('class_sections', function ($row) {
-                        
+
                         if($row->available_for_all_classes)
                         {
                             return "All Classes";
                         }
-                        
+
                         if (moduleStatusCheck('University')) {
                             $semLabel = $row->semesterLabel->name;
                             $academ = $row->unAcademic->name;
@@ -1463,7 +1493,7 @@ class DatatableQueryController extends Controller
                             $shift = $row->shift->name;
                             if(shiftEnable())
                             {
-                                return $classes . '(' . $sections . ')' . '[' . $shift . ']';   
+                                return $classes . '(' . $sections . ')' . '[' . $shift . ']';
                             }else{
                                 return $classes . '(' . $sections . ')';
                             }
@@ -1587,14 +1617,14 @@ class DatatableQueryController extends Controller
             ]);
         }
 
-       
+
         return DataTables::of($uploadContents)
             ->addIndexColumn()
             ->addColumn('date', function ($row) {
                 return dateConvert(@$row->upload_date);
             })
             ->addColumn('type', function ($row) {
-                
+
                 if ($row->content_type == 'ot') {
                     $type = 'other';
                 }
@@ -1603,7 +1633,7 @@ class DatatableQueryController extends Controller
 
             })
             ->addColumn('avaiable', function ($row): string {
-                
+
                 $avaiable = '';
                 if ($row->available_for_admin == 1) {
                     $avaiable .= app('translator')->get('study.all_admins') . ', ';
@@ -1631,13 +1661,13 @@ class DatatableQueryController extends Controller
                         $avaiable .= (app('translator')->get('study.all_students_of') . ' ' . $row->classes->class_name . '->' . app('translator')->get('study.all_sections')) . ', ';
                     }
                 }
-                
+
 
                 return $avaiable;
 
             })
             ->addColumn('class_sections', function ($row) {
-                
+
                 if (moduleStatusCheck('University')) {
                     $semLabel = $row->semesterLabel->name;
                     $academ = $row->unAcademic->name;
@@ -1646,7 +1676,7 @@ class DatatableQueryController extends Controller
                 }
 
                 if (($row->class) && ($row->section)) {
-                   
+
                     $classes = $row->classes->class_name;
                     $sections = $row->sections->section_name;
                     if(shiftEnable())
@@ -1656,7 +1686,7 @@ class DatatableQueryController extends Controller
                         return $classes . '(' . $sections . ')' ;
                     }
                 }
-                    
+
                 if ($row->class && !$row->section) {
                     $classes = $row->classes->class_name;
                     $nullsections = app('translator')->get('common.all_sections');
@@ -2409,10 +2439,10 @@ class DatatableQueryController extends Controller
     public function studentTransportReportAjax(Request $request)
     {
         if ($request->ajax()) {
-            
+
             $students = SmStudent::with(['studentRecord' => function($query) use($request){
                $query->when(!empty($request->class_id), function($q) use ($request){
-                  $q->where('class_id',$request->class_id); 
+                  $q->where('class_id',$request->class_id);
                })->when(!empty($request->section_id),function($q) use ($request){
                    return $q->where('section_id',$request->section_id);
                });
@@ -2431,9 +2461,9 @@ class DatatableQueryController extends Controller
                    })
                    ->rawColumns(['class_section'])
                    ->make(true);
-               
+
            }
-   
+
            return null;
     }
 }

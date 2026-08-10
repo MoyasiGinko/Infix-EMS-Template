@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\GlobalVariable;
 use App\InfixModuleManager;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Modules\Saas\Entities\SaasSettings;
 use Modules\MenuManage\Entities\Sidebar;
@@ -16,46 +17,27 @@ trait SidebarDataStore
 
     function defaultSidebarStore($role_id = null)
     {
-
-
         $is_role_based_sidebar = is_role_based_sidebar();
 
-        $user = auth()->user();
         if (!$role_id) {
-            $role_id = $user->role_id;
+            $role_id = Auth::check() ? Auth::user()->role_id : 1;
         }
         $cache_key = sidebar_cache_key($role_id);
 
-        $exit = Sidebar::when(!$is_role_based_sidebar, function ($q) use ($user) {
-            $q->where('user_id', auth()->user()->id)->where('role_id', $user->role_id);
+        $exit = Sidebar::when(!$is_role_based_sidebar, function ($q) {
+            $q->where('user_id', Auth::check() ? Auth::user()->id : 1)
+              ->where('role_id', Auth::check() ? Auth::user()->role_id : 1);
         }, function ($q) use ($role_id) {
             $q->where('role_id', $role_id)->whereNull('user_id');
         })->first();
-
 
         if ($exit) {
             return true;
         }
 
-
         $permissionInfos = $this->permissions($role_id);
 
-
-        /*if ($role_id == 2 || $role_id == 3) {
-
-            Sidebar::updateOrCreate([
-                'permission_id' => 1,
-                'user_id' => $is_role_based_sidebar ? null : $user->id,
-                'role_id' => $role_id,
-
-            ], [
-                'position' => 1,
-                'level' => 1,
-                'parent' => null,
-            ]);
-
-
-        }*/
+        // For student or parent roles, handle their specific menu structure
         if ($role_id == 2 || $role_id == 3) {
             foreach ($permissionInfos as $key => $sidebar) {
                 $parent_id = $this->parentId($sidebar, $role_id);
@@ -63,31 +45,83 @@ trait SidebarDataStore
             }
 
             Cache::forget($cache_key);
+        }
+        // For custom roles or admin roles, use a more flexible approach
+        else {
+            // Map role_id to a role_name for compatibility with legacy methods
+            $role_name = 'staff'; // Default for most custom roles
 
+            // Get all permissions appropriate for this role type
+            $userPermissionSections = Permission::with('parent:id,permission_section')
+                ->where('permission_section', 1)
+                ->whereNotNull('route')
+                ->where('is_saas', 0)
+                ->where(function($query) use ($role_id) {
+                    // For role_id 1 (admin) or custom roles, use admin permissions
+                    if ($role_id == 1 || $role_id > 3) {
+                        $query->where('is_admin', 1)->orWhere('is_teacher', 1);
+                    }
+                    // For role_id 2 (student)
+                    else if ($role_id == 2) {
+                        $query->where('is_student', 1);
+                    }
+                    // For role_id 3 (parent)
+                    else if ($role_id == 3) {
+                        $query->where('is_parent', 1);
+                    }
+                })
+                ->get(['id', 'name', 'type', 'route', 'parent_route', 'permission_section']);
 
-        } else {
-            $this->resetSidebarStore($role_id);
+            // Store each permission as a sidebar item
+            foreach ($userPermissionSections as $key => $userSection) {
+                $parent = $userSection->parent?->id;
+                $this->storeSidebar($userSection, $key, $parent, $role_id);
+            }
         }
 
         if ($role_id == 2 || $role_id == 3) {
             Sidebar::whereNull('parent')->when(!$is_role_based_sidebar, function ($q) {
-                $q->where('user_id', auth()->user()->id);
+                $q->where('user_id', Auth::check() ? Auth::user()->id : 1);
             }, function ($q) use ($role_id) {
                 $q->where('role_id', $role_id);
             })->where('permission_id', '!=', 1)->update(['parent' => 1]);
         }
 
         Cache::forget($cache_key);
-
     }
 
-    function resetSidebarStore($role_name = 'staff')
+    function resetSidebarStore($role_id = null)
     {
-        
-        $is_role_based_sidebar = is_role_based_sidebar();
-        $role_ids = $this->getRoleids($role_name);
-        $user = auth()->user();
-        
+        // First, handle the special case where a string role name is passed
+        if (is_string($role_id) && in_array($role_id, ['staff', 'student', 'parent'])) {
+            $role_name = $role_id;
+
+            // Map role_name to role_id for the core roles
+            if ($role_name == 'student') {
+                $role_id = 2;
+            } elseif ($role_name == 'parent') {
+                $role_id = 3;
+            } else {
+                $role_id = 1; // staff/admin
+            }
+        }
+        // If a numeric role_id is passed, determine its type
+        else if (is_numeric($role_id)) {
+            // Map role_id to role_name for compatibility with legacy code
+            if ($role_id == 2) {
+                $role_name = 'student';
+            } elseif ($role_id == 3) {
+                $role_name = 'parent';
+            } else {
+                $role_name = 'staff'; // Default for admin or custom roles
+            }
+        }
+        // Default fallback
+        else {
+            $role_name = 'staff';
+            $role_id = 1;
+        }
+
 
         $dashboardSections = ["dashboard", "menumanage.index"];
         $administration_sections = ["admin_section", "academics", "study_material", 'download-center', "lesson-plan", "bulk_print", "certificate", "university", "lms"];
@@ -102,7 +136,7 @@ trait SidebarDataStore
 
         //permission section
         $permissionSections = include './resources/var/permission/permission_section_sidebar.php';
-        
+
         $permissionSectionRoutes = [];
         foreach ($permissionSections as $item) {
             if($role_name == 'student'){
@@ -136,18 +170,18 @@ trait SidebarDataStore
         }
 
         $userPermissionSections = $userPermissionSections->get(['id', 'name', 'type', 'route', 'parent_route', 'permission_section']);
-       
-        
+
+
         foreach ($userPermissionSections as $key => $userSection) {
             $parent = $userSection->parent?->id;
             $this->storeSidebar($userSection, $key, $parent, $role_id);
         }
         $permissionInfos = $this->permissions($role_name);
         foreach ($permissionInfos as $key => $sidebar) {
-            
+
             $parent_id = $this->parentId($sidebar, $role_name);
             if (in_array($sidebar->route, $dashboardSections)) {
-               
+
                 $p_id = Permission::where('route', 'dashboard_section')
                     ->when($role_name == 'student',function($q){ $q->where('is_student',1); })
                     ->when($role_name == 'parent',function($q){ $q->where('is_parent',1); })
@@ -217,11 +251,11 @@ trait SidebarDataStore
                 continue;
             }
 
-           
+
             $this->storeSidebar($sidebar, $key, $parent_id, $role_id);
         }
 
-        
+
         $ignorePermissionRoutes = ['reports', 'fees.fees-report', 'exam-setting'];
         $getIgnoreIds = Permission::whereIn('route', $ignorePermissionRoutes)->pluck('id')->toArray();
         Cache::forget(sidebar_cache_key($role_id));
@@ -245,16 +279,16 @@ trait SidebarDataStore
         if($role_name == 'student'){
             $perInfo = $perInfo->where('is_student', 1);
         }
-        
+
         if($role_name == 'parent'){
            $perInfo =  $perInfo->where('is_parent', 1);
         }
-        
+
         if($role_name == 'staff'){
            $perInfo = $perInfo->where('is_admin', 1)->orWhere('is_teacher',1);
         }
         $permissionInfos = $perInfo->orderBy('position', 'ASC')->get(['id', 'name', 'type', 'route', 'parent_route', 'position', 'permission_section']);
-       
+
         // $is_role_based_sidebar = is_role_based_sidebar();
 
         // if (!$is_role_based_sidebar) {
@@ -332,7 +366,7 @@ trait SidebarDataStore
 
     function storeSidebar($sidebar, $key, $parent_id, $role_id)
     {
-        
+
         $is_role_based_sidebar = is_role_based_sidebar();
 
         $user = auth()->user();
@@ -346,7 +380,7 @@ trait SidebarDataStore
             'level' => $sidebar->type,
             'parent' => $parent_id,
         ]);
-       
+
     }
 
     function modulePermissionSidebar($role_id = null)
@@ -360,7 +394,7 @@ trait SidebarDataStore
         }
 
         $permissionIds = $this->permissions($role_id)->whereNotNull('route')->pluck('id')->toArray();
-        
+
         $sidebarPermissionIds = Sidebar::when(!$is_role_based_sidebar, function ($q) use ($user) {
             $q->where('user_id', $user->id)->where('role_id', $user->role_id);
         }, function ($q) use ($role_id) {
@@ -398,7 +432,7 @@ trait SidebarDataStore
 
     function parentId($sidebar, $role_name = 'staff')
     {
-        
+
         $is_role_based_sidebar = is_role_based_sidebar();
         // if (!$role_id) {
         //     $role_id = auth()->user()->role_id;
@@ -416,7 +450,7 @@ trait SidebarDataStore
         }
 
         $parent = $sidebar->parent;
-        
+
         if (!empty($parent) && $parent->permission_section == 1 && $sidebar->permission_section) {
             $parent_id = null;
         } elseif (!empty($parent) && $parent->permission_section == 1 && !$sidebar->permission_section) {
@@ -460,11 +494,11 @@ trait SidebarDataStore
             if($role_name == 'student'){
                 $permission = $permission->where('is_student', 1);
             }
-            
+
             if($role_name == 'parent'){
             $permission =  $permission->where('is_parent', 1);
             }
-            
+
             if($role_name == 'staff'){
                 $permission = $permission->where('is_admin', 1)->orWhere('is_teacher',1);
             }

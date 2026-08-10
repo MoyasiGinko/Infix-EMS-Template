@@ -2,6 +2,7 @@
 namespace App\Http\Requests\Admin\StudentInfo;
 
 use App\User;
+use App\SmParent;
 use App\SmStudent;
 use App\GlobalVariable;
 use App\Traits\CustomFields;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Models\SmStudentRegistrationField;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class SmStudentAdmissionRequest extends FormRequest
 {
@@ -22,6 +24,22 @@ class SmStudentAdmissionRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function guardianUserId(?SmStudent $student): ?int
+    {
+        $studentGuardianId = optional(optional($student)->parents)->user_id;
+        if ($studentGuardianId) {
+            return $studentGuardianId;
+        }
+
+        if ($this->parent_id) {
+            $parent = SmParent::find($this->parent_id);
+
+            return optional($parent)->user_id;
+        }
+
+        return null;
     }
 
     /**
@@ -40,17 +58,17 @@ class SmStudentAdmissionRequest extends FormRequest
             $section_ids = $student->studentRecords->pluck('section_id')->toArray();
         }
 
-        $school_id = auth()->user()->school_id;
+        $school_id = Auth::user()->school_id;
         $academic_id = getAcademicId();
 
         $field = SmStudentRegistrationField::where('school_id', $school_id)
-            ->when(in_array(auth()->user()->role_id, [10, 2]), function ($query): void {
+            ->when(in_array(Auth::user()->role_id, [10, 2]), function ($query): void {
                 $query->where('student_edit', 1)->where('is_required', 1);
             })
-            ->when(auth()->user()->role_id == 3, function ($query): void {
+            ->when(Auth::user()->role_id == 3, function ($query): void {
                 $query->where('parent_edit', 1)->where('is_required', 1);
             })
-            ->when(! in_array(auth()->user()->role_id, [2, 3, GlobalVariable::isAlumni()]), function ($query): void {
+            ->when(! in_array(Auth::user()->role_id, [2, 3, GlobalVariable::isAlumni()]), function ($query): void {
                 $query->where('is_required', 1);
             })
             ->pluck('field_name')
@@ -265,15 +283,16 @@ class SmStudentAdmissionRequest extends FormRequest
         }
 
         if ($user_role_id !== 2 || $user_role_id !== GlobalVariable::isAlumni()) {
+            $guardianUserId = $this->guardianUserId($student);
+            $guardianEmailRule = Rule::unique('users', 'email');
+            if ($guardianUserId) {
+                $guardianEmailRule->ignore($guardianUserId);
+            }
             $rules += [
                 'email_address' => ['bail', Rule::requiredIf(function () use ($field): bool {
                     return in_array('email_address', $field);
                 }), 'sometimes', 'nullable', 'email', Rule::unique('users', 'email')->ignore(optional($student)->user_id)],
-                'phone_number' => ['bail', Rule::requiredIf(function () use ($field): bool {
-                    return in_array('phone_number', $field);
-                }),'regex:/^(?!-)[+0-9]{6,15}$/', Rule::unique('users', 'phone_number')->where(function ($query) use ($student) {
-                    return $query->whereNotNull('phone_number')->where('id', '!=', (optional($student)->user_id));
-                })],
+                'phone_number' => ['bail', 'required', 'regex:/^(?!-)[+0-9]{6,15}$/', 'max:100'],
                 'guardians_email' => [
                     'bail',
                     Rule::requiredIf(function () use ($field): bool {
@@ -282,11 +301,11 @@ class SmStudentAdmissionRequest extends FormRequest
                     'sometimes',
                     'nullable',
                     'email',
-                    Rule::unique('users', 'email')->ignore(optional(optional($student)->parents)->user_id),
+                    $guardianEmailRule,
                 ],
-                'guardians_phone' => ['bail', 'nullable', Rule::requiredIf(function () use ($field): bool {
+                'guardians_phone' => ['bail', Rule::requiredIf(function () use ($field): bool {
                     return ! $this->parent_id && ! $this->staff_parent && in_array('guardians_phone', $field);
-                }),'nullable','regex:/^(?!-)[+0-9]{6,15}$/', 'max:100', 'different:phone_number'],
+                }), 'nullable', 'regex:/^(?!-)[+0-9]{6,15}$/', 'max:100'],
                 'roll_number' => ['sometimes', 'nullable', Rule::requiredIf(function () use ($field): bool {
                     return $this->filled('session') && in_array('roll_number', $field);
                 }), Rule::unique('sm_students', 'roll_no')->ignore(optional($student)->id)->where('school_id', $school_id)->where('academic_id', $academic_id)->whereIn('class_id', $class_ids)->whereIn('section_id', $section_ids)],

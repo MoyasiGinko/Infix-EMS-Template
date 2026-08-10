@@ -456,4 +456,10 @@ return [
     'All Sections' => 'All Sections',
     'Fill' => 'Fill',
     'select_school' => 'Select School',
+
+    'quantity' => 'Quantity',
+    'amount' => 'Amount',
+    'related' => 'Related',
+    'my' => 'My'
+
 ];

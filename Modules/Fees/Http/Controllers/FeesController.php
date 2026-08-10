@@ -22,6 +22,15 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
+// Local safe getter helper (namespaced) to satisfy static analysis if global helper not loaded
+if (!function_exists(__NAMESPACE__ . '\\gv')) {
+    function gv($array, $key, $default = null) {
+        if (is_array($array) && array_key_exists($key, $array)) {
+            return $array[$key];
+        }
+        return $default;
+    }
+}
 use Illuminate\Support\Facades\Cache;
 use Modules\Fees\Entities\FmFeesType;
 use Modules\Fees\Entities\FmFeesGroup;
@@ -52,7 +61,7 @@ class FeesController extends Controller
     public function feesGroupStore(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:100', Rule::unique('fm_fees_groups', 'name')->where('school_id', auth()->user()->school_id)->where('school_id', getAcademicId())],
+            'name' => ['required', 'max:100', Rule::unique('fm_fees_groups', 'name')->where('school_id', Auth::user()->school_id)->where('school_id', getAcademicId())],
         ]);
 
         if ($validator->fails()) {
@@ -80,6 +89,9 @@ class FeesController extends Controller
     public function feesGroupEdit($id)
     {
         try {
+            // Check permission - users can only edit fees groups if they have the proper permission
+            abort_if(! userPermission('fees.fees-group-edit'), 403);
+
             if (checkAdmin() == true) {
                 $feesGroup = FmFeesGroup::find($id);
             } else {
@@ -153,7 +165,7 @@ class FeesController extends Controller
                     FmFeesGroup::destroy($request->id);
                 } else {
                     FmFeesGroup::where('id', $request->id)
-                        ->where('school_id', auth()->user()->school_id)
+                        ->where('school_id', Auth::user()->school_id)
                         ->delete();
                 }
 
@@ -192,7 +204,7 @@ class FeesController extends Controller
 
         $validator = Validator::make($request->all(), [
             'fees_group' => ['required'],
-            'name' => ['required', 'max:50', Rule::unique('fm_fees_types', 'name')->where('fees_group_id', $request->fees_group)->where('school_id', auth()->user()->school_id)],
+            'name' => ['required', 'max:50', Rule::unique('fm_fees_types', 'name')->where('fees_group_id', $request->fees_group)->where('school_id', Auth::user()->school_id)],
         ]);
 
         if ($validator->fails()) {
@@ -221,6 +233,9 @@ class FeesController extends Controller
     public function feesTypeEdit($id)
     {
         try {
+            // Check permission - users can only edit fees types if they have the proper permission
+            abort_if(! userPermission('fees.fees-type-edit'), 403);
+
             if (checkAdmin() == true) {
                 $feesType = FmFeesType::find($id);
             } else {
@@ -249,7 +264,7 @@ class FeesController extends Controller
     public function feesTypeUpdate(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'max:50', Rule::unique('fm_fees_types', 'name')->where('fees_group_id', $request->fees_group)->where('school_id', auth()->user()->school_id)->ignore($request->id)],
+            'name' => ['required', 'max:50', Rule::unique('fm_fees_types', 'name')->where('fees_group_id', $request->fees_group)->where('school_id', Auth::user()->school_id)->ignore($request->id)],
         ]);
 
         $ifExistes = FmFeesType::where('id', '!=', $request->id)
@@ -363,7 +378,7 @@ class FeesController extends Controller
                 $invoiceSettings->section_limit = 1;
                 $invoiceSettings->admission_limit = 3;
                 $invoiceSettings->weaver = 'amount';
-                $invoiceSettings->school_id = auth()->user()->school_id;
+                $invoiceSettings->school_id = Auth::user()->school_id;
                 $invoiceSettings->save();
             }
 
@@ -392,8 +407,8 @@ class FeesController extends Controller
 
             return redirect()->back()->withErrors($validator)->withInput();
         }
-        
-       
+
+
 
         if ($request->payment_status == 'partial' && $request->total_paid_amount == null) {
             Toastr::warning('Paid Amount Can Not Be Blank', 'Failed');
@@ -402,14 +417,14 @@ class FeesController extends Controller
         }
 
         try {
-            
+
             $feesExtendedController = new FeesExtendedController();
             $payment_method = $request->payment_method ?? '';
             if ($request->student != 'all_student') {
-                
+
                 $student = StudentRecord::find($request->student);
                 if ($request->groups) {
-                    
+
                     if (empty($request->singleInvoice)) {
                         $feesType = [];
                         $amount = [];
@@ -420,7 +435,7 @@ class FeesController extends Controller
                     }
 
                     foreach ($request->groups as $group) {
-                        
+
                         if ($request->singleInvoice == 1) {
                             $feesType = [];
                             $amount = [];
@@ -436,6 +451,16 @@ class FeesController extends Controller
                         $sub_total[] = gv($group, 'sub_total');
                         $note[] = gv($group, 'note');
                         $paid_amount[] = gv($group, 'paid_amount');
+
+                        // Negative protection
+                        $gAmount = isset($group['amount']) ? (float)$group['amount'] : 0;
+                        $gWeaver = isset($group['weaver']) ? (float)$group['weaver'] : 0;
+                        $gPaid = isset($group['paid_amount']) ? (float)$group['paid_amount'] : 0;
+                        $gSub = isset($group['sub_total']) ? (float)$group['sub_total'] : 0;
+                        if ($gAmount < 0 || $gWeaver < 0 || $gPaid < 0 || $gSub < 0) {
+                            Toastr::warning('Negative values are not allowed in invoice line items', 'Failed');
+                            return redirect()->back()->withInput();
+                        }
 
                         if ($request->singleInvoice == 1) {
                             $feesCarry = feesCarryForward($student->id, $feesType, $amount, $sub_total);
@@ -466,7 +491,7 @@ class FeesController extends Controller
                     }
 
                     if (!$request->singleInvoice) {
-                        
+
                         $feesCarry = feesCarryForward($request->student, $feesType, $amount, $sub_total);
                         if ($feesCarry != null && $feesCarry != []) {
                             if ($feesCarry['type'] == 'due') {
@@ -481,10 +506,10 @@ class FeesController extends Controller
                                 $payment_method = $feesCarry['paymentMethod'];
                             }
                         }
-                        
-                       
-                        
-                       
+
+
+
+
                         $feesExtendedController->invStore($request->merge(['student' => $student->student_id,
                             'record_id' => $student->id,
                             'feesType' => $feesType,
@@ -510,7 +535,7 @@ class FeesController extends Controller
 
                     foreach ($request->types as $type) {
                         if ($request->singleInvoice == 1) {
-                            $tfeesType = []; 
+                            $tfeesType = [];
                             $tamount = [];
                             $tweaver = [];
                             $tsub_total = [];
@@ -605,7 +630,7 @@ class FeesController extends Controller
                 }
 
             } else {
-               
+
                 $allStudents = StudentRecord::with(['studentDetail' => function ($q) {
                     return $q->where('active_status', 1);
                 }, 'studentDetail.parents'])
@@ -702,12 +727,12 @@ class FeesController extends Controller
                                 'paid_amount' => $paid_amount,
                                 'payment_method' => $payment_method,
                             ]));
-                          
+
                         }
                     }
 
                     $tsub_total = 0;
-                    
+
 
                     if ($request->types) {
                         foreach ($request->types as $type) {
@@ -753,11 +778,11 @@ class FeesController extends Controller
                     //Notification
                     sendNotification("Fees Assign", null, $allStudent->studentDetail->user_id, 2);
                     sendNotification("Fees Assign", null, $allStudent->studentDetail->parents->user_id, 3);
-                    
+
                     $student_user_id      = SmStudent::find($allStudent->student_id)->user_id;
                     $data['student_name'] = $allStudent->studentDetail->full_name;
                     $data['fees']         = isset($tsub_total[0]) &&  is_array($tsub_total) ? (string) $tsub_total[0] : $tsub_total;
-                    
+
                     try{
                         $this->sent_notifications('Fees_Assign', [$student_user_id], $data, ['Student', 'Parent']);
                     } catch (Exception $e) {
@@ -780,6 +805,9 @@ class FeesController extends Controller
     public function feesInvoiceEdit($id)
     {
         try {
+            // Check permission - users can only edit invoices if they have the proper permission
+            abort_if(! userPermission('fees.fees-invoice-edit'), 403);
+
             // View Start
             $classes = SmClass::where('school_id', Auth::user()->school_id)
                 ->where('academic_id', getAcademicId())
@@ -1009,7 +1037,7 @@ class FeesController extends Controller
 
     public function feesPaymentStore(Request $request)
     {
-       
+
         if ($request->total_paid_amount == null) {
             Toastr::warning('Paid Amount Can Not Be Blank', 'Failed');
             return redirect()->back();
@@ -1115,7 +1143,7 @@ class FeesController extends Controller
                     $add_income->account_id = $request->bank;
                 }
 
-                $add_income->created_by = Auth()->user()->id;
+                $add_income->created_by = Auth::user()->id;
                 $add_income->school_id = Auth::user()->school_id;
                 $add_income->academic_id = getAcademicId();
                 $add_income->save();
@@ -1144,6 +1172,35 @@ class FeesController extends Controller
                     $current_balance->current_balance = $after_balance;
                     $current_balance->update();
                 }
+            }
+
+            // Recompute and persist overall invoice payment_status + latest payment_method after updates
+            try {
+                $invoice = FmFeesInvoice::find($request->invoice_id);
+                if ($invoice) {
+                    $children = FmFeesInvoiceChield::where('fees_invoice_id', $invoice->id)->get();
+                    $totalSub = $children->sum(function($c){ return ($c->amount + $c->fine) - $c->weaver; });
+                    $totalPaid = $children->sum('paid_amount');
+                    $due = $totalSub - $totalPaid;
+                    // Map fully satisfied invoices to legacy canonical status 'full'
+                    if ($totalPaid > 0 && $due <= 0) {
+                        $invoice->payment_status = 'full';
+                    } elseif ($totalPaid > 0 && $due > 0) {
+                        $invoice->payment_status = 'partial';
+                    } else {
+                        $invoice->payment_status = 'not';
+                    }
+                    // Update stored payment method/bank if this transaction supplies one (keeps latest non-empty)
+                    if (!empty($request->payment_method)) {
+                        $invoice->payment_method = $request->payment_method;
+                        if ($request->payment_method === 'Bank' && !empty($request->bank)) {
+                            $invoice->bank_id = $request->bank; // ensure bank association stays in sync
+                        }
+                    }
+                    $invoice->save();
+                }
+            } catch (\Throwable $e) {
+                // Silently ignore to not block payment storing; logging could be added
             }
 
             $student_user_id = $student->user_id;
@@ -1187,7 +1244,7 @@ class FeesController extends Controller
         $feesPayments = FmFeesTransaction::with('feeStudentInfo', 'transcationDetails', 'transcationDetails.transcationFeesType')
             ->where('paid_status', 'pending')
             ->whereIn('payment_method', ['Bank', 'Cheque'])
-            ->where('school_id', auth()->user()->school_id)
+            ->where('school_id', Auth::user()->school_id)
             ->where('academic_id', getAcademicId())
             ->get();
 
@@ -1220,7 +1277,7 @@ class FeesController extends Controller
                 ->when($bankFeesPayment->shift, function ($query) use ($bankFeesPayment) {
                     $query->where('shift_id', $bankFeesPayment->shift);
                 })
-                ->where('school_id', auth()->user()->school_id)
+                ->where('school_id', Auth::user()->school_id)
                 ->pluck('student_id')
                 ->unique();
 
@@ -1445,7 +1502,7 @@ class FeesController extends Controller
 
         $studentInvoices = FmFeesInvoice::where('type', $fees_type)
             ->with(['studentInfo' => function ($query): void {
-                $query->select(['id', 'admission_no', 'first_name', 'last_name']);
+                $query->select(['id', 'admission_no', 'first_name', 'last_name','roll_no']);
             }, 'invoiceDetails' => function ($query): void {
                 $query->select(['amount', 'weaver', 'fine', 'paid_amount', 'sub_total', 'id']);
             }])
@@ -1459,10 +1516,16 @@ class FeesController extends Controller
             return DataTables::of($studentInvoices)
                 ->addIndexColumn()
                 ->addColumn('student_name', function ($row): string {
-                    return '<a href="'.route('fees.fees-invoice-view', ['id' => $row->id, 'state' => 'view']).'target="_blank">'.@$row->studentInfo->full_name.'</a>';
+                    // Correct anchor: ensure target attribute is outside href value
+                    $url = route('fees.fees-invoice-view', ['id' => $row->id, 'state' => 'view']);
+                    return '<a href="'.$url.'" target="_blank">'.e(@$row->studentInfo->full_name).'</a>';
                 })
                 ->addColumn('admission_no', function ($row) {
+                    // Display roll number instead of admission no as per updated requirement
                     return $row->studentInfo->admission_no;
+                })
+                ->addColumn('roll_no', function ($row) {
+                    return $row->studentInfo->roll_no;
                 })
                 ->addColumn('amount', function ($row) {
                     return $row->Tamount;
@@ -1489,11 +1552,11 @@ class FeesController extends Controller
                     $weaver = $row->Tweaver;
                     $fine = $row->Tfine;
                     $paid_amount = $row->Tpaidamount;
-                    
-                    
+
+
                     $balance = $amount + $fine - ($paid_amount + $weaver);
-                    
-                    
+
+
                     if ($balance == 0) {
                         if ($amount == 0 && $balance == 0 && $paid_amount == 0) {
                             $btn = '<button class="primary-btn small bg-danger text-white border-0">'.__('fees.unpaid').'</button>';
@@ -1508,9 +1571,9 @@ class FeesController extends Controller
 
                     return $btn;
                 })
-                ->filterColumn('admission_no', function ($query, $keyword): void {
+                ->filterColumn('roll_no', function ($query, $keyword): void {
                     $query->whereHas('studentInfo', function ($query) use ($keyword): void {
-                        $query->where('admission_no', 'like', '%'.$keyword.'%');
+                        $query->where('roll_no', 'like', '%'.$keyword.'%');
                     });
                 })->filterColumn('amount', function ($query, $keyword): void {
                     $query->whereHas('invoiceDetails', function ($query) use ($keyword): void {

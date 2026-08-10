@@ -416,4 +416,9 @@ return [
     'select_files' => 'Select Files',
     'Operation Failed' => 'Operation Failed',
     'delete forever' => 'Delete Forever',
+
+    'quantity' => 'Quantitat',
+    'amount' => 'Quantitat',
+    'related' => 'Relatiu',
+    'my' => 'El meu'
 ];
