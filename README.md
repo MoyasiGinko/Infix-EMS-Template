@@ -64,3 +64,4 @@
 10. Inventory Templates
     📁 resources/views/backEnd/inventory/
     ├── item_sell_print.blade.php
+
