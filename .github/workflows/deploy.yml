@@ -13,17 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check vendor files
+      - name: Verify Composer file
         run: |
-          echo "=== vendor/composer ==="
-          ls -la vendor/composer/
-          echo "=== autoload_static.php ==="
-          if [ -f vendor/composer/autoload_static.php ]; then
-            echo "FOUND: autoload_static.php"
-          else
-            echo "MISSING: autoload_static.php"
-            exit 1
-          fi
+          test -f vendor/composer/autoload_static.php
+          echo "autoload_static.php exists"
 
       - name: Deploy to InfinityFree
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -34,3 +27,5 @@ jobs:
           protocol: ftp
           port: ${{ secrets.FTP_PORT }}
           server-dir: /htdocs/
+          log-level: verbose
+          dangerous-clean-slate: true
