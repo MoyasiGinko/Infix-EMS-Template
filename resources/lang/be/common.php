@@ -460,6 +460,7 @@ return [
     'quantity' => 'Quantity',
     'amount' => 'Amount',
     'related' => 'Related',
-    'my' => 'My'
+    'my' => 'My',
+    'reset' => 'Reset',
 
 ];

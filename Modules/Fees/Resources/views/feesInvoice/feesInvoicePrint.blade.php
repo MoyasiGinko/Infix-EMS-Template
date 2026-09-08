@@ -526,10 +526,15 @@
                                 if($stored === 'full' || ($paidAmount > 0 && $computedDue <= 0)) { $resolvedStatus='paid'; }
                                 elseif($stored === 'partial' || ($paidAmount > 0 && $computedDue > 0)) { $resolvedStatus='partial'; }
                                 else { $resolvedStatus='unpaid'; }
-                                $lastPaymentRecord = $invoiceDetails->filter(function($d){ return ($d->paid_amount ?? 0) > 0; })
-                                  ->sortByDesc(function($d){ return $d->updated_at ?? $d->created_at; })
-                                  ->first();
-                                $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->updated_at ?? $lastPaymentRecord->created_at) : null;
+                                $transactions = collect($feesTranscations ?? [])->whereNotNull('payment_method')->values();
+                                $lastPaymentRecord = $transactions->sortByDesc(function($txn){
+                                  $date = $txn->payment_date ?? $txn->created_at;
+                                  if($date instanceof \Carbon\Carbon){
+                                    return $date->timestamp;
+                                  }
+                                  return $date ? strtotime($date) : 0;
+                                })->first();
+                                $lastPaymentDate = $lastPaymentRecord ? ($lastPaymentRecord->payment_date ?? $lastPaymentRecord->created_at) : null;
                               @endphp
                               <p><span><strong>@lang('fees.invoice_number')</strong></span> <span>: {{$invoiceInfo->invoice_id}}</span></p>
                               <p><span>@lang('fees.create_date')</span> <span>: {{dateConvert($invoiceInfo->create_date)}}</span></p>

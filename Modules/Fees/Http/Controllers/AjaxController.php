@@ -14,6 +14,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Modules\Fees\Entities\FmFeesInvoice;
 use Modules\Fees\Entities\FmFeesTransaction;
 use Modules\Fees\Entities\FmFeesType;
@@ -25,10 +26,10 @@ class AjaxController extends Controller
         $feesinvoice = FmFeesInvoice::find($request->invoiceId);
         $feesTranscations = FmFeesTransaction::where('fees_invoice_id', $request->invoiceId)
             ->where('paid_status', 'approve')
-            ->where('school_id', auth()->user()->school_id)
+            ->where('school_id', Auth::user()->school_id)
             ->get();
         $paymentMethods = SmPaymentMethhod::whereIn('method', ['Cash', 'Cheque', 'Bank'])->get();
-        $banks = SmBankAccount::where('school_id', auth()->user()->school_id)->get();
+        $banks = SmBankAccount::where('school_id', Auth::user()->school_id)->get();
 
         return view('fees::feesInvoice.viewPayment', ['feesinvoice' => $feesinvoice, 'feesTranscations' => $feesTranscations, 'paymentMethods' => $paymentMethods, 'banks' => $banks]);
     }
@@ -38,7 +39,12 @@ class AjaxController extends Controller
         try {
             $allStudents = StudentRecord::with('studentDetail', 'section')
                 ->where('class_id', $request->classId)
-                ->where('school_id', auth()->user()->school_id)
+                ->when($request->student_type, function ($query) use ($request) {
+                    $query->whereHas('studentDetail', function ($studentQuery) use ($request) {
+                        $studentQuery->where('student_category_id', $request->student_type);
+                    });
+                })
+                ->where('school_id', Auth::user()->school_id)
                 ->where('academic_id', getAcademicId())
                 ->get();
 
@@ -79,15 +85,15 @@ class AjaxController extends Controller
         try {
             if (teacherAccess()) {
                 $sectionIds = SmAssignSubject::where('class_id', '=', $request->class_id)
-                    ->where('teacher_id', auth()->user()->staff->id)
-                    ->where('school_id', auth()->user()->school_id)
+                    ->where('teacher_id', Auth::user()->staff->id)
+                    ->where('school_id', Auth::user()->school_id)
                     ->where('academic_id', getAcademicId())
                     ->distinct(['class_id', 'section_id'])
                     ->withoutGlobalScope(StatusAcademicSchoolScope::class)
                     ->get();
             } else {
                 $sectionIds = SmClassSection::where('class_id', '=', $request->class_id)
-                    ->where('school_id', auth()->user()->school_id)
+                    ->where('school_id', Auth::user()->school_id)
                     ->withoutGlobalScope(StatusAcademicSchoolScope::class)
                     ->get();
             }
@@ -111,7 +117,7 @@ class AjaxController extends Controller
             $allStudents = StudentRecord::with('studentDetail', 'section')
                 ->where('class_id', $request->class_id)
                 ->where('section_id', $request->section_id)
-                ->where('school_id', auth()->user()->school_id)
+                ->where('school_id', Auth::user()->school_id)
                 ->where('academic_id', getAcademicId())
                 ->get();
 
@@ -126,7 +132,7 @@ class AjaxController extends Controller
         try {
             $allStudents = StudentRecord::with('studentDetail', 'section')
                 ->where('class_id', $request->class_id)
-                ->where('school_id', auth()->user()->school_id)
+                ->where('school_id', Auth::user()->school_id)
                 ->where('academic_id', getAcademicId())
                 ->get();
 
@@ -141,6 +147,17 @@ class AjaxController extends Controller
         try {
             $transcation = FmFeesTransaction::find($request->feesInvoiceId);
             $transcation->payment_method = $request->change_method;
+
+            // Save payment note if provided
+            if ($request->has('payment_note')) {
+                $transcation->payment_note = $request->payment_note;
+            }
+
+            // Save bank_id if Bank method is selected
+            if ($request->change_method === 'Bank' && $request->has('bank_id')) {
+                $transcation->bank_id = $request->bank_id;
+            }
+
             $transcation->update();
 
             $payment_method = SmPaymentMethhod::where('method', $request->change_method)->first();
@@ -149,13 +166,19 @@ class AjaxController extends Controller
 
             foreach ($incomes as $income) {
                 $updateIncome = SmAddIncome::find($income->id);
-                $updateIncome->payment_method = $payment_method->id;
+                $updateIncome->payment_method_id = $payment_method->id;
+
+                // Update account_id (bank_id) in income record as well if applicable
+                if ($request->change_method === 'Bank' && $request->has('bank_id')) {
+                    $updateIncome->account_id = $request->bank_id;
+                }
+
                 $updateIncome->update();
             }
 
-            return response()->json(['sucess']);
+            return response()->json(['success' => true, 'message' => 'Payment method changed successfully']);
         } catch (Exception $exception) {
-            return response()->json('Error', $exception->getMessage());
+            return response()->json(['success' => false, 'message' => $exception->getMessage()], 500);
         }
     }
 

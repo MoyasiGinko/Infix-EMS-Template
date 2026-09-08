@@ -168,6 +168,24 @@ html[dir="rtl"] #main-content {
                 </div>
 
                 <div class="row mt-15">
+                  <div class="col-lg-12">
+                    <label class="primary_input_label" for="studentTypeFilter">
+                      {{ __('student.category') }}
+                    </label>
+                    <select class="primary_select form-control" id="studentTypeFilter" disabled>
+                      <option data-display="@lang('student.category')" value="">
+                        @lang('common.all')
+                      </option>
+                      @if(isset($studentCategories))
+                      @foreach ($studentCategories as $studentCategory)
+                      <option value="{{ $studentCategory->id }}">{{ $studentCategory->category_name }}</option>
+                      @endforeach
+                      @endif
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row mt-15">
                   <div class="col-lg-12" id="selectStudentDiv">
                     <label class="primary_input_label" for="">
                       {{ __('common.select_student') }}

@@ -3,8 +3,9 @@
 namespace Modules\Fees\Http\Controllers;
 
 use Exception;
-use DataTables;
+use Yajra\DataTables\Facades\DataTables;
 use App\SmClass;
+use App\SmStudentCategory;
 use App\SmSchool;
 use App\SmStudent;
 use App\Models\User;
@@ -14,6 +15,9 @@ use App\SmBankStatement;
 use App\SmPaymentMethhod;
 use App\SmGeneralSettings;
 use Illuminate\Http\Request;
+use Modules\Fees\Http\Requests\AdminAddFeesPaymentRequest;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use App\Models\StudentRecord;
 use Illuminate\Validation\Rule;
 use App\SmPaymentGatewaySetting;
@@ -341,7 +345,31 @@ class FeesController extends Controller
 
     public function feesInvoiceList()
     {
-        return view('fees::feesInvoice.feesInvoiceList');
+        $classes = SmClass::where('school_id', Auth::user()->school_id)
+            ->where('academic_id', getAcademicId())
+            ->select('id', 'class_name')
+            ->orderBy('class_name')
+            ->get();
+
+        $studentCategories = SmStudentCategory::where('school_id', Auth::user()->school_id)
+            ->select('id', 'category_name')
+            ->orderBy('category_name')
+            ->get();
+
+        $statusOptions = [
+            'paid' => __('fees.paid'),
+            'partial' => __('fees.partial'),
+            'unpaid' => __('fees.unpaid'),
+        ];
+
+        $monthOptions = collect(range(1, 12))->map(function ($monthNumber) {
+            return [
+                'value' => $monthNumber,
+                'label' => Carbon::create(null, $monthNumber, 1)->translatedFormat('F'),
+            ];
+        });
+
+        return view('fees::feesInvoice.feesInvoiceList', compact('classes', 'studentCategories', 'statusOptions', 'monthOptions'));
     }
 
     public function feesInvoice()
@@ -367,6 +395,12 @@ class FeesController extends Controller
             $bankAccounts = SmBankAccount::where('school_id', Auth::user()->school_id)
                 ->get();
 
+            $studentCategories = SmStudentCategory::where('school_id', Auth::user()->school_id)
+                ->get();
+
+            $studentCategories = SmStudentCategory::where('school_id', Auth::user()->school_id)
+                ->get();
+
             $invoiceSettings = FmFeesInvoiceSettings::where('school_id', Auth::user()->school_id)->first();
 
             if (! $invoiceSettings) {
@@ -382,7 +416,15 @@ class FeesController extends Controller
                 $invoiceSettings->save();
             }
 
-            return view('fees::feesInvoice.feesInvoice', ['classes' => $classes, 'feesGroups' => $feesGroups, 'feesTypes' => $feesTypes, 'paymentMethods' => $paymentMethods, 'bankAccounts' => $bankAccounts, 'invoiceSettings' => $invoiceSettings]);
+            return view('fees::feesInvoice.feesInvoice', [
+                'classes' => $classes,
+                'feesGroups' => $feesGroups,
+                'feesTypes' => $feesTypes,
+                'paymentMethods' => $paymentMethods,
+                'bankAccounts' => $bankAccounts,
+                'invoiceSettings' => $invoiceSettings,
+                'studentCategories' => $studentCategories,
+            ]);
 
         } catch (Exception $exception) {
             Toastr::error('Operation Failed', 'Failed');
@@ -828,6 +870,9 @@ class FeesController extends Controller
 
             $bankAccounts = SmBankAccount::where('school_id', Auth::user()->school_id)
                 ->get();
+
+            $studentCategories = SmStudentCategory::where('school_id', Auth::user()->school_id)
+                ->get();
             // View End
 
             $invoiceSettings = FmFeesInvoiceSettings::where('school_id', Auth::user()->school_id)->first();
@@ -847,7 +892,18 @@ class FeesController extends Controller
                     ->where('academic_id', getAcademicId())
                     ->get();
 
-            return view('fees::feesInvoice.feesInvoice', ['classes' => $classes, 'feesGroups' => $feesGroups, 'feesTypes' => $feesTypes, 'paymentMethods' => $paymentMethods, 'bankAccounts' => $bankAccounts, 'invoiceSettings' => $invoiceSettings, 'invoiceInfo' => $invoiceInfo, 'invoiceDetails' => $invoiceDetails, 'students' => $students]);
+            return view('fees::feesInvoice.feesInvoice', [
+                'classes' => $classes,
+                'feesGroups' => $feesGroups,
+                'feesTypes' => $feesTypes,
+                'paymentMethods' => $paymentMethods,
+                'bankAccounts' => $bankAccounts,
+                'invoiceSettings' => $invoiceSettings,
+                'invoiceInfo' => $invoiceInfo,
+                'invoiceDetails' => $invoiceDetails,
+                'students' => $students,
+                'studentCategories' => $studentCategories,
+            ]);
 
         } catch (Exception $exception) {
             Toastr::error('Operation Failed', 'Failed');
@@ -958,15 +1014,19 @@ class FeesController extends Controller
             ->where('school_id', Auth::user()->school_id)
             ->where('academic_id', getAcademicId())
             ->get();
+        $feesTranscations = FmFeesTransaction::where('fees_invoice_id', $invoiceInfo->id)
+            ->where('school_id', Auth::user()->school_id)
+            ->where('academic_id', getAcademicId())
+            ->get();
         $banks = SmBankAccount::where('active_status', '=', 1)
             ->where('school_id', Auth::user()->school_id)
             ->get();
 
         if ($state == 'view') {
-            return view('fees::feesInvoice.feesInvoiceView', ['generalSetting' => $generalSetting, 'invoiceInfo' => $invoiceInfo, 'invoiceDetails' => $invoiceDetails, 'banks' => $banks]);
+            return view('fees::feesInvoice.feesInvoiceView', ['generalSetting' => $generalSetting, 'invoiceInfo' => $invoiceInfo, 'invoiceDetails' => $invoiceDetails, 'banks' => $banks, 'feesTranscations' => $feesTranscations]);
         }
 
-        return view('fees::feesInvoice.feesInvoicePrint', ['invoiceInfo' => $invoiceInfo, 'invoiceDetails' => $invoiceDetails, 'banks' => $banks]);
+        return view('fees::feesInvoice.feesInvoicePrint', ['invoiceInfo' => $invoiceInfo, 'invoiceDetails' => $invoiceDetails, 'banks' => $banks, 'feesTranscations' => $feesTranscations]);
 
     }
 
@@ -1035,7 +1095,7 @@ class FeesController extends Controller
 
     }
 
-    public function feesPaymentStore(Request $request)
+    public function feesPaymentStore(AdminAddFeesPaymentRequest $request)
     {
 
         if ($request->total_paid_amount == null) {
@@ -1043,14 +1103,8 @@ class FeesController extends Controller
             return redirect()->back();
         }
 
-        $validator = Validator::make($request->all(), [
-            'payment_method' => 'required',
-            'bank' => 'required_if:payment_method,Bank',
-            'file' => 'mimes:jpg,jpeg,png,pdf',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        $paymentDate = $request->payment_date ? Carbon::parse($request->payment_date) : now();
+        $paymentDateString = $paymentDate->toDateString();
         try {
             $destination = 'public/uploads/student/document/';
             $file = fileUpload($request->file('file'), $destination);
@@ -1075,7 +1129,7 @@ class FeesController extends Controller
                 $compact['user_email'] = $user->email;
                 $compact['full_name'] = $user->full_name;
                 $compact['method'] = $request->payment_method;
-                $compact['create_date'] = date('Y-m-d');
+                $compact['create_date'] = $paymentDateString;
                 $compact['school_name'] = $school->school_name;
                 $compact['current_balance'] = $user->wallet_balance;
                 $compact['add_balance'] = $request->total_paid_amount;
@@ -1095,6 +1149,7 @@ class FeesController extends Controller
             $fmFeesTransaction->user_id = Auth::user()->id;
             $fmFeesTransaction->file = $file;
             $fmFeesTransaction->paid_status = 'approve';
+            $fmFeesTransaction->payment_date = $paymentDate;
             $fmFeesTransaction->school_id = Auth::user()->school_id;
             $fmFeesTransaction->academic_id = getAcademicId();
             $fmFeesTransaction->save();
@@ -1133,7 +1188,7 @@ class FeesController extends Controller
                 $income_head = generalSetting();
                 $add_income = new SmAddIncome();
                 $add_income->name = 'Fees Collect';
-                $add_income->date = date('Y-m-d');
+                $add_income->date = $paymentDateString;
                 $add_income->amount = $request->paid_amount[$key];
                 $add_income->fees_collection_id = $fmFeesTransaction->id;
                 $add_income->active_status = 1;
@@ -1162,7 +1217,7 @@ class FeesController extends Controller
                     $bank_statement->type = 1;
                     $bank_statement->details = 'Fees Payment';
                     $bank_statement->item_sell_id = $fmFeesTransaction->id;
-                    $bank_statement->payment_date = date('Y-m-d');
+                    $bank_statement->payment_date = $paymentDateString;
                     $bank_statement->bank_id = $request->bank;
                     $bank_statement->school_id = Auth::user()->school_id;
                     $bank_statement->payment_method = $payment_method->id;
@@ -1300,8 +1355,7 @@ class FeesController extends Controller
                     });
                 })
                 ->when($bankFeesPayment->payment_date, function ($query) use ($date_from, $date_to): void {
-                    $query->whereDate('created_at', '>=', $date_from)
-                        ->whereDate('created_at', '<=', $date_to);
+                    $query->whereBetween(DB::raw('COALESCE(payment_date, created_at)'), [$date_from, $date_to]);
                 })
                 ->whereIn('student_id', $student_ids)
                 ->whereIn('payment_method', ['Bank', 'Cheque'])
@@ -1486,10 +1540,21 @@ class FeesController extends Controller
         $invoiceInfo = FmFeesInvoice::find($transcationInfo->fees_invoice_id);
 
         if ($type == 'view') {
-            return view('fees::feesInvoice.feesInvoiceSingleView', ['generalSetting' => $generalSetting, 'invoiceInfo' => $invoiceInfo, 'transcationDetails' => $transcationDetails, 'id' => $id]);
+            return view('fees::feesInvoice.feesInvoiceSingleView', [
+                'generalSetting' => $generalSetting,
+                'invoiceInfo' => $invoiceInfo,
+                'transcationDetails' => $transcationDetails,
+                'transcationInfo' => $transcationInfo,
+                'id' => $id,
+            ]);
         }
 
-        return view('fees::feesInvoice.feesInvoiceSinglePrint', ['generalSetting' => $generalSetting, 'invoiceInfo' => $invoiceInfo, 'transcationDetails' => $transcationDetails]);
+        return view('fees::feesInvoice.feesInvoiceSinglePrint', [
+            'generalSetting' => $generalSetting,
+            'invoiceInfo' => $invoiceInfo,
+            'transcationDetails' => $transcationDetails,
+            'transcationInfo' => $transcationInfo,
+        ]);
 
     }
 
@@ -1500,16 +1565,83 @@ class FeesController extends Controller
 
         $fees_type = $previous_route == 'lms.fees-invoice' ? 'lms' : 'fees';
 
-        $studentInvoices = FmFeesInvoice::where('type', $fees_type)
-            ->with(['studentInfo' => function ($query): void {
-                $query->select(['id', 'admission_no', 'first_name', 'last_name','roll_no']);
-            }, 'invoiceDetails' => function ($query): void {
-                $query->select(['amount', 'weaver', 'fine', 'paid_amount', 'sub_total', 'id']);
-            }])
-            ->select('fm_fees_invoices.*')
+        $latestPayments = FmFeesTransaction::select([
+            'fees_invoice_id',
+            DB::raw('MAX(COALESCE(payment_date, created_at)) as latest_payment_at'),
+        ])
             ->where('school_id', Auth::user()->school_id)
             ->where('academic_id', getAcademicId())
-            ->withInvoiceDetailsSums();
+            ->groupBy('fees_invoice_id');
+
+        $invoiceTotals = DB::table('fm_fees_invoice_chields')
+            ->select('fees_invoice_id')
+            ->selectRaw('COALESCE(SUM(amount), 0) as total_amount')
+            ->selectRaw('COALESCE(SUM(weaver), 0) as total_weaver')
+            ->selectRaw('COALESCE(SUM(fine), 0) as total_fine')
+            ->selectRaw('COALESCE(SUM(paid_amount), 0) as total_paid_amount')
+            ->selectRaw('COALESCE(SUM(sub_total), 0) as total_sub_total')
+            ->groupBy('fees_invoice_id');
+
+        $filters = request()->input('filters', []);
+        $classFilter = isset($filters['class_id']) && $filters['class_id'] !== '' ? (int) $filters['class_id'] : null;
+        $studentCategoryFilter = isset($filters['student_category_id']) && $filters['student_category_id'] !== '' ? (int) $filters['student_category_id'] : null;
+        $statusFilter = isset($filters['payment_status']) && $filters['payment_status'] !== '' ? $filters['payment_status'] : null;
+        $monthFilter = isset($filters['month']) && $filters['month'] !== '' ? (int) $filters['month'] : null;
+
+        $studentInvoices = FmFeesInvoice::where('type', $fees_type)
+            ->leftJoinSub($latestPayments, 'latest_payments', function ($join): void {
+                $join->on('latest_payments.fees_invoice_id', '=', 'fm_fees_invoices.id');
+            })
+            ->leftJoinSub($invoiceTotals, 'invoice_totals', function ($join): void {
+                $join->on('invoice_totals.fees_invoice_id', '=', 'fm_fees_invoices.id');
+            })
+            ->with([
+                'studentInfo' => function ($query): void {
+                    $query->select(['id', 'admission_no', 'first_name', 'last_name', 'full_name', 'roll_no', 'student_category_id']);
+                },
+                'recordDetail' => function ($query): void {
+                    $query->select(['id', 'roll_no']);
+                },
+            ])
+            ->select('fm_fees_invoices.*')
+            ->addSelect(DB::raw('latest_payments.latest_payment_at as latest_payment_at'))
+            ->addSelect([
+                DB::raw('COALESCE(invoice_totals.total_amount, 0) as total_amount'),
+                DB::raw('COALESCE(invoice_totals.total_weaver, 0) as total_weaver'),
+                DB::raw('COALESCE(invoice_totals.total_fine, 0) as total_fine'),
+                DB::raw('COALESCE(invoice_totals.total_paid_amount, 0) as total_paid_amount'),
+                DB::raw('COALESCE(invoice_totals.total_sub_total, 0) as total_sub_total'),
+            ])
+            ->where('fm_fees_invoices.school_id', Auth::user()->school_id)
+            ->where('fm_fees_invoices.academic_id', getAcademicId());
+
+        if ($classFilter) {
+            $studentInvoices->where('fm_fees_invoices.class_id', $classFilter);
+        }
+
+        if ($studentCategoryFilter) {
+            $studentInvoices->whereHas('studentInfo', function ($query) use ($studentCategoryFilter): void {
+                $query->where('student_category_id', $studentCategoryFilter);
+            });
+        }
+
+        if ($monthFilter && $monthFilter >= 1 && $monthFilter <= 12) {
+            $studentInvoices->whereMonth('fm_fees_invoices.create_date', $monthFilter);
+        }
+
+        if ($statusFilter && in_array($statusFilter, ['paid', 'partial', 'unpaid'], true)) {
+            $amountExpr = '(COALESCE(invoice_totals.total_amount, 0) + COALESCE(invoice_totals.total_fine, 0))';
+            $paidExpr = '(COALESCE(invoice_totals.total_paid_amount, 0) + COALESCE(invoice_totals.total_weaver, 0))';
+            $studentInvoices->where(function ($query) use ($statusFilter, $amountExpr, $paidExpr): void {
+                if ($statusFilter === 'paid') {
+                    $query->whereRaw("$amountExpr <= $paidExpr");
+                } elseif ($statusFilter === 'partial') {
+                    $query->whereRaw("$amountExpr > $paidExpr AND $paidExpr > 0");
+                } elseif ($statusFilter === 'unpaid') {
+                    $query->whereRaw("$paidExpr = 0 AND $amountExpr > 0");
+                }
+            });
+        }
 
         if (isset($studentInvoices)) {
 
@@ -1525,33 +1657,65 @@ class FeesController extends Controller
                     return $row->studentInfo->admission_no;
                 })
                 ->addColumn('roll_no', function ($row) {
-                    return $row->studentInfo->roll_no;
+                    $roll = optional($row->studentInfo)->roll_no;
+
+                    if (! empty($roll)) {
+                        return $roll;
+                    }
+
+                    return optional($row->recordDetail)->roll_no;
                 })
                 ->addColumn('amount', function ($row) {
-                    return $row->Tamount;
+                    return $row->total_amount;
                 })
                 ->addColumn('weaver', function ($row) {
-                    return $row->Tweaver;
+                    return $row->total_weaver;
                 })
                 ->addColumn('fine', function ($row) {
-                    return $row->Tfine;
+                    return $row->total_fine;
                 })
                 ->addColumn('paid_amount', function ($row) {
-                    return $row->Tpaidamount;
+                    return $row->total_paid_amount;
+                })
+                ->addColumn('paid_date', function ($row) {
+                    $timestamp = $row->latest_payment_at;
+
+                    if (! $timestamp) {
+                        return '';
+                    }
+
+                    if (is_object($timestamp) && method_exists($timestamp, 'toDateString')) {
+                        $timestamp = $timestamp->toDateString();
+                    }
+
+                    return dateConvert($timestamp);
+                })
+                ->addColumn('updated_at_human', function ($row) {
+                    $timestamp = $row->updated_at;
+
+                    if (! $timestamp) {
+                        return '';
+                    }
+
+                    if (is_object($timestamp) && method_exists($timestamp, 'toDateString')) {
+                        $timestamp = $timestamp->toDateString();
+                    }
+
+                    return dateConvert($timestamp);
                 })
                 ->addColumn('balance', function ($row) {
-                    $amount = $row->Tamount;
-                    $weaver = $row->Tweaver;
-                    $fine = $row->Tfine;
-                    $paid_amount = $row->Tpaidamount;
+                    $amount = (float) $row->total_amount;
+                    $weaver = (float) $row->total_weaver;
+                    $fine = (float) $row->total_fine;
+                    $paid_amount = (float) $row->total_paid_amount;
 
                     return $amount + $fine - ($paid_amount + $weaver);
                 })
                 ->addColumn('status', function ($row): string {
-                    $amount = $row->Tamount;
-                    $weaver = $row->Tweaver;
-                    $fine = $row->Tfine;
-                    $paid_amount = $row->Tpaidamount;
+                    $amount = (float) $row->total_amount;
+                    $weaver = (float) $row->total_weaver;
+                    $fine = (float) $row->total_fine;
+                    $paid_amount = (float) $row->total_paid_amount;
 
 
                     $balance = $amount + $fine - ($paid_amount + $weaver);
@@ -1572,8 +1736,30 @@ class FeesController extends Controller
                     return $btn;
                 })
                 ->filterColumn('roll_no', function ($query, $keyword): void {
-                    $query->whereHas('studentInfo', function ($query) use ($keyword): void {
-                        $query->where('roll_no', 'like', '%'.$keyword.'%');
+                    $keyword = trim((string) $keyword);
+
+                    if ($keyword === '') {
+                        return;
+                    }
+
+                    $query->where(function ($rollQuery) use ($keyword): void {
+                        $rollQuery->whereHas('studentInfo', function ($studentQuery) use ($keyword): void {
+                            $studentQuery->where(function ($studentRollQuery) use ($keyword): void {
+                                $studentRollQuery->where('roll_no', $keyword);
+
+                                if (ctype_digit($keyword)) {
+                                    $studentRollQuery->orWhere('roll_no', (int) $keyword);
+                                }
+                            });
+                        })->orWhereHas('recordDetail', function ($recordQuery) use ($keyword): void {
+                            $recordQuery->where(function ($recordRollQuery) use ($keyword): void {
+                                $recordRollQuery->where('roll_no', $keyword);
+
+                                if (ctype_digit($keyword)) {
+                                    $recordRollQuery->orWhere('roll_no', (int) $keyword);
+                                }
+                            });
+                        });
                     });
                 })->filterColumn('amount', function ($query, $keyword): void {
                     $query->whereHas('invoiceDetails', function ($query) use ($keyword): void {
@@ -1596,12 +1782,30 @@ class FeesController extends Controller
                     });
                 })
                 ->filterColumn('student_name', function ($query, $keyword): void {
-                    $query->whereHas('studentInfo', function ($query) use ($keyword): void {
-                        $query->where('full_name', 'like', '%'.$keyword.'%');
+                    $keyword = trim((string) $keyword);
+
+                    if ($keyword === '') {
+                        return;
+                    }
+
+                    $query->whereHas('studentInfo', function ($studentQuery) use ($keyword): void {
+                        $studentQuery->where(function ($studentSubQuery) use ($keyword): void {
+                            $studentSubQuery->where('full_name', 'like', '%'.$keyword.'%')
+                                ->orWhere('first_name', 'like', '%'.$keyword.'%')
+                                ->orWhere('last_name', 'like', '%'.$keyword.'%')
+                                ->orWhere('admission_no', 'like', '%'.$keyword.'%');
+                        });
                     });
                 })
                 ->addColumn('create_date', function ($row) {
                     return dateConvert($row->create_date);
+                })
+                ->addColumn('create_month_name', function ($row) {
+                    if (! $row->create_date) {
+                        return '';
+                    }
+
+                    return Carbon::parse($row->create_date)->translatedFormat('F');
                 })
                 ->filterColumn('create_date', function ($query, $keyword): void {
                     $date = date('Y-m-d', strtotime($keyword));
@@ -1624,7 +1828,43 @@ class FeesController extends Controller
 
                     return (string) $view;
                 })
-                ->rawColumns(['student_name', 'admission_no', 'status', 'action', 'date'])
+                ->filter(function ($query): void {
+                    $searchValue = trim((string) request()->input('search.value'));
+
+                    if ($searchValue === '') {
+                        return;
+                    }
+
+                    $isRollSearch = ctype_digit($searchValue);
+
+                    $query->where(function ($searchQuery) use ($searchValue, $isRollSearch): void {
+                        if ($isRollSearch) {
+                            $searchQuery->whereHas('studentInfo', function ($studentQuery) use ($searchValue): void {
+                                $studentQuery->where(function ($studentRollQuery) use ($searchValue): void {
+                                    $studentRollQuery->where('roll_no', $searchValue)
+                                        ->orWhere('roll_no', (int) $searchValue);
+                                });
+                            })->orWhereHas('recordDetail', function ($recordQuery) use ($searchValue): void {
+                                $recordQuery->where(function ($recordRollQuery) use ($searchValue): void {
+                                    $recordRollQuery->where('roll_no', $searchValue)
+                                        ->orWhere('roll_no', (int) $searchValue);
+                                });
+                            });
+                        } else {
+                            $searchQuery->whereHas('studentInfo', function ($studentQuery) use ($searchValue): void {
+                                $studentQuery->where(function ($studentSubQuery) use ($searchValue): void {
+                                    $studentSubQuery->where('full_name', 'like', '%'.$searchValue.'%')
+                                        ->orWhere('first_name', 'like', '%'.$searchValue.'%')
+                                        ->orWhere('last_name', 'like', '%'.$searchValue.'%')
+                                        ->orWhere('admission_no', 'like', '%'.$searchValue.'%');
+                                });
+                            })->orWhereHas('recordDetail', function ($recordQuery) use ($searchValue): void {
+                                $recordQuery->where('roll_no', 'like', '%'.$searchValue.'%');
+                            });
+                        }
+                    });
+                })
+                ->rawColumns(['student_name', 'admission_no', 'status', 'paid_date', 'create_date', 'action'])
                 ->make(true);
         }
 

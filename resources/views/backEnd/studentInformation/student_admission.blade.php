@@ -13,6 +13,7 @@
   --admission-accent: #22d3ee;
   --admission-muted: #64748b;
   --admission-surface: #f8fafc;
+  --admission-highlight: #f0f9ff;
   --admission-border: #e2e8f0;
   --admission-text-strong: #0f172a;
   --admission-text-muted: #475569;
@@ -61,21 +62,22 @@
 }
 
 .modern-section-card {
-  background: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 255, 0.9) 100%);
   border-radius: 22px;
   border: 1px solid var(--admission-border);
-  padding: 36px 32px;
-  box-shadow: 0 24px 48px var(--admission-shadow);
+  padding: 38px 34px;
+  box-shadow: 0 28px 54px rgba(15, 23, 42, 0.12);
   margin-bottom: 32px;
   position: relative;
   overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .modern-section-card::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(124, 58, 237, 0.08));
+  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 55%), radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.12), transparent 45%);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 0;
@@ -88,6 +90,11 @@
 .modern-section-card>* {
   position: relative;
   z-index: 1;
+}
+
+.modern-section-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 32px 58px rgba(15, 23, 42, 0.14);
 }
 
 .section-header-flex {
@@ -121,6 +128,17 @@
   box-shadow: 0 16px 32px rgba(37, 99, 235, 0.12);
 }
 
+.modern-section-card .primary_input:focus-within .primary_input_label,
+.modern-section-card .primary_input:focus-within label {
+  color: var(--admission-primary);
+}
+
+.modern-section-card .primary_input:focus-within .primary_input_label::before,
+.modern-section-card .primary_input:focus-within label::before {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+  filter: brightness(1.05);
+}
+
 .modern-section-card .primary_input .primary_file_uploader {
   background: rgba(255, 255, 255, 0.85);
   border-radius: 12px;
@@ -136,11 +154,27 @@
 
 .modern-section-card .primary_input_label,
 .modern-section-card label {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--admission-text-strong);
-  font-size: 13px;
-  letter-spacing: 0.25px;
-  margin-bottom: 8px;
+  font-size: 14px;
+  letter-spacing: 0.35px;
+  margin-bottom: 10px;
+  line-height: 1.3;
+  transition: color 0.2s ease;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modern-section-card .primary_input_label::before,
+.modern-section-card label::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--admission-primary), var(--admission-secondary));
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
 }
 
 .modern-section-card .primary_input_field,
@@ -148,12 +182,12 @@
 .modern-section-card textarea.primary_input_field {
   border-radius: 12px;
   border: 1px solid #d1d5db;
-  padding: 12px 16px;
-  transition: all 0.25s ease;
+  padding: 14px 16px;
+  transition: all 0.25s ease, transform 0.2s ease;
   background: var(--admission-surface);
   width: 100%;
   color: var(--admission-text-strong);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .modern-section-card .primary_input_field::placeholder,
@@ -167,7 +201,8 @@
 .modern-section-card textarea.primary_input_field:focus {
   border-color: var(--admission-primary);
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+  transform: translateY(-1px);
 }
 
 .modern-section-card .primary_input_field.is-invalid,
@@ -183,9 +218,9 @@
 }
 
 .modern-info-group {
-  padding: 20px 24px;
-  border-radius: 16px;
-  background: linear-gradient(145deg, rgba(248, 250, 252, 0.95) 0%, #eef2ff 100%);
+  padding: 22px 26px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(248, 250, 252, 0.96) 0%, rgba(240, 249, 255, 0.92) 100%);
   border: 1px solid var(--admission-border);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }

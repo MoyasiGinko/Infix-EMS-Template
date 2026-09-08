@@ -94,8 +94,7 @@
                             <p><span>@lang('fees.due_date') </span> <span>:
                                 {{dateConvert($invoiceInfo->due_date)}}</span> </p>
                             @php
-                              $lastTrans = $transcationDetails->sortByDesc(function($t){ return $t->updated_at ?? $t->created_at; })->first();
-                              $lastPaidAt = $lastTrans ? ($lastTrans->updated_at ?? $lastTrans->created_at) : null;
+                              $lastPaidAt = optional($transcationInfo)->payment_date ?? optional($transcationInfo)->created_at;
                             @endphp
                             @if($paidAmount > 0 && $lastPaidAt)
                               <p><span>Payment Date</span> <span>: {{ dateConvert($lastPaidAt) }}</span></p>

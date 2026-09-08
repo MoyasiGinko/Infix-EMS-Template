@@ -12,6 +12,10 @@ class FmFeesTransaction extends Model
 
     protected $fillable = [];
 
+    protected $casts = [
+        'payment_date' => 'datetime',
+    ];
+
     public function transcationDetails()
     {
         return $this->hasMany(FmFeesTransactionChield::class, 'fees_transaction_id');

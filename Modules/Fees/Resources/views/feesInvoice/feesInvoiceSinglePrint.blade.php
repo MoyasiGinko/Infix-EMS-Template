@@ -526,8 +526,7 @@
                                 if($stored==='full' || ($paidAmount>0 && $computedDue<=0)) { $resolvedStatus='paid'; }
                                 elseif($stored==='partial' || ($paidAmount>0 && $computedDue>0)) { $resolvedStatus='partial'; }
                                 else { $resolvedStatus='unpaid'; }
-                                $lastTrans = $transcationDetails->sortByDesc(function($t){ return $t->updated_at ?? $t->created_at; })->first();
-                                $lastPaidAt = $lastTrans ? ($lastTrans->updated_at ?? $lastTrans->created_at) : null;
+                                $lastPaidAt = optional($transcationInfo)->payment_date ?? optional($transcationInfo)->created_at;
                               @endphp
                               <p><span><strong>@lang('fees.invoice_number')</strong></span> <span>: {{$invoiceInfo->invoice_id}}</span></p>
                               <p><span>@lang('fees.create_date')</span> <span>: {{dateConvert($invoiceInfo->create_date)}}</span></p>

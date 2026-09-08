@@ -827,5 +827,6 @@ return [
     'quantity' => 'Cantidad',
     'amount' => 'Monto',
     'related' => 'Relacionado',
-    'my' => 'Mi'
+    'my' => 'Mi',
+    'reset' => 'Reiniciar',
 ];
