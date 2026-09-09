@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify Composer file
+      - name: Verify Composer files
         run: |
           test -f vendor/composer/autoload_static.php
           echo "autoload_static.php exists"
@@ -28,4 +28,3 @@ jobs:
           port: ${{ secrets.FTP_PORT }}
           server-dir: /htdocs/
           log-level: verbose
-          dangerous-clean-slate: true
