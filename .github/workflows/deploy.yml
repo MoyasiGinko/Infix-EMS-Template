@@ -13,12 +13,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify Composer files
+      - name: Verify Composer autoloader
         run: |
-          echo "Checking Composer autoloader..."
+          echo "=========================================="
+          echo "COMPOSER AUTOLOADER CHECK"
+          echo "=========================================="
+
+          echo ""
+          echo "Checking file:"
           test -f vendor/composer/autoload_static.php
-          echo "autoload_static.php exists"
+
+          echo ""
+          echo "File information:"
           ls -lah vendor/composer/autoload_static.php
+
+          echo ""
+          echo "SHA256:"
+          sha256sum vendor/composer/autoload_static.php
+
+          echo ""
+          echo "Git tracking status:"
+          git ls-files --error-unmatch vendor/composer/autoload_static.php
+
+          echo ""
+          echo "Composer directory:"
+          ls -lah vendor/composer/
+
+          echo ""
+          echo "=========================================="
+          echo "Composer autoloader exists and is tracked."
+          echo "=========================================="
 
       - name: Deploy to InfinityFree
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
