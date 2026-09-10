@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -16,15 +17,15 @@ jobs:
       - name: Verify Composer autoloader
         run: |
           echo "=========================================="
-          echo "COMPOSER AUTOLOADER CHECK"
+          echo "CHECKING COMPOSER AUTOLOADER"
           echo "=========================================="
 
-          echo ""
-          echo "Checking file:"
-          test -f vendor/composer/autoload_static.php
+          if [ ! -f "vendor/composer/autoload_static.php" ]; then
+            echo "ERROR: vendor/composer/autoload_static.php DOES NOT EXIST"
+            exit 1
+          fi
 
-          echo ""
-          echo "File information:"
+          echo "File exists:"
           ls -lah vendor/composer/autoload_static.php
 
           echo ""
@@ -32,7 +33,7 @@ jobs:
           sha256sum vendor/composer/autoload_static.php
 
           echo ""
-          echo "Git tracking status:"
+          echo "Git tracking:"
           git ls-files --error-unmatch vendor/composer/autoload_static.php
 
           echo ""
@@ -41,8 +42,13 @@ jobs:
 
           echo ""
           echo "=========================================="
-          echo "Composer autoloader exists and is tracked."
+          echo "COMPOSER AUTOLOADER VERIFIED"
           echo "=========================================="
+
+      - name: Remove FTP sync state
+        run: |
+          rm -f .ftp-deploy-sync-state.json
+          echo "Removed local FTP sync state so deployment can recalculate files."
 
       - name: Deploy to InfinityFree
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
