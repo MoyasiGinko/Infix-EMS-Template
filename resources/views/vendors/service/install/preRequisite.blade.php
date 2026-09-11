@@ -18,15 +18,21 @@
             </div>
             @foreach ($server_checks as $server)
              @php
-                if(gv($server, 'type') == 'error' and !$has_false){
+                $server_type = gv($server, 'type');
+                if($server_type == 'error' and !$has_false){
                     $has_false = true;
                 }
+                $alert_class = $server_type == 'error' ? 'danger' : ($server_type == 'warning' ? 'warning' : 'success');
+                $icon_class = $server_type == 'error' ? 'na' : ($server_type == 'warning' ? 'alert' : 'check-box');
             @endphp
             <div class="col-md-6">
                 <p
-                    class="alert alert-font alert-{{ gv($server, 'type') == 'error' ? 'danger' : 'success' }}">
-                    <i class="ti-{{ gv($server, 'type') == 'error' ? 'na' : 'check-box' }} mr-1"></i>
+                    class="alert alert-font alert-{{ $alert_class }}">
+                    <i class="ti-{{ $icon_class }} mr-1"></i>
                     {{ gv($server, 'message') }}
+                    @if($server_type == 'warning')
+                        <span class="badge badge-warning text-uppercase float-right">Warning</span>
+                    @endif
                 </p>
             </div>
             @endforeach
@@ -36,15 +42,21 @@
             </div>
             @foreach ($folder_checks as $folder)
             @php
-                if(gv($folder, 'type') == 'error' and !$has_false){
+                $folder_type = gv($folder, 'type');
+                if($folder_type == 'error' and !$has_false){
                     $has_false = true;
                 }
+                $alert_class = $folder_type == 'error' ? 'danger' : ($folder_type == 'warning' ? 'warning' : 'success');
+                $icon_class = $folder_type == 'error' ? 'na' : ($folder_type == 'warning' ? 'alert' : 'check-box');
             @endphp
             <div class="col-md-6">
                 <p
-                    class="alert-font alert alert-{{ gv($folder, 'type') == 'error' ? 'danger' : 'success' }}">
-                    <i class="ti-{{ gv($folder, 'type') == 'error' ? 'na' : 'check-box' }} mr-1"></i>
+                    class="alert-font alert alert-{{ $alert_class }}">
+                    <i class="ti-{{ $icon_class }} mr-1"></i>
                     {{ gv($folder, 'message') }}
+                    @if($folder_type == 'warning')
+                        <span class="badge badge-warning text-uppercase float-right">Warning</span>
+                    @endif
                 </p>
             </div>
             @endforeach

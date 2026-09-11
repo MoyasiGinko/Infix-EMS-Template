@@ -60,7 +60,7 @@ class InstallRepository
         if ($boolean) {
             return array('type' => 'success', 'message' => $message);
         } else {
-            return array('type' => 'error', 'message' => $help);
+            return array('type' => $fatal ? 'error' : 'warning', 'message' => $help);
         }
     }
 
@@ -110,10 +110,10 @@ class InstallRepository
         $server[] = $this->check(extension_loaded('curl'), 'CURL is installed.', 'Install and enable CURL.', true);
         $server[] = $this->check(ini_get('allow_url_fopen'), 'allow_url_fopen is on.', 'Turn on allow_url_fopen.', true);
         $server[] = $this->check(ini_get('allow_url_fopen'), 'allow_url_fopen is on.', 'Turn on allow_url_fopen.', true);
-        $server[] = $this->check($this->compareInt($this->getIniSize('post_max_size'), $this->convertToInt($post_max_size)),  'Current Post Max Size ' . ini_get('post_max_size'), sprintf('Min Post Max Size ' . $post_max_size . ' (%s)', 'Current size ' . ini_get('post_max_size')),true);
-        $server[] = $this->check($this->compareInt($this->getIniSize('memory_limit'), $this->convertToInt($memory_limit)), 'Current Memory Limit ' . ini_get('memory_limit'), sprintf('Min Memory Limit ' . $memory_limit . ' (%s)', 'Current limit ' . ini_get('memory_limit')),true);
-        $server[] = $this->check($this->compareInt($this->getIniSize('upload_max_filesize'), $this->convertToInt($upload_max_filesize)), 'Current Upload Max File Size ' . ini_get('upload_max_filesize'), sprintf('Min Upload Max File Size ' . $upload_max_filesize . ' (%s)', 'Current size ' . ini_get('upload_max_filesize')),true);
-        $server[] = $this->check($this->compareInt($this->getIniSize('max_execution_time'), $max_execution_time),  'Current Max Execution time ' . ini_get('max_execution_time'), sprintf('Min Max Excecution time ' . $max_execution_time . ' (%s)', 'Current time ' . ini_get('max_execution_time')),true);
+        $server[] = $this->check($this->compareInt($this->getIniSize('post_max_size'), $this->convertToInt($post_max_size)),  'Current Post Max Size ' . ini_get('post_max_size'), sprintf('Min Post Max Size ' . $post_max_size . ' (%s)', 'Current size ' . ini_get('post_max_size')), false);
+        $server[] = $this->check($this->compareInt($this->getIniSize('memory_limit'), $this->convertToInt($memory_limit)), 'Current Memory Limit ' . ini_get('memory_limit'), sprintf('Min Memory Limit ' . $memory_limit . ' (%s)', 'Current limit ' . ini_get('memory_limit')), true);
+        $server[] = $this->check($this->compareInt($this->getIniSize('upload_max_filesize'), $this->convertToInt($upload_max_filesize)), 'Current Upload Max File Size ' . ini_get('upload_max_filesize'), sprintf('Min Upload Max File Size ' . $upload_max_filesize . ' (%s)', 'Current size ' . ini_get('upload_max_filesize')), false);
+        $server[] = $this->check($this->compareInt($this->getIniSize('max_execution_time'), $max_execution_time),  'Current Max Execution time ' . ini_get('max_execution_time'), sprintf('Min Max Excecution time ' . $max_execution_time . ' (%s)', 'Current time ' . ini_get('max_execution_time')), false);
 
         $folder[] = $this->check(is_writable(base_path('/.env')), 'File .env is writable', 'File .env is not writable', true);
         $folder[] = $this->check(is_writable(base_path("/storage/app")), 'Folder /storage/app is writable', 'Folder /storage/app is not writable', true);
