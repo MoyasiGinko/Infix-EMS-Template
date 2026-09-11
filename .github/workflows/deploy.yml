@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   deploy:
@@ -13,42 +12,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Verify Composer autoloader
-        run: |
-          echo "=========================================="
-          echo "CHECKING COMPOSER AUTOLOADER"
-          echo "=========================================="
-
-          if [ ! -f "vendor/composer/autoload_static.php" ]; then
-            echo "ERROR: vendor/composer/autoload_static.php DOES NOT EXIST"
-            exit 1
-          fi
-
-          echo "File exists:"
-          ls -lah vendor/composer/autoload_static.php
-
-          echo ""
-          echo "SHA256:"
-          sha256sum vendor/composer/autoload_static.php
-
-          echo ""
-          echo "Git tracking:"
-          git ls-files --error-unmatch vendor/composer/autoload_static.php
-
-          echo ""
-          echo "Composer directory:"
-          ls -lah vendor/composer/
-
-          echo ""
-          echo "=========================================="
-          echo "COMPOSER AUTOLOADER VERIFIED"
-          echo "=========================================="
-
-      - name: Remove FTP sync state
-        run: |
-          rm -f .ftp-deploy-sync-state.json
-          echo "Removed local FTP sync state so deployment can recalculate files."
 
       - name: Deploy to InfinityFree
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -59,5 +22,3 @@ jobs:
           protocol: ftp
           port: ${{ secrets.FTP_PORT }}
           server-dir: /htdocs/
-          log-level: verbose
-          dangerous-clean-slate: false
