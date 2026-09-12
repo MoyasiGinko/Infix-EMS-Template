@@ -35,7 +35,7 @@ class HomeController extends Controller
 
         $user = Auth::user();
         $role_id = $user->role_id;
-        $is_due_fees_login_permission = generalSetting()->due_fees_login;
+        $is_due_fees_login_permission = generalSetting() ? (generalSetting()->due_fees_login ?? 0) : 0;
         $due_fees_login_prevent = DueFeesLoginPrevent::where('user_id', $user->id)->where('school_id', $user->school_id)->where('role_id', $role_id)->first();
         
         if (($user->role_id == 1) && ($user->is_administrator == 'yes') && (moduleStatusCheck('Saas') == true)) {   // SuperAdmin

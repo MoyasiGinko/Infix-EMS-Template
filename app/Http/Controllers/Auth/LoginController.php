@@ -437,10 +437,26 @@ class LoginController extends Controller
             }
 
             // System date format save in session
-            $date_format_id = generalSetting()->date_format_id;
+            $date_format_id = generalSetting() ? generalSetting()->date_format_id : null;
             $system_date_format = 'jS M, Y';
             if ($date_format_id) {
-                $system_date_format = SmDateFormat::where('id', $date_format_id)->first(['format'])->format;
+                $df = SmDateFormat::where('id', $date_format_id)->first(['format']);
+                if ($df) {
+                    $system_date_format = $df->format;
+                }
+            }
+            if (!SmDateFormat::where('school_id', Auth::user()->school_id ?? 1)->exists()) {
+                try {
+                    $df = new SmDateFormat();
+                    $df->format = 'jS M, Y';
+                    $df->normal_view = '12th Sep, 2026';
+                    $df->active_status = 1;
+                    $df->school_id = Auth::user()->school_id ?? 1;
+                    $df->save();
+                    $system_date_format = $df->format;
+                } catch (\Throwable $e) {
+                    // ignore
+                }
             }
 
             session()->put('system_date_format', $system_date_format);
@@ -456,10 +472,24 @@ class LoginController extends Controller
             session()->put('all_module', $all_modules);
 
             // Session put text decoration
-            $ttl_rtl = generalSetting()->ttl_rtl;
+            $ttl_rtl = generalSetting() ? generalSetting()->ttl_rtl : 2;
             session()->put('text_direction', $ttl_rtl);
 
             $active_style = SmStyle::where('school_id', Auth::user()->school_id)->where('is_active', 1)->first();
+            if (!$active_style) {
+                try {
+                    $active_style = new SmStyle();
+                    $active_style->style_name = 'Default';
+                    $active_style->path_main_style = 'style.css';
+                    $active_style->path_infix_style = 'infix.css';
+                    $active_style->is_active = 1;
+                    $active_style->is_default = 1;
+                    $active_style->school_id = Auth::user()->school_id ?? 1;
+                    $active_style->save();
+                } catch (\Throwable $e) {
+                    // ignore
+                }
+            }
             session()->put('active_style', $active_style);
 
             $all_styles = SmStyle::where('school_id', Auth::user()->school_id)->get();
@@ -479,27 +509,25 @@ class LoginController extends Controller
                 $profile = SmStudent::where('user_id', Auth::id())->withOutGlobalScopes([StatusAcademicSchoolScope::class])->first();
 
                 session()->put('profile', @$profile->student_photo);
-                // $session_id = $profile ? $profile->academic_id : generalSetting()->session_id;
-                $session_id = generalSetting()->session_id;
+                $session_id = generalSetting() ? generalSetting()->session_id : null;
             } else {
                 $profile = SmStaff::where('user_id', Auth::id())->first();
                 if ($profile) {
                     session()->put('profile', $profile->staff_photo);
                 }
 
-                // $session_id = $profile && $profile->academic_id ? $profile->academic_id : generalSetting()->session_id;
-                $session_id = generalSetting()->session_id;
+                $session_id = generalSetting() ? generalSetting()->session_id : null;
             }
 
             if (moduleStatusCheck('University')) {
-                $session_id = generalSetting()->un_academic_id;
+                $session_id = generalSetting() ? generalSetting()->un_academic_id : null;
                 if (! $session_id) {
                     $session = UnAcademicYear::where('school_id', Auth::user()->school_id)->where('active_status', 1)->first();
                 } else {
                     $session = UnAcademicYear::find($session_id);
                 }
 
-                session()->put('sessionId', $session->id);
+                session()->put('sessionId', $session ? $session->id : 1);
                 session()->put('session', $session);
             } else {
                 if (! $session_id) {
@@ -512,8 +540,35 @@ class LoginController extends Controller
                     $session = SmAcademicYear::where('school_id', Auth::user()->school_id)->first();
                 }
 
-                session()->put('sessionId', $session->id);
+                if (! $session) {
+                    try {
+                        $session = new SmAcademicYear();
+                        $session->year = date('Y');
+                        $session->title = date('Y');
+                        $session->starting_date = date('Y-01-01');
+                        $session->ending_date = date('Y-12-31');
+                        $session->active_status = 1;
+                        $session->school_id = Auth::user()->school_id ?? 1;
+                        $session->created_by = Auth::id() ?? 1;
+                        $session->updated_by = Auth::id() ?? 1;
+                        $session->save();
+                    } catch (\Throwable $e) {
+                        // ignore
+                    }
+                }
+
+                session()->put('sessionId', $session ? $session->id : 1);
                 session()->put('session', $session);
+
+                $gs = generalSetting();
+                if ($gs && empty($gs->session_id) && $session) {
+                    try {
+                        $gs->session_id = $session->id;
+                        $gs->save();
+                    } catch (\Throwable $e) {
+                        // ignore
+                    }
+                }
             }
 
             session()->put('school_config', generalSetting());

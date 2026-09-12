@@ -543,21 +543,30 @@ if (! function_exists('getAcademicId')) {
             return session()->get('sessionId');
         }
 
-        if (moduleStatusCheck('University')) {
-            $session_id = generalSetting()->un_academic_id;
-            if (! $session_id) {
-                $session_id = UnAcademicYear::where('school_id', Auth::user()->school_id)->where('active_status', 1)->first()->id;
+        $session_id = 1;
+        try {
+            if (moduleStatusCheck('University')) {
+                $session_id = generalSetting() ? generalSetting()->un_academic_id : null;
+                if (! $session_id) {
+                    $schoolId = Auth::check() ? Auth::user()->school_id : 1;
+                    $unYear = UnAcademicYear::where('school_id', $schoolId)->where('active_status', 1)->first();
+                    $session_id = $unYear ? $unYear->id : 1;
+                }
+            } else {
+                $session_id = generalSetting() ? generalSetting()->session_id : null;
+                if (! $session_id) {
+                    $schoolId = Auth::check() ? Auth::user()->school_id : 1;
+                    $acYear = SmAcademicYear::where('school_id', $schoolId)->where('active_status', 1)->first();
+                    $session_id = $acYear ? $acYear->id : 1;
+                }
             }
-        } else {
-            $session_id = generalSetting()->session_id;
-            if (! $session_id) {
-                $session_id = SmAcademicYear::where('school_id', Auth::user()->school_id)->where('active_status', 1)->first()->id;
-            }
+        } catch (\Throwable $e) {
+            $session_id = 1;
         }
 
-        session()->put('sessionId', $session_id);
+        session()->put('sessionId', $session_id ?? 1);
 
-        return session()->get('sessionId');
+        return session()->get('sessionId') ?? 1;
 
     }
 }
@@ -567,13 +576,17 @@ if (! function_exists('timeZone')) {
     {
         $time_zone_setup = session()->get('time_zone_setup');
         if (is_null($time_zone_setup)) {
-            $time_zone = SmGeneralSettings::join('sm_time_zones', 'sm_time_zones.id', '=', 'sm_general_settings.time_zone_id')
-                ->where('school_id', 1)->first('time_zone');
-            session()->put('time_zone_setup', $time_zone);
-            $time_zone_setup = session()->get('time_zone_setup');
+            try {
+                $time_zone = SmGeneralSettings::join('sm_time_zones', 'sm_time_zones.id', '=', 'sm_general_settings.time_zone_id')
+                    ->where('school_id', 1)->first('time_zone');
+                session()->put('time_zone_setup', $time_zone);
+                $time_zone_setup = session()->get('time_zone_setup');
+            } catch (\Throwable $e) {
+                $time_zone_setup = null;
+            }
         }
 
-        return $time_zone_setup->time_zone;
+        return $time_zone_setup ? ($time_zone_setup->time_zone ?? 'UTC') : 'UTC';
     }
 }
 
@@ -582,13 +595,18 @@ if (! function_exists('schoolTimeZone')) {
     {
         $time_zone_setup = session()->get('time_zone_setup');
         if (is_null($time_zone_setup)) {
-            $time_zone = SmGeneralSettings::join('sm_time_zones', 'sm_time_zones.id', '=', 'sm_general_settings.time_zone_id')
-                ->where('school_id', Auth::user()->school_id)->first('time_zone');
-            session()->put('time_zone_setup', $time_zone);
-            $time_zone_setup = session()->get('time_zone_setup');
+            try {
+                $schoolId = Auth::check() ? Auth::user()->school_id : 1;
+                $time_zone = SmGeneralSettings::join('sm_time_zones', 'sm_time_zones.id', '=', 'sm_general_settings.time_zone_id')
+                    ->where('school_id', $schoolId)->first('time_zone');
+                session()->put('time_zone_setup', $time_zone);
+                $time_zone_setup = session()->get('time_zone_setup');
+            } catch (\Throwable $e) {
+                $time_zone_setup = null;
+            }
         }
 
-        return $time_zone_setup->time_zone;
+        return $time_zone_setup ? ($time_zone_setup->time_zone ?? 'UTC') : 'UTC';
     }
 }
 
