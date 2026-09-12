@@ -65,15 +65,17 @@ class AppServiceProvider extends ServiceProvider
             });
 
             view()->composer(['plugins.tawk_to'], function ($view): void {
+                $school_id = (app()->bound('school') && app('school')) ? app('school')->id : (auth()->check() ? auth()->user()->school_id : 1);
                 $data = [
                     'agent' => new \Jenssegers\Agent\Agent(),
-                    'tawk_setting' => Plugin::where('name', 'tawk')->where('school_id', app('school')->id)->first(),
+                    'tawk_setting' => Plugin::where('name', 'tawk')->where('school_id', $school_id)->first(),
                 ];
                 $view->with($data);
             });
 
             view()->composer(['backEnd.partials.menu', 'layouts.pb-site', 'frontEnd.home.front_master'], function ($view): void {
-                $pluginCheck = Plugin::whereIn('name', ['tawk', 'messenger'])->where('school_id', app('school')->id)->get();
+                $school_id = (app()->bound('school') && app('school')) ? app('school')->id : (auth()->check() ? auth()->user()->school_id : 1);
+                $pluginCheck = Plugin::whereIn('name', ['tawk', 'messenger'])->where('school_id', $school_id)->get();
                 $tawk = $pluginCheck->where('name', 'tawk')->first();
                 $messenger = $pluginCheck->where('name', 'messenger')->first();
                 $data = [
@@ -86,9 +88,10 @@ class AppServiceProvider extends ServiceProvider
             });
 
             view()->composer(['plugins.messenger'], function ($view): void {
+                $school_id = (app()->bound('school') && app('school')) ? app('school')->id : (auth()->check() ? auth()->user()->school_id : 1);
                 $data = [
                     'agent' => new \Jenssegers\Agent\Agent(),
-                    'messenger_setting' => Plugin::where('name', 'messenger')->where('school_id', app('school')->id)->first(),
+                    'messenger_setting' => Plugin::where('name', 'messenger')->where('school_id', $school_id)->first(),
                 ];
                 $view->with($data);
             });

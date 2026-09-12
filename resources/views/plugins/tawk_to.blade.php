@@ -13,7 +13,7 @@
 @php
     $isApplicable = false;
 
-    if (Auth::check()) {
+    if (Auth::check() && !empty($tawk_setting)) {
         $user = Auth::user();
 
         if ($user) {
@@ -24,7 +24,7 @@
     }
 @endphp
 
- @if($tawk_setting->is_enable == 1)
+ @if(!empty($tawk_setting) && $tawk_setting->is_enable == 1)
     @if ($tawk_setting->showing_page == 'all')
         @if ( ($tawk_setting->availability == 'mobile' && $agent->isMobile()) ||
         ($tawk_setting->availability == 'desktop' && $agent->isDesktop()) ||      

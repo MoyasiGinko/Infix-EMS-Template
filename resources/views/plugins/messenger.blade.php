@@ -1,7 +1,7 @@
 @php
     $isApplicable = false;
 
-    if (Auth::check()) {
+    if (Auth::check() && !empty($messenger_setting)) {
         $user = Auth::user();
 
         if ($user) {
@@ -11,7 +11,7 @@
         }
     }
 @endphp
-@if($messenger_setting->is_enable == 1)
+@if(!empty($messenger_setting) && $messenger_setting->is_enable == 1)
 
     @if ($messenger_setting->showing_page == 'all')
 

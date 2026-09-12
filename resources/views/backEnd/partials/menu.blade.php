@@ -459,8 +459,8 @@
 
 @php
     $school_id = @Auth::user()->school_id;
-    $tawk_is_enable = $tawk->is_enable;
-    $messenger_is_enable = $messenger->is_enable;
+    $tawk_is_enable = !empty($tawk) ? ($tawk->is_enable ?? 0) : 0;
+    $messenger_is_enable = !empty($messenger) ? ($messenger->is_enable ?? 0) : 0;
 @endphp
 
 @if ($tawk_is_enable == 1)
