@@ -31,25 +31,21 @@ class Handler extends ExceptionHandler
 
     public function register()
     {
-        
         $this->renderable(function (Throwable $throwable, $request) {
             if ($throwable instanceof ValidationException) {
-                $statusCode = 422;
-            } elseif ($throwable instanceof HttpExceptionInterface) {
-                $statusCode = $throwable->getStatusCode();
-            } else {
-                $statusCode = 500;
+                return null;
             }
-            if($statusCode == 500)
-            {                
-                if(!empty(request()->headers->get('referer')) && request()->headers->get('referer') !== request()->fullUrl())
-                {
-                    Toastr::error($throwable->getMessage(), 'Failed');
-                    return back();
-                }
+            if ($throwable instanceof HttpExceptionInterface && $throwable->getStatusCode() != 500) {
+                return null;
             }
+
+            return response('<pre style="white-space:pre-wrap; background:#181818; color:#f85149; padding:20px; font-size:14px; font-family:monospace; line-height:1.5; border:1px solid #da3633; border-radius:6px; margin:20px;">' . 
+                '<strong>[500 EXCEPTION]</strong> ' . htmlspecialchars(get_class($throwable)) . "\n" .
+                '<strong>MESSAGE:</strong> ' . htmlspecialchars($throwable->getMessage()) . "\n" .
+                '<strong>LOCATION:</strong> ' . htmlspecialchars($throwable->getFile()) . ':' . $throwable->getLine() . "\n\n" .
+                '<strong>STACK TRACE:</strong>' . "\n" . htmlspecialchars($throwable->getTraceAsString()) .
+            '</pre>', 500);
         });
-       
     }
 
     /**
@@ -75,7 +71,15 @@ class Handler extends ExceptionHandler
             return redirect('login');
         }
 
-        return parent::render($request, $throwable);
+        if (config('app.debug') || env('APP_DEBUG', true) || request()->has('debug') || request()->is('admin-dashboard*') || request()->is('test-dash*')) {
+            return response('<pre style="white-space:pre-wrap; background:#181818; color:#f85149; padding:20px; font-size:14px; font-family:monospace; line-height:1.5; border:1px solid #da3633; border-radius:6px; margin:20px;">' . 
+                '<strong>[500 EXCEPTION]</strong> ' . htmlspecialchars(get_class($throwable)) . "\n" .
+                '<strong>MESSAGE:</strong> ' . htmlspecialchars($throwable->getMessage()) . "\n" .
+                '<strong>LOCATION:</strong> ' . htmlspecialchars($throwable->getFile()) . ':' . $throwable->getLine() . "\n\n" .
+                '<strong>STACK TRACE:</strong>' . "\n" . htmlspecialchars($throwable->getTraceAsString()) .
+            '</pre>', 500);
+        }
 
+        return parent::render($request, $throwable);
     }
 }

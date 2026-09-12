@@ -23,14 +23,24 @@ class SubdomainMiddleware
     {
 
         $school = SaasSchool();
-        Session::put('domain', $school->domain);
+        $domain = ($school && isset($school->domain)) ? $school->domain : 'school';
+        Session::put('domain', $domain);
         app()->forgetInstance('school');
         app()->instance('school', $school);
 
-        $settings_prefix = Str::lower(str_replace(' ', '_', $school->domain));
-        $chat_settings = storage_path('app/chat/'.$settings_prefix.'_settings.json');
+        $settings_prefix = Str::lower(str_replace(' ', '_', $domain ?: 'default'));
+        $chat_dir = storage_path('app/chat');
+        if (!file_exists($chat_dir)) {
+            @mkdir($chat_dir, 0777, true);
+        }
+        $chat_settings = $chat_dir.'/'.$settings_prefix.'_settings.json';
         if (! file_exists($chat_settings)) {
-            copy(storage_path('app/chat/default_settings.json'), $chat_settings);
+            $default_settings = storage_path('app/chat/default_settings.json');
+            if (file_exists($default_settings)) {
+                @copy($default_settings, $chat_settings);
+            } else {
+                @file_put_contents($chat_settings, json_encode([], JSON_PRETTY_PRINT));
+            }
         }
 
         app()->scoped('general_settings', function () use ($chat_settings): Valuestore {
