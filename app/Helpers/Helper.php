@@ -424,8 +424,11 @@ function FeesDueSMSBody($body, $s_id, $time)
 if (! function_exists('userPermission')) {
     function userPermission($route, $role_id = null, $purpose = null): bool
     {
-        
-        $role_id = Auth::user()->role_id;
+        if (Auth::check() && Auth::user()->role_id == 1) {
+            return true;
+        }
+
+        $role_id = Auth::check() ? Auth::user()->role_id : $role_id;
         $permissions = app('permission');
         if ($role_id == 1 && Auth::user()->is_administrator == 'yes') {
             return true;
