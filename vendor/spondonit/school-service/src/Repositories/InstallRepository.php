@@ -96,15 +96,19 @@ class InstallRepository {
             $staff->save();
 
 			$setting =  SmGeneralSettings::first();
-            $setting->email = $user->email;
-            $setting->system_purchase_code = Storage::get('.access_code');
-            $setting->system_activated_date = date('Y-m-d');
-            $setting->system_domain = app_url();
-            $setting->save();
+            if ($setting) {
+                $setting->email = $user->email;
+                $setting->system_purchase_code = Storage::get('.access_code');
+                $setting->system_activated_date = date('Y-m-d');
+                $setting->system_domain = app_url();
+                $setting->save();
+            }
 
             $school = SmSchool::first();
-            $school->email = $user->email;
-            $school->save();
+            if ($school) {
+                $school->email = $user->email;
+                $school->save();
+            }
       
             
         } catch(\Exception $e){

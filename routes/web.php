@@ -26,9 +26,17 @@ Route::group(['middleware' => ['subdomain']], function ($routes) {
 });
 
 Route::get('migrate', function () {
-    if (Auth::check() && Auth::id() == 1) {
-        Artisan::call('migrate', ['--force' => true]);
-        Brian2694\Toastr\Facades\Toastr::success('Migration run successfully');
+    if (!Storage::exists('.app_installed') || (Auth::check() && Auth::id() == 1)) {
+        @set_time_limit(0);
+        @ini_set('max_execution_time', 0);
+        @ini_set('memory_limit', '-1');
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+            Brian2694\Toastr\Facades\Toastr::success('Migration run successfully');
+        } catch (\Throwable $e) {
+            Brian2694\Toastr\Facades\Toastr::error($e->getMessage());
+            return response('Migration error: ' . $e->getMessage(), 500);
+        }
 
         return redirect()->to(url('/admin-dashboard'));
     }

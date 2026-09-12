@@ -419,19 +419,59 @@ class InstallRepository
      */
     public function migrateDB()
     {
+        @set_time_limit(0);
+        @ini_set('max_execution_time', 0);
+        @ini_set('memory_limit', '-1');
+
         $this->rollbackDb();
+
+        $migrationException = null;
         try {
             Artisan::call('migrate:fresh', array('--force' => true));
             return true;
         } catch (Throwable $e) {
+            $migrationException = $e;
+            Log::error('migrate:fresh failed: ' . $e->getMessage());
             $this->rollbackDb();
-            Log::error($e);
-            return false;
-            $sql = base_path('database/' . config('spondonit.database_file'));
-            if (File::exists($sql)) {
-                DB::unprepared(file_get_contents($sql));
+        }
+
+        // Fallback: load SQL dump if migrate:fresh failed
+        $possibleSqlFiles = [
+            base_path('database/' . config('spondonit.database_file')),
+            base_path('database/infixeduV6.sql'),
+            base_path('database/infix_edu.sql'),
+            base_path('qlabxcom_zoldii_ems_3.sql'),
+        ];
+
+        $sqlFile = null;
+        foreach ($possibleSqlFiles as $file) {
+            if (File::exists($file)) {
+                $sqlFile = $file;
+                break;
             }
         }
+
+        if ($sqlFile) {
+            try {
+                DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+                DB::unprepared(File::get($sqlFile));
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+                return true;
+            } catch (Throwable $sqlError) {
+                Log::error('SQL dump fallback failed: ' . $sqlError->getMessage());
+                throw ValidationException::withMessages([
+                    'message' => 'Migration failed: ' . ($migrationException ? $migrationException->getMessage() : '') . ' | SQL import failed: ' . $sqlError->getMessage()
+                ]);
+            }
+        }
+
+        if ($migrationException) {
+            throw ValidationException::withMessages([
+                'message' => 'Migration failed: ' . $migrationException->getMessage()
+            ]);
+        }
+
+        return false;
     }
 
     public function rollbackDb()
@@ -448,7 +488,11 @@ class InstallRepository
             return;
         }
 
-        Artisan::call('db:seed', array('--force' => true));
+        try {
+            Artisan::call('db:seed', array('--force' => true));
+        } catch (Throwable $e) {
+            Log::warning('Seeding warning: ' . $e->getMessage());
+        }
     }
 
 
