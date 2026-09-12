@@ -64,15 +64,16 @@
     </script>
 </head>
 @php
-if (empty(color_theme())) {
+$color_theme = color_theme();
+if (empty($color_theme)) {
 //  $css = "background: url('".asset('/public/backEnd/img/body-bg.jpg')."')  no-repeat center; background-size: cover ; ";
     $css = "background: var(--background)";
 } else {
- if (!empty(color_theme()->background_type == 'image')) {
-     $css = "background: url('" . asset(color_theme()->background_image) . "')  no-repeat center; background-size: cover; background-attachment: fixed; background-position: top; ";
- } else {
-     $css = "background:" . color_theme()->background_color;
- }
+    if (!empty($color_theme->background_type) && $color_theme->background_type == 'image' && !empty($color_theme->background_image)) {
+        $css = "background: url('" . asset($color_theme->background_image) . "')  no-repeat center; background-size: cover; background-attachment: fixed; background-position: top; ";
+    } else {
+        $css = "background:" . ($color_theme->background_color ?? 'var(--background)');
+    }
 }
 
 @endphp

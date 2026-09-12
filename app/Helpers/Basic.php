@@ -38,19 +38,81 @@ if (!function_exists('userColorThemeActive')) {
     {
         $school_id = auth()->user()->school_id ?? 1;
         $cache_key = $user_id ? ('active_theme_user_' . $user_id) : 'active_theme_school_' . $school_id;
-        $active_theme = Cache::rememberForever($cache_key, function () use ($user_id) {
-            $theme = Theme::with('colors')->where('is_default', 1)
-                ->when($user_id, function ($q) use ($user_id) {
-                    $q->where('created_by', $user_id);
-                })->first();
-            if ($user_id && !$theme) {
-                $theme = Theme::with('colors')->where('is_default', 1)->first();
-            }
-            if (!$theme) {
-                $theme = Theme::with('colors')->first();
-            }
-            return $theme;
-        });
+        $active_theme = Cache::get($cache_key);
+        if (!$active_theme) {
+            $active_theme = Cache::rememberForever($cache_key, function () use ($user_id, $school_id) {
+                $theme = Theme::withoutGlobalScope(\App\Scopes\SchoolScope::class)->with('colors')->where('is_default', 1)
+                    ->when($user_id, function ($q) use ($user_id) {
+                        $q->where('created_by', $user_id);
+                    })->first();
+                if ($user_id && !$theme) {
+                    $theme = Theme::withoutGlobalScope(\App\Scopes\SchoolScope::class)->with('colors')->where('is_default', 1)->first();
+                }
+                if (!$theme) {
+                    $theme = Theme::withoutGlobalScope(\App\Scopes\SchoolScope::class)->with('colors')->first();
+                }
+                if (!$theme) {
+                    try {
+                        $theme = Theme::withoutGlobalScope(\App\Scopes\SchoolScope::class)->create([
+                            'title' => 'Default',
+                            'school_id' => $school_id,
+                            'path_main_style' => 'style.css',
+                            'path_infix_style' => 'infix.css',
+                            'is_default' => 1,
+                            'color_mode' => 'gradient',
+                            'background_type' => 'color',
+                            'background_color' => '#FAFAFA',
+                            'is_system' => true,
+                            'created_by' => $user_id ?? 1,
+                            'box_shadow' => 1,
+                        ]);
+
+                        $colors = \Illuminate\Support\Facades\DB::table('colors')->get();
+                        if ($colors->isNotEmpty()) {
+                            $defaults = [
+                                1 => '#415094', 2 => '#7c32ff', 3 => '#7c32ff', 4 => '#7c32ff',
+                                5 => '#828bb2', 6 => '#828bb2', 7 => '#ffffff', 8 => '#ffffff',
+                                9 => '#000000', 10 => '#000000', 11 => '#EFF2F8', 12 => '#ffffff',
+                                13 => '#51A351', 14 => '#E09079', 15 => '#FF6D68', 16 => '#415094',
+                                17 => '#222222', 18 => '#415094', 19 => '#0d0e12', 20 => '#ffffff',
+                                21 => '#ffffff', 29 => '#415094'
+                            ];
+                            $sql = [];
+                            foreach ($colors as $col) {
+                                $val = $defaults[$col->id] ?? ($col->default_value ?? '#415094');
+                                $sql[] = [
+                                    'theme_id' => $theme->id,
+                                    'color_id' => $col->id,
+                                    'value' => $val,
+                                    'created_at' => now(),
+                                    'updated_at' => now(),
+                                ];
+                            }
+                            if (!empty($sql)) {
+                                \Illuminate\Support\Facades\DB::table('color_theme')->insert($sql);
+                            }
+                        }
+                        $theme->load('colors');
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning('Could not auto-create theme: ' . $e->getMessage());
+                    }
+                }
+                return $theme;
+            });
+        }
+
+        if (!$active_theme) {
+            $fallback = new Theme();
+            $fallback->box_shadow = 1;
+            $fallback->title = 'Default';
+            $fallback->background_type = 'color';
+            $fallback->background_color = '#FAFAFA';
+            $fallback->path_main_style = 'style.css';
+            $fallback->path_infix_style = 'infix.css';
+            $fallback->setRelation('colors', collect());
+            return $fallback;
+        }
+
         return $active_theme;
     }
 }
@@ -59,12 +121,12 @@ if (!function_exists('userColorThemes')) {
     function userColorThemes(int $user_id = null)
     {
 
-        $themes = Theme::with('colors')
+        $themes = Theme::withoutGlobalScope(\App\Scopes\SchoolScope::class)->with('colors')
             ->when($user_id, function ($q) use ($user_id) {
                 $q->where('created_by', $user_id);
             })->get();
         if ($user_id && !$themes) {
-            $themes = Theme::with('colors')->where('is_system', 1)->get();
+            $themes = Theme::withoutGlobalScope(\App\Scopes\SchoolScope::class)->with('colors')->where('is_system', 1)->get();
         }
         return $themes;
     }
@@ -77,13 +139,23 @@ if (!function_exists('activeStyle')) {
             $active_style = session()->get('active_style');
             return $active_style;
         } else {
-            $active_style = auth()->check() ? Theme::where('id', auth()->user()->style_id)->first() :
-                Theme::where('school_id', 1)->where('is_default', 1)->first();
+            $active_style = auth()->check() ? Theme::withoutGlobalScope(\App\Scopes\SchoolScope::class)->where('id', auth()->user()->style_id)->first() :
+                Theme::withoutGlobalScope(\App\Scopes\SchoolScope::class)->where('school_id', 1)->where('is_default', 1)->first();
             if ($active_style == null) {
-                $active_style = Theme::where('school_id', 1)->where('is_default', 1)->first();
+                $active_style = Theme::withoutGlobalScope(\App\Scopes\SchoolScope::class)->where('school_id', 1)->where('is_default', 1)->first();
             }
             if ($active_style == null) {
-                $active_style = Theme::first();
+                $active_style = Theme::withoutGlobalScope(\App\Scopes\SchoolScope::class)->first();
+            }
+            if ($active_style == null) {
+                $active_style = new Theme();
+                $active_style->path_main_style = 'style.css';
+                $active_style->path_infix_style = 'infix.css';
+                $active_style->is_default = 1;
+                $active_style->title = 'Default';
+                $active_style->box_shadow = 1;
+                $active_style->background_type = 'color';
+                $active_style->background_color = '#FAFAFA';
             }
 
             session()->put('active_style', $active_style);

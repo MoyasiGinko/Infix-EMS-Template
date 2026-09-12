@@ -48,49 +48,51 @@
     @endphp
 
     --base_font : {{ in_array(session()->get('locale', Config::get('app.locale')), ['ar']) ? 'Cairo,' : ''}}Poppins, sans-serif;
-    --box_shadow : {{ $color_theme->box_shadow ? 'var(--box_shadow)' : 'none' }};
+    --box_shadow : {{ ($color_theme && !empty($color_theme->box_shadow)) ? 'var(--box_shadow)' : 'none' }};
     
+    @if($color_theme && !empty($color_theme->colors))
     @foreach($color_theme->colors as $color)
-        --{{ $color->name}}: {{ $color->pivot->value }};
+        --{{ $color->name}}: {{ $color->pivot ? $color->pivot->value : ($color->value ?? '') }};
         
         @if(in_array($color->name, ['success', 'danger']))
-            --{{ $color->name}}_with_opacity: {{ $color->pivot->value }}23;
+            --{{ $color->name}}_with_opacity: {{ ($color->pivot ? $color->pivot->value : ($color->value ?? '')) }}23;
         @endif
 
         @if ($color->name           == 'card-gradient-cyan_one')
-            @php $cyan_one          = $color->pivot->value; @endphp
+            @php $cyan_one          = $color->pivot ? $color->pivot->value : ($color->value ?? $cyan_one); @endphp
         @elseif ($color->name       == 'card-gradient-cyan_two')
-            @php $cyan_two          = $color->pivot->value; @endphp
+            @php $cyan_two          = $color->pivot ? $color->pivot->value : ($color->value ?? $cyan_two); @endphp
         @elseif ($color->name       == 'card-gradient-cyan_one_hover')
-            @php $cyan_one_hover    = $color->pivot->value; @endphp
+            @php $cyan_one_hover    = $color->pivot ? $color->pivot->value : ($color->value ?? $cyan_one_hover); @endphp
         @elseif ($color->name       == 'card-gradient-cyan_two_hover')
-            @php $cyan_two_hover    = $color->pivot->value; @endphp
+            @php $cyan_two_hover    = $color->pivot ? $color->pivot->value : ($color->value ?? $cyan_two_hover); @endphp
         @elseif ($color->name       == 'card-gradient-violet_one')
-            @php $violet_one        = $color->pivot->value; @endphp
+            @php $violet_one        = $color->pivot ? $color->pivot->value : ($color->value ?? $violet_one); @endphp
         @elseif ($color->name       == 'card-gradient-violet_one_hover')
-            @php $violet_one_hover  = $color->pivot->value; @endphp
+            @php $violet_one_hover  = $color->pivot ? $color->pivot->value : ($color->value ?? $violet_one_hover); @endphp
         @elseif ($color->name       == 'card-gradient-violet_two')
-            @php $violet_two        = $color->pivot->value; @endphp
+            @php $violet_two        = $color->pivot ? $color->pivot->value : ($color->value ?? $violet_two); @endphp
         @elseif ($color->name       == 'card-gradient-violet_two_hover')
-            @php $violet_two_hover  = $color->pivot->value; @endphp
+            @php $violet_two_hover  = $color->pivot ? $color->pivot->value : ($color->value ?? $violet_two_hover); @endphp
         @elseif ($color->name       == 'card-gradient-blue_one')
-            @php $blue_one          = $color->pivot->value; @endphp
+            @php $blue_one          = $color->pivot ? $color->pivot->value : ($color->value ?? $blue_one); @endphp
         @elseif ($color->name       == 'card-gradient-blue_one_hover')
-            @php $blue_one_hover    = $color->pivot->value; @endphp
+            @php $blue_one_hover    = $color->pivot ? $color->pivot->value : ($color->value ?? $blue_one_hover); @endphp
         @elseif ($color->name       == 'card-gradient-blue_two')
-            @php $blue_two          = $color->pivot->value; @endphp
+            @php $blue_two          = $color->pivot ? $color->pivot->value : ($color->value ?? $blue_two); @endphp
         @elseif ($color->name       == 'card-gradient-blue_two_hover')
-            @php $blue_two_hover    = $color->pivot->value; @endphp
+            @php $blue_two_hover    = $color->pivot ? $color->pivot->value : ($color->value ?? $blue_two_hover); @endphp
         @elseif ($color->name       == 'card-gradient-fuchsia_one')
-            @php $fuchsia_one       = $color->pivot->value; @endphp
+            @php $fuchsia_one       = $color->pivot ? $color->pivot->value : ($color->value ?? $fuchsia_one); @endphp
         @elseif ($color->name       == 'card-gradient-fuchsia_one_hover')
-            @php $fuchsia_one_hover = $color->pivot->value; @endphp
+            @php $fuchsia_one_hover = $color->pivot ? $color->pivot->value : ($color->value ?? $fuchsia_one_hover); @endphp
         @elseif ($color->name       == 'card-gradient-fuchsia_two')
-            @php $fuchsia_two       = $color->pivot->value; @endphp
+            @php $fuchsia_two       = $color->pivot ? $color->pivot->value : ($color->value ?? $fuchsia_two); @endphp
         @elseif ($color->name       == 'card-gradient-fuchsia_two_hover')
-            @php $fuchsia_two_hover = $color->pivot->value; @endphp
+            @php $fuchsia_two_hover = $color->pivot ? $color->pivot->value : ($color->value ?? $fuchsia_two_hover); @endphp
         @endif
     @endforeach
+    @endif
 
     --card-gradient-cyan: linear-gradient(to right, {{ $cyan_one }}, {{ $cyan_two }});
     --card-gradient-cyan-hover: linear-gradient(to right, {{ $cyan_one_hover }}, {{ $cyan_two_hover }});
