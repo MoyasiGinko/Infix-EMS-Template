@@ -37,32 +37,7 @@ Route::get('home', function() {
     return redirect()->to(url('/admin-dashboard'));
 });
 
-Route::get('show-log', function() {
-    $path = storage_path('logs/laravel.log');
-    if (!file_exists($path)) {
-        return 'No laravel.log file found';
-    }
-    $content = file_get_contents($path);
-    $lines = explode("\n", $content);
-    return response('<pre>' . htmlspecialchars(implode("\n", array_slice($lines, -150))) . '</pre>');
-});
 
-Route::get('test-dash', function() {
-    try {
-        if (!Auth::check()) {
-            Auth::loginUsingId(1);
-        }
-        $request = request();
-        $controller = app(\App\Http\Controllers\HomeController::class);
-        return $controller->index($request);
-    } catch (\Throwable $e) {
-        return response('<pre style="white-space:pre-wrap; background:#111; color:#ff5555; padding:20px; font-size:14px; font-family:monospace;">' . 
-            'ERROR: ' . $e->getMessage() . "\n" .
-            'FILE: ' . $e->getFile() . ':' . $e->getLine() . "\n\n" .
-            'STACK TRACE:' . "\n" . $e->getTraceAsString() .
-        '</pre>');
-    }
-});
 
 Route::get('migrate', function () {
     if (!Storage::exists('.app_installed') || (Auth::check() && Auth::id() == 1)) {

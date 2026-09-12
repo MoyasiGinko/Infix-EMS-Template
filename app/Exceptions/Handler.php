@@ -38,13 +38,15 @@ class Handler extends ExceptionHandler
             if ($throwable instanceof HttpExceptionInterface && $throwable->getStatusCode() != 500) {
                 return null;
             }
-
-            return response('<pre style="white-space:pre-wrap; background:#181818; color:#f85149; padding:20px; font-size:14px; font-family:monospace; line-height:1.5; border:1px solid #da3633; border-radius:6px; margin:20px;">' . 
-                '<strong>[500 EXCEPTION]</strong> ' . htmlspecialchars(get_class($throwable)) . "\n" .
-                '<strong>MESSAGE:</strong> ' . htmlspecialchars($throwable->getMessage()) . "\n" .
-                '<strong>LOCATION:</strong> ' . htmlspecialchars($throwable->getFile()) . ':' . $throwable->getLine() . "\n\n" .
-                '<strong>STACK TRACE:</strong>' . "\n" . htmlspecialchars($throwable->getTraceAsString()) .
-            '</pre>', 500);
+            if (config('app.debug') || env('APP_DEBUG', true) || request()->has('debug')) {
+                return response('<pre style="white-space:pre-wrap; background:#181818; color:#f85149; padding:20px; font-size:14px; font-family:monospace; line-height:1.5; border:1px solid #da3633; border-radius:6px; margin:20px;">' . 
+                    '<strong>[500 EXCEPTION]</strong> ' . htmlspecialchars(get_class($throwable)) . "\n" .
+                    '<strong>MESSAGE:</strong> ' . htmlspecialchars($throwable->getMessage()) . "\n" .
+                    '<strong>LOCATION:</strong> ' . htmlspecialchars($throwable->getFile()) . ':' . $throwable->getLine() . "\n\n" .
+                    '<strong>STACK TRACE:</strong>' . "\n" . htmlspecialchars($throwable->getTraceAsString()) .
+                '</pre>', 500);
+            }
+            return null;
         });
     }
 
@@ -71,7 +73,7 @@ class Handler extends ExceptionHandler
             return redirect('login');
         }
 
-        if (config('app.debug') || env('APP_DEBUG', true) || request()->has('debug') || request()->is('admin-dashboard*') || request()->is('test-dash*')) {
+        if (config('app.debug') || env('APP_DEBUG', true) || request()->has('debug')) {
             return response('<pre style="white-space:pre-wrap; background:#181818; color:#f85149; padding:20px; font-size:14px; font-family:monospace; line-height:1.5; border:1px solid #da3633; border-radius:6px; margin:20px;">' . 
                 '<strong>[500 EXCEPTION]</strong> ' . htmlspecialchars(get_class($throwable)) . "\n" .
                 '<strong>MESSAGE:</strong> ' . htmlspecialchars($throwable->getMessage()) . "\n" .
