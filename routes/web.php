@@ -33,6 +33,20 @@ Route::get('install', function() {
     return redirect()->to(url('/login'));
 });
 
+Route::get('home', function() {
+    return redirect()->to(url('/admin-dashboard'));
+});
+
+Route::get('show-log', function() {
+    $path = storage_path('logs/laravel.log');
+    if (!file_exists($path)) {
+        return 'No laravel.log file found';
+    }
+    $content = file_get_contents($path);
+    $lines = explode("\n", $content);
+    return response('<pre>' . htmlspecialchars(implode("\n", array_slice($lines, -150))) . '</pre>');
+});
+
 Route::get('migrate', function () {
     if (!Storage::exists('.app_installed') || (Auth::check() && Auth::id() == 1)) {
         @set_time_limit(0);

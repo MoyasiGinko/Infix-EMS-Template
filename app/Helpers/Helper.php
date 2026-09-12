@@ -3366,11 +3366,21 @@ if (! function_exists('getSussSchools')) {
 if (! function_exists('calandarSettingByMenuName')) {
     function calandarSettingByMenuName($menu_name)
     {
-        return Cache::rememberForever('calendarSetting', function () use ($menu_name) {
-            return SmCalendarSetting::where('menu_name', $menu_name)
-                ->select('font_color', 'bg_color', 'status')
-                ->first();
+        $setting = Cache::rememberForever('calendarSetting_' . $menu_name, function () use ($menu_name) {
+            try {
+                return SmCalendarSetting::where('menu_name', $menu_name)
+                    ->select('font_color', 'bg_color', 'status')
+                    ->first();
+            } catch (\Throwable $e) {
+                return null;
+            }
         });
+
+        if (!$setting) {
+            return (object) ['status' => 0, 'font_color' => '#ffffff', 'bg_color' => '#415094'];
+        }
+
+        return $setting;
     }
 }
 if (!function_exists('shifts')) {

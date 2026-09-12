@@ -315,13 +315,18 @@ class HomeController extends Controller
         })
             ->whereNotIn('id', [1, 2])
             ->get();
+        try {
             $academicCalendar = new SmAcademicCalendarController();
             $data['events'] = $academicCalendar->calenderData();
-            if(isSubscriptionEnabled()){
-                return view('backEnd.dashboard',compact('chart_data','chart_data_yearly','calendar_events','package_info'))->with($data);
-            }else{
-                return view('backEnd.dashboard',compact('chart_data','chart_data_yearly','calendar_events'))->with($data);
-            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Calendar data error: ' . $e->getMessage());
+            $data['events'] = [];
+        }
+        if(isSubscriptionEnabled()){
+            return view('backEnd.dashboard',compact('chart_data','chart_data_yearly','calendar_events','package_info'))->with($data);
+        }else{
+            return view('backEnd.dashboard',compact('chart_data','chart_data_yearly','calendar_events'))->with($data);
+        }
         return view('backEnd.dashboard', ['chart_data' => $chart_data, 'chart_data_yearly' => $chart_data_yearly, 'calendar_events' => $calendar_events])->with($data);
 
     }

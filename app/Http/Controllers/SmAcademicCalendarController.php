@@ -187,7 +187,7 @@ class SmAcademicCalendarController extends Controller
             }
 
             if ($eventSettings->status == 1) {
-                $allEvents = SmEvent::when($roleInfo->name != 'Super admin', function ($a) use ($roleInfo): void {
+                $allEvents = SmEvent::when($roleInfo && $roleInfo->name != 'Super admin', function ($a) use ($roleInfo): void {
                     $a->whereJsonContains('role_ids', (string) $roleInfo->id);
                 })
                     ->get(['event_title', 'event_location', 'event_des', 'from_date', 'to_date', 'uplad_image_file', 'url']);
@@ -218,7 +218,7 @@ class SmAcademicCalendarController extends Controller
             }
 
             if ($noticeBoardSettings->status == 1) {
-                $noticeBoards = SmNoticeBoard::where('publish_on', '<=', date('Y-m-d'))->when($roleInfo->name != 'Super admin', function ($a) use ($roleInfo): void {
+                $noticeBoards = SmNoticeBoard::where('publish_on', '<=', date('Y-m-d'))->when($roleInfo && $roleInfo->name != 'Super admin', function ($a) use ($roleInfo): void {
                     $a->whereJsonContains('inform_to', (string) $roleInfo->id);
                 })
                     ->get(['notice_title', 'notice_message', 'publish_on', 'inform_to']);

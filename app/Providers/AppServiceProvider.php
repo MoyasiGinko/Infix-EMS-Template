@@ -112,11 +112,12 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->register(RepositoryServiceProvider::class);
         $this->app->singleton('dashboard_bg', function () {
-            return DB::table('sm_background_settings')->where('school_id', app('school')->id)->where([['is_default', 1], ['title', 'Dashboard Background']])->first();
+            $school_id = (app()->bound('school') && app('school')) ? app('school')->id : 1;
+            return DB::table('sm_background_settings')->where('school_id', $school_id)->where([['is_default', 1], ['title', 'Dashboard Background']])->first();
         });
 
         $this->app->singleton('school_info', function () {
-            if (app()->bound('school')) {
+            if (app()->bound('school') && app('school')) {
                 return SmGeneralSettings::where('school_id', app('school')->id)->first();
             }
 
@@ -134,7 +135,7 @@ class AppServiceProvider extends ServiceProvider
 
             $infixRole = InfixRole::find(Auth::user()->role_id);
             $permissionIds = AssignPermission::where('role_id', Auth::user()->role_id)
-                ->when($infixRole->is_saas == 0, function ($q): void {
+                ->when($infixRole && $infixRole->is_saas == 0, function ($q): void {
                     $q->where('school_id', Auth::user()->school_id);
                 })->pluck('permission_id')->toArray();
             $permissions = Permission::whereIn('id', $permissionIds)->pluck('route')->toArray();
