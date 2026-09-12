@@ -24,17 +24,22 @@ class InstallController extends Controller{
     }
 
     public function index(){
-
+        if (Storage::exists('.app_installed')) {
+            return redirect()->to(url('/login'));
+        }
         $this->service_repo->checkInstallation();
         return view('school::install.welcome');
     }
 
 
     public function user(){
+        if (Storage::exists('.app_installed')) {
+            return redirect()->to(url('/login'));
+        }
         $ac = Storage::exists('.temp_app_installed') ? Storage::get('.temp_app_installed') : null;
 
         if(!$this->service_repo->checkDatabaseConnection() || !$ac){
-            abort(404);
+            return redirect()->to(url('/login'));
         }
 
 		return view('school::install.user');

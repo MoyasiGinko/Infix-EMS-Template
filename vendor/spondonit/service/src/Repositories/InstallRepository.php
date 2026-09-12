@@ -31,7 +31,7 @@ class InstallRepository
     {
         $ac = Storage::exists('.app_installed') ? Storage::get('.app_installed') : null;
         if ($ac) {
-            abort(404);
+            return redirect()->to(url('/login'))->send();
         } else {
             if ($this->checkPreviousInstallation()) {
                 return redirect('/')->send();

@@ -25,6 +25,14 @@ Route::group(['middleware' => ['subdomain']], function ($routes) {
     require 'tenant.php';
 });
 
+Route::get('install/done', function() {
+    return redirect()->to(url('/login'));
+})->name('service.done');
+
+Route::get('install', function() {
+    return redirect()->to(url('/login'));
+});
+
 Route::get('migrate', function () {
     if (!Storage::exists('.app_installed') || (Auth::check() && Auth::id() == 1)) {
         @set_time_limit(0);

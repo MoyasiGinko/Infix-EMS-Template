@@ -8,6 +8,9 @@ Route::group(['namespace' => 'SpondonIt\SchoolService\Controllers', 'middleware'
         Route::get('/', 'InstallController@index')->name('service.install');
         Route::get('user', 'InstallController@user')->name('service.user');
         Route::post('user', 'InstallController@post_user');
+        Route::get('done', function() {
+            return redirect()->to(url('/login'));
+        })->name('service.done');
     });
 
 });
